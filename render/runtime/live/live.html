@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  motion live — OBS tarayıcı kaynağı (şablon).
+  Mantıksal tuval 1920×1080; kaynak boyutuna ölçeklenir. Parametreler:
+    ?bg=transparent        saydam zemin (OBS bindirmesi)      ?bg=%23202020  zemin rengi
+    ?avatar=yol/avatar.js  projenin avatar adaptörü            ?settings=ayar.json  proje varsayılanları
+    ?panel=1               ayar paneli katmanı (masaüstü deneme) ?meter=1  seviye göstergesi
+    ?play=zarf.json        kayıtlı zarf oynatma               ?drive=manual  elle sürüş (deterministik yakalama)
+    ?qc=1                  ölçüm kipi (yerel kayıt yok sayılır) ?mic=0  mikrofon açılmaz
+  Yer tutucu avatar (placeholder-avatar.js) look-dev'de projenin avatarıyla değiştirilir.
+-->
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>motion live</title>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #dom-root { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; pointer-events: none; display: none; overflow: hidden; }
+  #notice { position: fixed; left: 16px; bottom: 16px; max-width: 70vw; font: 14px/1.45 system-ui, sans-serif; color: #e6e6e6;
+            background: rgba(0, 0, 0, 0.6); padding: 8px 12px; border-radius: 4px; display: none; z-index: 5; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="dom-root"></div>
+<div id="notice" role="status" aria-live="polite"></div>
+<script src="live.js"></script>
+<script src="placeholder-avatar.js"></script>
+</body>
+</html>

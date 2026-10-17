@@ -31,6 +31,11 @@ import { ff, X264_ARGS, TO709 } from '../lib/ffmpeg.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = path.resolve(HERE, '..', 'runtime', 'live', 'live.html');
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {   // kullanım: dosya başındaki açıklama bloğu
+  const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n');
+  console.log(src.slice(0, src.findIndex((l) => !l.startsWith('//'))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  process.exit(0);
+}
 const has = (k) => args.includes(k);
 const argOf = (k, d) => { const i = args.indexOf(k); return i >= 0 && args[i + 1] != null && !args[i + 1].startsWith('--') ? args[i + 1] : d; };
 const VALUED = new Set(['--seconds', '--wav', '--fps', '--port', '--warmup', '--channel', '--bg', '--scale', '--capture', '--out', '--gpu', '--avatar', '--settings']);
