@@ -19,7 +19,7 @@ Bu skill **genel katmandır**: kuralların ve ölçümlerin özeti ile hangi bel
 > - `/motion:init`'te **"yeni world"** seçilirse look-dev fazı brief'ten **sıfırdan** bir dil kurar: **3 gerçekten farklı yön** (malzeme, ışık, hareket grameri, tipografi, kamera dili). Her yön **ölçülebilirdir**: bant, kontrast ve **K1 maske tanımı** `world.json`'a yazılır.
 > - **"fx-lab'in bir versiyonu"** sayılan yön varyant olarak kabul edilmez. Reviewer'ın UCUZ listesinde **#11 "önceki projeyi taklit"** vardır.
 > - Kurallar (K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi, §0.6) üslup değil **DİSİPLİNDİR**: her world'de geçerlidir; ama **eşikleri ve ölçüm maskeleri world başına yeniden tanımlanır**.
-> - Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, **kopyalanmaz**. Bulunan yeni kalıp world'e **K-new** olarak yazılır ve **`/motion:promote`** ile core'a önerilir.
+> - Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, **kopyalanmaz**. Bulunan yeni kalıp world'e **K-yeni** olarak yazılır ve **`/motion:promote`** ile core'a önerilir.
 
 Kural satırları: [RULES.md](references/RULES.md) §0.3 (YR-1 … YR-8).
 

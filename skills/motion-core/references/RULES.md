@@ -69,7 +69,7 @@
 > `/motion:init`'te **"yeni world"** seçilirse look-dev fazı brief'ten **sıfırdan** bir dil kurar: **3 gerçekten farklı yön** (malzeme, ışık, hareket grameri, tipografi, kamera dili); her yön **ölçülebilirdir** — bant, kontrast ve K1 maske tanımı `world.json`'a yazılır.
 > **"fx-lab'in bir versiyonu"** sayılan yön varyant olarak kabul edilmez; reviewer'ın UCUZ listesine **#11 "önceki projeyi taklit"** eklenmiştir.
 > Kurallar (K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi, §0.6) üslup değil **DİSİPLİNDİR**: her world'de geçerlidir; ama **eşikleri ve ölçüm maskeleri world başına yeniden tanımlanır**.
-> Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, kopyalanmaz. Bulunan yeni kalıp world'e **K-new** olarak yazılır ve `/motion:promote` ile core'a önerilir.
+> Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, kopyalanmaz. Bulunan yeni kalıp world'e **K-yeni** olarak yazılır ve `/motion:promote` ile core'a önerilir.
 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
@@ -79,7 +79,7 @@
 | YR-4 | Her yön ölçülebilir teslim edilir: `band`, kontrast hedefi, `k1.mask` (+ `selector`), `accent`, `classes`, `grade.chain` `world.json`'a yazılır; ölçülemeyen yön seçime sunulmaz. Zorunlu alan eksikse `manifest validate` hata verir, ilgili kontrol "ölçülemedi" der ve **değer uydurulmaz**; ölçülemeyen SERT kural geçmiş sayılmaz. | `manifest validate`, M-QC7, M-K1 | — | — | **evet** (world) | SERT | sayısı olmayan dil QC'de "geçti ama okunmuyor" verdi |
 | YR-5 | "Örnek world'ün / önceki projenin versiyonu" sayılan yön varyant değildir (UCUZ #11). | rev | — | — | hayır | SERT | paket bir önceki filmin dilini taşıma riski |
 | YR-6 | Kurallar disiplindir: her world'de geçerli; eşik ve maskeler world başına yeniden tanımlanır; yeniden tanım SERT kuralı kaldıramaz. | — | — | world | hayır | SERT | aynı kural (K1) farklı dünyada farklı maske istedi |
-| YR-7 | Kalıplar (PATTERNS K-xx) ve dersler ilham/uyarıdır; sahneye A/B kanıtıyla ya da `project.md`'de kayıtlı muafiyetle girer (KT-5). Yeni kalıp world'e `K-new` olarak yazılır, `/motion:promote` ile önerilir. | rev, rapor | — | proje (muafiyet) | hayır | SERT | kalıp kartları şablon gibi kopyalanınca dünya kuralları ezildi |
+| YR-7 | Kalıplar (PATTERNS K-xx) ve dersler ilham/uyarıdır; sahneye A/B kanıtıyla ya da `project.md`'de kayıtlı muafiyetle girer (KT-5). Yeni kalıp world'e `K-yeni` olarak yazılır, `/motion:promote` ile önerilir. | rev, rapor | — | proje (muafiyet) | hayır | SERT | kalıp kartları şablon gibi kopyalanınca dünya kuralları ezildi |
 | YR-8 | World/fx parçası proje adı, marka rengi ya da sahne kimliği taşımaz; değer prop/token'dan gelir. | kod inceleme | — | — | hayır | SERT | dünya dosyasına marka kuralı yazılmıştı |
 
 ---
