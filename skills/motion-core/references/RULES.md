@@ -6,7 +6,7 @@
 
 ## Okuma notu
 
-**Birimler.** Bütün süre eşikleri **saniye** cinsindendir; kare sayısı manifestteki `fps` ile hesaplanır (`kare = round(s · fps)`). Core varsayılanı **60 fps · 1920×1080** (D1-03); parantez içindeki `@60` kare karşılığıdır. Piksel eşikleri **1080p ekran pikselidir** (başka yükseklikte `px × H/1080`). `world.json`'daki px/kare değerleri (`camera.maxPxPerFrame`, `camera.stepJump`, `camera.accel.floor`, `motion.toolMaxPx`) **60 fps · 1080p referansında** yazılır; araç başka fps'te `× 60/fps` ile ölçekler, px/s karşılığı tabloda verilir. Luma % = Rec.709 Y′ (8-bit gamma uzayı) / 255 · 100.
+**Birimler.** Bütün süre eşikleri **saniye** cinsindendir; kare sayısı manifestteki `fps` ile hesaplanır (`kare = round(s · fps)`). Core varsayılanı **60 fps · 1920×1080** (D1-03); parantez içindeki `@60` kare karşılığıdır. Piksel eşikleri **1080p ekran pikselidir** (başka yükseklikte `px × H/1080`). `world.json`'daki px/kare değerleri (`camera.maxPxPerFrame`, `camera.stepJump`, `camera.accel.floor`, `motion.toolMaxPx`) **60 fps · 1080p**'de ölçülüp yazılır; araç **ölçeklemez** (değer proje fps'inde px/kare uygulanır) — başka fps'te world'e o fps'te ölçülen değer yazılır; px/s karşılığı tabloda verilir. Luma % = Rec.709 Y′ (8-bit gamma uzayı) / 255 · 100.
 
 **Sütunlar.**
 
@@ -21,7 +21,7 @@
 | sınıf | **SERT** (ölçülür, değişmez; istisna yalnız manifest kaydıyla) · **VARSAYILAN** (gerekçe + kaynak + geri alma yoluyla aşılır) |
 | kaynak dersi | kuralın neden var olduğu (kaynak projedeki olay; anonim) |
 
-**Override yönü.** Override bir eşiği **sıkılaştırabilir** ya da `override` sütununun izin verdiği yerde değiştirebilir; bir SERT kuralı **kaldıramaz**. SERT kuralın bir aralıkta uygulanmaması yalnız manifest kaydıyla olur: `review.<tür>: [[a, b, "gerekçe"]]` (incelendi → UYARI), `exceptions.<tür>` (kayıtlı istisna), ADR'li `cut: "light"`.
+**Override yönü.** Override bir eşiği **sıkılaştırabilir** ya da `override` sütununun izin verdiği yerde değiştirebilir; bir SERT kuralı **kaldıramaz**. SERT kuralın bir aralıkta uygulanmaması yalnız manifest kaydıyla olur: `review.<tür>: [[a, b, "gerekçe"]]` (incelendi → UYARI), `exceptions.<tür>` (kayıtlı istisna), `slice: true` (son kare muafiyeti). ADR'li `cut: "light"` kaydını araçlar okumaz: ışıkla kesmede son kare `slice` + ADR ile muaf tutulur, sızıntı `fc:ramp`/`fc:temporal` bildirimiyle ölçülür (GÇ-7).
 
 ---
 
@@ -194,7 +194,7 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 | GÇ-4 | **Geçişler tasarlanmış:** her kesme/devir künyede bir geçiş kararıdır; sıçrayan kesme yok. Repertuvar world'den ve PATTERNS'ten gelir; core varsayılan geçiş kalıbı yoktur (YR-2). | rev, künye | — | world | hayır | SERT | — |
 | GÇ-5 | Durum değişimi (renk, ekran içeriği) yerinde değişmez — hareketli silme/tarama ile; yerinde değişim fade olur. | M-QC12, rev | — | — | hayır | SERT | ekran rengi yerinde değişince fade sayıldı |
 | GÇ-6 | Işıkla açılışta şiddet ve havuz birlikte büyümez (fade sayılır): şiddet kısa sürede, havuz merkezden. | M-QC12 | — | world | hayır | VARSAYILAN | ışıkla açılış fade dedektörüne takıldı |
-| GÇ-7 | **Işıkla kesme** (`cut: "light"`) yalnız manifestte çift olarak kayıtlı ve ADR'li; A'nın kapanışı ve B'nin `blackStart`'ı kalkar; QC son kare yerine sızıntı kontrolü yapar. | M-QC2 | sızıntı tepe ≤ %60 | proje (ADR) | hayır | SERT | — |
+| GÇ-7 | **Işıkla kesme** (`cut: "light"`) yalnız manifestte çift olarak kayıtlı ve ADR'li; A'nın kapanışı ve B'nin `blackStart`'ı kalkar. qc `cut` alanını okumaz: A `slice: true` (son kare muafiyeti) ile kaydedilir, sızıntı (son 2 kare, tepe ≤ %60) `fc:ramp`/`fc:temporal` bildirimiyle ölçülür. | M-QC2, fc:ramp | sızıntı tepe ≤ %60 | proje (ADR) | hayır | SERT | — |
 | GÇ-8 | Pozlama göz kırpması (exposure dip) yalnız sahne/perde geçişinde. | rev | %40 · 0,3 s | world | hayır | VARSAYILAN | — |
 
 ---
@@ -204,9 +204,9 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
 | SN-1 | Son kare zamanı **(n−1)/fps**; çıkış tween'leri `süre − 1/fps`'te biter. | M-QC2 | — | — | hayır | SERT | çıkış `süre`'de bitince son karede %13–28 kalıntı kaldı |
-| SN-2 | Sahne sonu **tam siyah:** ham son kare max ≤ 2; encode'da max 0 (mp4 Y = 16, TV aralığı). Muaf: `slice: true`, `cut: "light"`. | M-QC2, fc:black | ≤ 2 / 0 | — | hayır | SERT | — |
+| SN-2 | Sahne sonu **tam siyah:** ham son kare max ≤ 2; encode'da max 0 (mp4 Y = 16, TV aralığı). Muaf: `slice: true` (araçların tanıdığı tek muafiyet; `cut: "light"` ADR'si `slice` ile işlenir). | M-QC2, fc:black | ≤ 2 / 0 | — | hayır | SERT | — |
 | SN-3 | Siyahtan açılış: encode kare 0 saf siyah **yalnız** ham kare 0 gerçekten siyahsa (`blackStart`). | M-QC2, M-GRADE | — | — | hayır | SERT | kit kare 0'ı siyah değil boşluk rengiydi |
-| SN-4 | **Saf siyah penceresi 0,2 s** (sahne sonu; 12 kare @60, 6 kare animatik @30); grade'in renk dengesi/siyah noktası bu karelerde kapalı. İnişli sonda `grade.fadeOut [n0, n1]` (tam ↔ saf zincir karışımı); tek kare basamağı yok. | M-GRADE, fc:ramp | 0,2 s | — | hayır | SERT | sabit 12 kare 60 fps'te yarı süreye indi; inişli sonda Y −8 tek kare basamağı |
+| SN-4 | **Saf siyah penceresi** = world `grade.params.pureSec` (araç varsayılanı 0,4 s = 24 kare @60, animatikte 12 kare @30; fx-lab örneği 0,2 s); grade'in renk dengesi/siyah noktası bu karelerde kapalı. İnişli sonda `grade.fadeOut [n0, n1]` (tam ↔ saf zincir karışımı); tek kare basamağı yok. | M-GRADE, fc:ramp | 0,2 s | — | hayır | SERT | sabit 12 kare 60 fps'te yarı süreye indi; inişli sonda Y −8 tek kare basamağı |
 | SN-5 | Siyaha iniş kayan noktada + TPDF dither (`expo-post`); iki kez karartma yok. | fc:ramp | son kare 0 | — | hayır | SERT | 8-bit inişte pürüz 0,30 → dither ile 0,08 |
 | SN-6 | Perde (`slice`) sonlarında fade/filtre kapanışı yok; dikiş hareketli kalır (DV-3). | fc:temporal | — | — | hayır | SERT | — |
 | SN-7 | **Kapanış kuyruğu:** konuşma sonu + tutuş + ışık çekilişi + siyah; ışık çekilişi kelime içinde başlamaz; kuyruk sese düz sessizlik olarak eklenir; K3 dışıdır. | rev, fc:loudness (`tail`) | [ÖRNEK] 0,8 s + 1,0 s + ≥ 0,067 s | proje | hayır | VARSAYILAN | ışık konuşma bitmeden çekildi |
@@ -506,8 +506,8 @@ Kaynak eşiklerinin çoğu 30 fps karesiyle yazılmıştı; paket saniye tutar.
 | aksan aralığı / köprü boşluğu | ≥ 0,067 s / < 0,067 s | 4 | 2 | AK-3 |
 | kontak / bant hücresi | her 0,4 s | 24 | 12 | KD-6 |
 | kamera ivme penceresi | 1/30 s | 2 | 1 | KM-5 |
-| saf siyah penceresi (son) | 0,2 s | 12 | 6 | SN-4 |
-| `layer.exit` yoksa kapanış muafiyeti | son 0,2 s | 12 | 6 | SN-4 |
+| saf siyah penceresi (son) | world `pureSec` (varsayılan 0,4 s) | 24 | 12 | SN-4 |
+| `layer.exit` yoksa kapanış muafiyeti (qc) | son 0,4 s (12·KF) | 24 | 12 | SN-4 |
 | son/ilk dikiş penceresi | ±0,2 s | ±12 | ±6 | DV-3 |
 | K8 başlama/bitiş ofseti | ≥ 0,1 s | ≥ 6 | ≥ 3 | K8 |
 | 2× pad / blend | [ÖRNEK] 0,1 s | 6 | 3 | SS-1 |
@@ -543,7 +543,7 @@ Kaynak belgelerde birbirini tutmayan değerler ve paketteki karar.
 | 11 | Kare/zaman 30 fps'e sabit ↔ 60 fps üretim, `×(FPS/30)` yalnız proje belgesinde. | Bütün eşikler saniye + fps (§21); core varsayılan 60 fps (D1-03). | 30 fps sabitleri hata kaynağıydı |
 | 12 | Animatik 15 fps ↔ 30 fps. | **960×540 @30** (K7). | 15 fps "kasıyordu" |
 | 13 | Storyboard kapısı "6 boyalı kare" ↔ "3 varyant still/shot + animatik kapısı". | Bütün profillerde shot başına 3 varyant still + K7 animatik kapısı (`live`'da canlı kayıt); `light`'ta varyant seçimi animatik kapısıyla tek turda; storyboard paneli PLAYBOOK'ta destek artefaktı (§19). | kaynak filmin fiilî akışı varyant + animatikti |
-| 14 | "Son 12 kare saf siyah" ↔ inişli sonda basamak; 12 kare fps ile ölçeklenmiyordu. | **0,2 s** saf pencere + `grade.fadeOut` (SN-4). | teslim edilen film 60 fps'te 12 kare = 0,2 s ile onaylandı |
+| 14 | "Son 12 kare saf siyah" ↔ inişli sonda basamak; 12 kare fps ile ölçeklenmiyordu. | fps ile ölçekli saf pencere (world `grade.params.pureSec`; araç varsayılanı 0,4 s = 12·KF, fx-lab world'ü 0,2 s) + `grade.fadeOut` (SN-4). | teslim edilen film 60 fps'te 12 kare = 0,2 s ile onaylandı |
 | 15 | Eski karanlık eşiği (%40 / %0,1) ↔ güncel (%30 / %0,05). | **%8 ort. + %30 üstü < %0,05, > 0,5 s** (KD-8). | arşiv metni güncel değil |
 | 16 | Bir kalıp kartı yanlış ADR'ye atıf yapıyordu. | PATTERNS/DECISIONS anonim yeniden yazımda düzeltilir. | — |
 | 17 | ADR'de ikon boyutu ↔ world'de düzeltilmiş boyut. | Örnek world değeri geçerli; ADR'ye not (DECISIONS). | — |
@@ -553,7 +553,7 @@ Kaynak belgelerde birbirini tutmayan değerler ve paketteki karar.
 | 21 | Reviewer yalıtımı metinde var, araç kısıtı yok; reviewer seçime katıldı. | Reviewer salt-okur araçlar + yalnız `out/review/` yazımı; seçimi kullanıcı yapar (RV-1, VR-4). | yalıtım |
 | 22 | Bir bellek kaydı olmayan bir kayda bağlanıyordu. | Ders LESSONS'a anonim taşınır. | — |
 | 23 | K1 brief'te yalnız alan yazıldı; uygulamada yükseklik kabul edildi. | Kural **"alan ≥ X ya da yükseklik ≥ Y"** (K1). | QC zaten "ya da" ölçüyordu |
-| 24 | `cut: "light"` QC desteği belirsizdi. | Mekanizma core: manifest çifti + ADR + qc sızıntı kontrolü (GÇ-7, M-QC2). | — |
+| 24 | `cut: "light"` QC desteği belirsizdi. | Mekanizma core: manifest çifti + ADR; araçta `cut` alanı yok → `slice: true` + sızıntı `fc:ramp`/`fc:temporal` bildirimi (GÇ-7, M-QC2). | — |
 | 25 | Üretken ihtiyaç/üretim ajan mı prosedür mü; bağımsız ölçüm ve araştırma rolleri tanımsızdı. | 4 ajan: `motion-director` · `motion-research` · `motion-measure` · `motion-reviewer`; üretim prosedürü GENAI.md (D1-04). | fiilî akış |
 | 26 | K1, kapı, alet hızı için core varsayılanı belirsizdi (kaynak değerleri bilinçli sıkı). | Core: K1 0,30/0,50 (maske world'de zorunlu); kapı D1-05; alet hızı world değeri (core'da yok). | sıkı değerler world/proje profili |
 | 27 | Fps yedek değerleri araçlarda 30/60 karışık. | Tek kaynak `scenes.json` `fps` (init şablonu 60 yazar); araçlarda koda gömülü fps yedeği yok (CONTRACT §2). | — |

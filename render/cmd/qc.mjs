@@ -28,7 +28,9 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import { ffmpeg } from '../lib/ffmpeg.mjs';
-import { ROOT, FPS, KF, WIDTH, HEIGHT, latestMp4, sceneById } from '../lib/project.mjs';
+import { ROOT, FPS as FPS_M, KF as KF_M, WIDTH, HEIGHT, latestMp4, sceneById } from '../lib/project.mjs';
+// Etkin kare hızı: animatik kareleri (render --step N: her N. kare) için `qc <id> --step N` → FPS = fps/N, KF = FPS/30, kare sayısı ⌈N/step⌉.
+let FPS = FPS_M, KF = KF_M;
 import { cli, worldFor, worldName, bandFor, accentFor, k1For, probeEval, PROBE_DIR, pad5 } from '../lib/qc-common.mjs';
 import { W2, H2, lum480, heroContrast, heroRegion, gridMask, textRatio, JS_PAINTED, jsTextRows, jsHeroGrid } from '../lib/qc-img.mjs';
 import { k1Measure } from '../lib/qc-k1.mjs';
@@ -47,15 +49,17 @@ if (ARGV[0] === 'film') {
 }
 
 async function qcScene(argv) {
-  const { argOf, has, pos } = cli(argv, ['--frames-dir', '--mp4']);
+  const { argOf, has, pos } = cli(argv, ['--frames-dir', '--mp4', '--step']);
+  const STEP = Math.max(1, Math.round(+argOf('--step') || 1));
+  FPS = FPS_M / STEP; KF = FPS / 30;
   const id = pos[0];
-  if (!id) { console.error('kullanım: motion-render qc <id> [--frames-dir D] [--mp4 auto|yol] [--no-glyph] [--no-cam] [--quiet] · qc film …'); return 2; }
+  if (!id) { console.error('kullanım: motion-render qc <id> [--frames-dir D] [--step N] [--mp4 auto|yol] [--no-glyph] [--no-cam] [--quiet] · qc film …'); return 2; }
   let S;
   try { S = sceneById(id); } catch { console.error('manifestte yok: ' + id); return 1; }
   const WLD = worldFor(S);
   const DIR = argOf('--frames-dir') ? path.resolve(ROOT, argOf('--frames-dir')) : path.join(ROOT, 'out', 'frames', id);
-  const N = S.frames, quiet = has('--quiet');
-  const res = { id, world: worldName(S, WLD), frames: N, checks: {}, errors: [], warnings: [] };
+  const N = Math.ceil(S.frames / STEP), quiet = has('--quiet');
+  const res = { id, world: worldName(S, WLD), frames: N, step: STEP, checks: {}, errors: [], warnings: [] };
   const err = (k, m) => { res.errors.push(k + ': ' + m); }, warn = (k, m) => { res.warnings.push(k + ': ' + m); };
   const file = (f) => path.join(DIR, pad5(f) + '.png');
   const exitF = S.layer && S.layer.exit != null ? Math.floor(S.layer.exit * FPS) - 1 : N - Math.round(12 * KF);   // (#9) kapanış yedeği 12/30 s
@@ -74,7 +78,7 @@ async function qcScene(argv) {
   // tek geçiş, yarım çözünürlük (960×540): ışık/kırmızı/fade ölçüleri; bellekte yalnız önceki kare (+ derinlik/anahtar kareler)
   const Y = {}, luma = [], bright = [], sig = [], sigBox = [], bor = [], hot = [], fadeLike = [0], empty = [];
   const depthF = new Set([Math.floor(N * 0.25), Math.floor(N * 0.5), Math.floor(N * 0.75)]);
-  const KEYS = (S.keys && S.keys.length ? S.keys : [...depthF]).filter((f) => f >= 0 && f < N), keyF = new Set(KEYS);   // §5a anahtar kareler
+  const KEYS = (S.keys && S.keys.length ? S.keys.map((f) => Math.round(f / STEP)) : [...depthF]).filter((f) => f >= 0 && f < N), keyF = new Set(KEYS);   // §5a anahtar kareler
   let prev = null;
   function fadeMetric(A, B) {   // kenar gradyanı yönü (cos), genlik oranı (mu, cv); yalnız B'de / yalnız A'da kenar payı (beliriş / kayboluş)
     let n = 0;
@@ -162,7 +166,7 @@ async function qcScene(argv) {
   res.checks.kadraj = kadraj;
   // K1 (SERT): kahraman = world.k1.mask ölçüsü (ink: mürekkep/nesne maskesi, kâğıt değil); k1.keys verilmişse yalnız o karelerde
   if (K1.enabled) {
-    const kf = (K1.keys || KEYS).filter((f) => f >= 0);
+    const kf = (K1.keys ? K1.keys.map((f) => Math.round(f / STEP)) : KEYS).filter((f) => f >= 0 && f < N);
     if (kf.length) {
       try {
         const ik = await k1Measure(id, kf, K1, FPS); res.checks.k1 = ik;

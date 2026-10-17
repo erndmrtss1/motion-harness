@@ -114,7 +114,7 @@
 // sahne tasarım uzayında çiziyorsa MH.toStage ile çevrilir) — araçlar kareyi scenes.json width×height'ta ölçer.
 //   MH.hooks.camSpeed(camAt, o)        window.__camSpeed(fps, n): kare başı kamera ekran hızı (px/kare)
 //   MH.hooks.camK(kFn, o)              window.__camK(fps, n): kare başı kamera ölçeği k
-//   MH.hooks.boxes(fn)                 window.__boxes(t) → fn(T tasarım, t sayfa): [{name, rect:[x,y,w,h]|poly, z, kind, size}]
+//   MH.hooks.boxes(fn)                 window.__boxes(t) → fn(T tasarım, t sayfa): [{name, rect:[x,y,w,h]|poly, z, kind, px}]  (px = metnin ekran yüksekliği; frame-check framing okur)
 //   MH.hooks.tools(fn) · glyphs(fn)    window.__tools(t) / __glyphs(t) (aynı zaman dönüşümüyle)
 //   MH.hooks.holds(list|fn) · events(list|fn)   window.__holds() / __events(): tasarım anları sayfa zamanına çevrilir
 //   MH.hooks.accentExclude(fn, o)      window.__redExclude(fps, n): kare başı izinli aksan kutuları [[x0, y0, x1, y1], …] (fn tasarım px döner)

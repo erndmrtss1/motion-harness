@@ -64,11 +64,13 @@ Senin çıktını yapan (motion-director) ve kullanıcı okur. Reviewer yalnız 
 
   ```
   { scene, proposal, path, taskCap, targetCredits, rules, common,
-    items: [ { id, type, role, model, alt, budget, ref, accept, [duration, trim, resolution, tool, conflict] } ] }
+    items: [ { id, type, role, model, alt, params, budget, prompt, refs, accept, [start, trim, tool, conflict] } ] }
   ```
 
   - `id` biçimi: `g-<birim küçük>-<ad>-<n>`.
-  - `ref`: storyboard ya da referans kare yolu.
+  - `params`: politika varsayılanlarının üstüne yazılan ayarlar (süre, çözünürlük); `gen` öğe düzeyindeki başka ayar alanını okumaz.
+  - `prompt`: istem; yoksa `gen` öğeyi "istem yok" diye atlar.
+  - `refs`: storyboard ya da referans kare yolları (dizi); `start`: başlangıç karesi.
   - `accept`: ölçülebilir kabul ölçütü (doluluk, ton aralığı, yasaklar, süre).
 
 ### `sozluk`: shot başına nesne sözlüğü taslağı

@@ -23,8 +23,8 @@
 seslendirme (kayıt | TTS)  →  materials/<ses>.wav     scenes.json "audio" = TEK KAYNAK
  1 motion-render transcribe materials/<ses>.wav --out script/<ad>
       → <ad>.words.json · .srt · .txt · .dogrula.md   (.part → rename)
- 2 klip doğrulaması (şüpheli bölgeler)  motion-render transcribe verify <spec>
-      → <ad>.words.json düzeltilmiş (meta.corrected, meta.fixes[]) · ham: <ad>.whisper.words.json
+ 2 klip doğrulaması (şüpheli bölgeler)  motion-render transcribe verify "<ad>,<kaynak>,<a>,<b>" … [--src <kaynak>=<ses>]
+      → konsol/--log çıktısı; düzeltme elle <ad>.words.json'a işlenir (meta.corrected, meta.fixes[]) · ham: <ad>.whisper.words.json
       DUR → metin farkı beklenen yerlerin dışında
  3 motion-render beats materials/<ses>.wav --words script/<ad>.words.json --out script/BEATS.md
       → BEATS.md + beats.json (duraklar ≥ 250 ms, kesme TC, vurgu adayları)
@@ -63,12 +63,10 @@ Whisper uzun geçişte, önceki metne koşullu çözümde güvenilmez. Belirtile
 | kelime bölme | tek kelime iki kelimeye bölünür (ya da iki kelime birleşir) |
 | sınır kayması | duraktan sonraki ilk/kısa kelime sessizliğin içine konur (§5) |
 
-Yöntem (`transcribe verify <spec>`):
+Yöntem (`transcribe verify`; her bölge bir `"<ad>,<kaynak>,<a>,<b>"` belirtimidir, `<kaynak>` = `--src` kısa adı ya da ses yolu):
 
-```json
-{ "audio": "materials/<ses>.wav", "words": "script/<ad>.words.json",
-  "regions": [ [37.10, 41.20, "sıfır süreli tekrar"], [52.00, 53.40, "bölünmüş kelime?"] ],
-  "beams": [5, 10], "conditionOnPrevious": false }
+```
+motion-render transcribe verify "tekrar,ses,37.10,41.20" "bolunme,ses,52.00,53.40" --src ses=materials/<ses>.wav --beams 5,10 [--log out/logs/<ad>-clipcheck.log]
 ```
 
 - Şüpheli bölge kısa klip olarak, **önceki metne koşulsuz**, iki ışın genişliğiyle (beam 5 / 10) yeniden çözülür. İki ses karşılaştırılıyorsa ikisinde de yapılır.
@@ -170,25 +168,24 @@ DUR sırasında bağımsız işler sürer. Ör. Δ ≤ 33 ms bölgelerin tanık 
 - **Yeni perdeler doğrudan yeni ses zamanında tasarlanır** (eşlemsiz). Eşlem yalnız önceden tasarlanmış perdeler içindir.
 - **Saklı kare bayatlığı:** "birebir aralık, kareler kalır" kararından önce saklı kare güncel kodla probe edilip karşılaştırılır. [ÖRNEK] eski bir doku kalıntısı 0.56/255 fark verdi; eskiyi tutup yenisini eklemek doku sıçraması yapardı, perde baştan çizildi.
 
-`script/amap.config.json` (`amap build --anchors` girdisi) [ÖRNEK, önerilen alanlar]:
+`script/amap.config.json` (`amap build --anchors` girdisi; `name` ve `maps[]` zorunlu, tam örnek `motion-render amap example`) [ÖRNEK]:
 
 ```json
 {
-  "fps": 60, "tol": 0.033, "target": 0.028, "dropIfEnvelopeConflictMs": 50,
-  "design": { "words": "script/<tasarim>.words.json", "beats": "script/<tasarim>.beats.json" },
-  "audio":  { "file": "materials/<yeni-ses>.wav", "words": "script/<yeni>.words.json", "beats": "script/<yeni>.beats.json",
-              "envelope": "out/probe/<faz>/audio-diff.json" },
-  "bounds": [ { "id": "<FILM>-P1", "tau": 0 }, { "id": "<FILM>-P2", "tau": 30.30 } ],
-  "anchors": [
-    { "kind": "cut",   "label": "S03 kesme",      "tau": 8.12,  "t": 8.32 },
-    { "kind": "lyric", "label": "S05 lyric başı", "tau": 15.06, "word": 44 },
-    { "kind": "event", "label": "S05 damga",      "tau": 17.40, "word": 47 }
-  ],
-  "keep": [ { "range": [0, 3.90], "map": "identity" },
-            { "range": [36.90, 40.38], "map": "script/<onceki>.amap.json" } ],
-  "out": { "json": "script/<yeni>.amap.json", "page": "script/<yeni>-amap.js" }
+  "name": "<yeni>", "tol": 0.033, "fps": 60, "lang": "tr", "audio": "materials/<yeni-ses>.wav",
+  "maps": [ {
+    "id": "A", "solver": "v1", "xKey": "tau",
+    "from": { "words": "script/<tasarim>.words.json", "beats": "script/<tasarim>.beats.json" },
+    "to":   { "words": "script/<yeni>.words.json", "beats": "script/<yeni>.beats.json" },
+    "anchors": { "cuts": { "maxDt": 3 }, "lyrics": { "scene": "<FILM>", "word": "firstPaired", "kind": "map" },
+                 "words": [[44, "<kelime>"]], "events": [], "list": [] },
+    "ident": true, "bounds": [0, 30.30], "sections": ["<FILM>-P1", "<FILM>-P2"]
+  } ]
 }
 ```
+
+- Çıktı `script/<name>.amap.json` + `script/<name>-amap.js`.
+- İkinci eşlem (`solver: "v2"`) zarf çapalarını `anchors.drift` ile `audio-diff` çıktısından (`out/probe/audio-diff/<a>--<b>/drift.json`, `dropFitMs: 50`) alır; değişmeyen aralıkta önceki eşleme devir `keep` alanıyladır.
 
 ## 8. Olay ↔ kelime ve tasarım kuralları
 

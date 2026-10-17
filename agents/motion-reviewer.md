@@ -57,7 +57,7 @@ Kural kaynakları:
   - `out/measure/**`;
   - konuşma kayıtları.
 - **Kendi yönteminle ölçersin.** qc ve frame-check json'ları nereye bakacağını söyler, kanıt değildir. Kararın dayandığı her sayıyı ayrı yoldan yeniden alırsın:
-  - `motion-render probe … --out out/review/<kapı-id>/…`
+  - `motion-render probe <id> --frame N --out out/review/<kapı-id>/…`
   - `motion-render contact sheet out/review/<kapı-id>/… …`
   - `motion-render imgdiff a b out/review/<kapı-id>/…`
   - `ffmpeg` kırpımları

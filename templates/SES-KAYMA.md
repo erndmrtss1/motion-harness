@@ -3,7 +3,7 @@
 > Yeni ses: `<materials/…>` (<s>). Önceki: `<materials/…>`. Transkript `script/<ad>.words.json` (klip doğrulaması: <n> düzeltme, `meta.fixes`).
 > **Kural:** |Δ| ≤ 2 kare (60 fps'te 33 ms) olan shot'ın kareleri aynen kalır; diğerleri eşlemle yeniden çizilir. Tasarım zamanı korunur; yeni perdeler doğrudan yeni ses zamanında tasarlanır.
 > Etkilenen kareler tasarım listesinden değil **ölçümle** bulunur.
-> Komutlar: `motion-render transcribe … --out script/<ad>` · `motion-render transcribe verify <spec>` · `motion-render beats … --out script/BEATS<k>.md` · `motion-render audio-diff <eski> <yeni>` · `motion-render amap build --anchors amap.config.json`.
+> Komutlar: `motion-render transcribe … --out script/<ad>` · `motion-render transcribe verify "<ad>,<kaynak>,<a>,<b>" … --src <kaynak>=<ses>` · `motion-render beats … --out script/BEATS<k>.md` · `motion-render audio-diff <eski> <yeni>` · `motion-render amap build --anchors amap.config.json`.
 
 ## 1. Metin farkı
 

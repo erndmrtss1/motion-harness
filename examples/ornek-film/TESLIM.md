@@ -17,9 +17,9 @@
 | `out/master/FILM_v5.mp4` | **H.264** High yuv420p, BT.709 tv · CRF 16 preset slow · AAC-LC 48 kHz (hedef 320k) | 7003 kare · 116.72 s · 107 MB · video 7450 kb/s · AAC 248 kb/s (kabul, F9-B #4) · ses **−16.00 LUFS / −3.89 dBTP** |
 | `out/master/FILM_v5-loudness.json` | ses ölçümleri | kaynak −12.62 LUFS / −0.51 dBTP → doğrusal −3.38 dB (sınırlayıcı yok) · LRA 2.3 · ölçüm bütün dosyada, sessiz kuyruk dahil |
 | `out/archive/FILM_v5/` | perde arşivi: FFV1 kayıpsız kareler (**altı perde yeni**; P1 0–239 v4 ile bit-aynı) · perde mp4'leri · künyeler · `ARSIV.json` · önceki manifest | PNG 14.3 GB → FFV1 9.6 GB · framemd5 kare kare bit-exact: **6/6 evet** |
-| `out/probe/FILM-full-qc/` | bütün film QC, OURS, son-12-kare json'ları | §5 |
+| `out/probe/_film-qc.json` · `FILM-ours.json` · `FILM-fc.json` | bütün film QC, OURS, son-12-kare json'ları | §5 |
 | `out/master/FILM_v4.*` · `out/archive/FILM_v4/` | önceki master (eski ses; 7038 kare) | v5 ile ortak: S01 (0–239) ProRes'te bit-aynı |
-| `out/FILM-onizleme.mp4` | önizleme (perde mp4'lerinin uç uca kopyası) — **master değil** | 7003 kare · 116.72 s |
+| `out/scenes/FILM-onizleme-ses.mp4` | önizleme (perde mp4'lerinin uç uca kopyası) — **master değil** | 7003 kare · 116.72 s |
 
 Üretim:
 

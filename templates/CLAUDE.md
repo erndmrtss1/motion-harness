@@ -29,7 +29,7 @@
 - **Kasıtlı ihlal yok.** SERT ölçüm ihlali "kasıtlı" diye bırakılmaz: düzelt ya da istisnayı önce sor.
 - **Her "giderildi" kare numarasıyla** doğrulanır.
 - **Değişmeyen kare değişmez.**
-  - Kısmi render sırası: yedek → aralığı sil → yeniden üret (`--range a-b --resume`) → tanık kareler `imgdiff 0` → kopya.
+  - Kısmi render sırası: yedek → aralığı sil → yeniden üret (`--range a-b --tag <T> --resume`) → tanık kareler `imgdiff 0` → kopya.
   - Paylaşılan bileşene eklenen parametrenin varsayılanı eski çıktıyı verir.
 - **YAP / YAPMA.** Kapsam dışı iş yapılmaz; `project.md` §12 borç kütüğüne yazılır.
 - **Rapor.**
@@ -42,7 +42,7 @@
   - Yama dosyadan yapılır, heredoc yok; her yamadan sonra tek kare probe.
   - Sahne açılmıyorsa render yok.
 - **Bekleme.**
-  - Uzun iş arka planda koşar; bildirim ya da `motion-render wait --timeout` ile beklenir.
+  - Uzun iş arka planda koşar; bildirim ya da `motion-render wait --id <id> --tag <T>|- --frames N --expect <s>` ile beklenir (üst sınır = 2 × expect).
   - Elle `sleep`/`until` döngüsü yok.
   - Beklerken belge yazılır.
 - **Disk.** Render öncesi ≥ 40 GB boş alan. Animatik tur dizinleri perde kabulünden sonra silinebilir; kalıcı silme kullanıcı kararıdır.
@@ -66,8 +66,9 @@
 motion-render manifest validate
 motion-render frame-check <id> --only framing,toolPath,overlap,camera     # izdüşüm kapısı (render yok)
 motion-render probe <id> --frame <N> [--frames a,b] [--out p.png]
-motion-render render <id> --scale 0.5 --step 2 --tag A --progress           # animatik 960×540 @30
-motion-render grade <id> --animatic --audio
+motion-render render <id> --scale 0.5 --step 2 --tag animatic --progress    # animatik 960×540 @30 → out/frames/<id>_animatic
+motion-render grade <id> --animatic                                         # → out/scenes/<id>_animatic.mp4 (--audio yalnız animatik sayfasında)
+motion-render contact <id> --dir out/frames/<id>_animatic --fstep 2         # animatik ölçümü: qc/frame-check --frames-dir, ours --dir … --step 2
 motion-render run <id> [--ss2] [--expo-post]                                # tam zincir
 motion-render render <id> --range a-b --tag <faz> --resume                  # kısmi yeniden render
 motion-render qc <id> --mp4 auto

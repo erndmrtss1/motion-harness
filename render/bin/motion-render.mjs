@@ -34,6 +34,17 @@ const mod = ALIAS[cmd] || cmd;
 const file = path.join(CMD_DIR, mod + '.mjs');
 if (!fs.existsSync(file)) { console.error('bilinmeyen komut: ' + cmd + ' (motion-render help)'); process.exit(2); }
 if (cmd === 'probe' && !argv.includes('--frame')) { console.error('probe: --frame N gerekir'); process.exit(2); }
+// --help / -h: komut ÇALIŞTIRILMAZ; komut dosyasının baş açıklama bloğu (kullanım) basılır. '--' sonrası argümanlar komuta aittir.
+const own = argv.indexOf('--') >= 0 ? argv.slice(0, argv.indexOf('--')) : argv;
+if (own.includes('--help') || own.includes('-h')) {
+  const src = fs.readFileSync(file, 'utf8').split('\n');
+  let i0 = 0;
+  while (i0 < src.length && (src[i0].startsWith('#!') || src[i0].trim() === '')) i0++;
+  const head = [];
+  for (let k = i0; k < src.length && src[k].startsWith('//'); k++) head.push(src[k].replace(/^\/\/ ?/, ''));
+  console.log(head.length ? head.join('\n') : 'motion-render ' + cmd + ' — açıklama yok (render/CONTRACT.md §6)');
+  process.exit(0);
+}
 process.argv = [process.argv[0], file, ...argv];
 process.env.MOTION_CMD = cmd;
 await import(pathToFileURL(file).href);

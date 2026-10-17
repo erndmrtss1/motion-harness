@@ -5,7 +5,7 @@ Bir motion projesinin belgeleri iki işe yarar:
 - **Süreci denetlenebilir kılar:** her kapı, her ölçüm ve her karar bir dosyada sayıyla durur.
 - **Bağımsız reviewer'a hafıza olur:** reviewer yalnız çıktıları, kural belgelerini ve kendi kayıt dosyasını (`docs/REVIEWER.md`) görür; yapanın belgelerini (künye, rapor, RETRO, RENDER_REPORT) görmez.
 
-Şablonlar paketin `templates/` klasöründedir. `motion-render init` kök şablonları kopyalar; diğerleri ihtiyaç anında kopyalanıp doldurulur. Anonim gerçek örnekler `examples/ornek-film/` altındadır.
+Şablonlar paketin `templates/` klasöründedir. `motion-render init` kök şablonları (`project.md`, `CLAUDE.md`, `scenes.json`) köke, ledger'ı `assets/gen/manifest.json`'a, diğer belge şablonlarını `docs/` altına kopyalar; bunlar ihtiyaç anında adlandırılıp doldurulur. Anonim gerçek örnekler `examples/ornek-film/` altındadır.
 
 ---
 
@@ -24,7 +24,7 @@ Bir motion projesinin belgeleri iki işe yarar:
 | `out/review/<kapı-id>/` | — | her kapı | reviewer (kanıt, kendi betikleri, RECORD.md) | ana oturum, kullanıcı |
 | `out/measure/<iş>/` | — | ölçüm isteği | `motion-measure` (RESULT.md + result.json) | ana oturum — reviewer okumaz |
 | `docs/SES-KAYMA-<ses>.md` | `templates/SES-KAYMA.md` | ses değişince, render'dan önce (DUR 1) | yapan | kullanıcı, reviewer |
-| `out/RENDER_REPORT.md` | `templates/RENDER_REPORT.md` | her render / animatik / master sonrası | yapan (`motion-render report` taslak satırları üretir) | kullanıcı, sonraki faz — reviewer okumaz |
+| `out/RENDER_REPORT.md` | `templates/RENDER_REPORT.md` | her render / animatik / master sonrası | yapan (elle sona ekler; otomatik özet ayrı dosyadadır: `motion-render report` → `out/RENDER_SUMMARY.md`, bu dosyaya dokunmaz) | kullanıcı, sonraki faz — reviewer okumaz |
 | `docs/RETRO.md` | `templates/RETRO.md` | her faz kapanışında | ana oturum / yapan | `/motion:promote`, sonraki faz |
 | `docs/TESLIM.md` | `templates/TESLIM.md` | master ve teslim fazlarında | ana oturum | kullanıcı |
 | `docs/F<n>-RAPOR.md` | `templates/RAPOR.md` | faz sonu (ana oturumun son mesajıyla aynı metin) | ana oturum | kullanıcı |

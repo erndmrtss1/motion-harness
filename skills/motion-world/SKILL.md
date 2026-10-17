@@ -103,7 +103,7 @@ world/
    motion-render qc LOOK-A                          # bant (M-QC7), kontrast, kadraj, K1, aksan, fade
    motion-render k1 LOOK-A --frames 0,1,2           # K1 alan / yükseklik (world.k1.mask)
    motion-render probe CARD-A --frame 0 --set MH_CARD=1 --out out/probe/look/A-card.png
-   motion-render frame-check CARD-A --only edgeDark # gri kart düşümü (kısa: fc)
+   motion-render frame-check CARD-A --only edgeDark # gri kart düşümü; sahnede {"type":"edgeDark","mode":"corners"} bildirili (kısa: fc)
    motion-render probe LOOK-A --frame 0 --bench 30  # maliyet s/kare
    motion-render contact sheet out/probe/look/LOOK-sheet.png A1.png=A·açılış B1.png=B·açılış …
    ```
@@ -173,17 +173,20 @@ function Piece() {
 |---|---|---|---|
 | `name`, `version`, `origin` | — | ad, semver, `lookdev` ya da `example:<ad>` | world değişince `version` artar |
 | `palette` | — | ad → `#rrggbb` (yalnız hex) | world jsx sabitleriyle aynı; ışık telafili kaynak renk ayrı ad (`accentSrc`) |
-| `accent` | — | `{color, class, quotaDefault}` | `color` grade'li çıktıdan ölçülen hedef; `class` `classes`'tan; kota sahne kaydında (`redQuota`) |
-| `fonts` | — | `[{family, weights, source}]` | `motion-render vendor fonts` indirir (lisans metniyle); Türkçe glif kontrolü (`frame-check --only glyph`) |
-| **`band`** | **ZORUNLU** | `[alt, üst]` zaman ağırlıklı ortalama luma %, grade sonrası | onaylı yönün look still'leri + storyboard panelleri (`qc` → `checks.band.mean`, `--mp4 auto` ile grade sonrası); hepsi içeride, kenarlara ≥ 2 puan pay; tipik genişlik 10–20 puan |
-| `profileBands` | — | profil bantları (ör. `typographic: [6, 14]`) | yalnız profil kullanılıyorsa |
-| **`k1.mask`** | **ZORUNLU** | `dom` \| `ink` \| `alpha` (+ `selector`, `areaMin`, `heightMin`, `lyricMin`) | açık zeminde koyu kahraman → `ink`; koyu zeminde açık kahraman → `alpha`; DOM öğesi (panel, kâğıt, cam) → `dom`. Eşik çekirdek tabanı 0.30 / 0.50; world yalnız **yükseltir** (`motion-render k1`) |
-| `edgeDark.maxFalloff` | — | köşe/merkez düşüm tavanı | gri kart (`MH_CARD=1`) → `frame-check --only edgeDark`; ölçülen + ~0.05 pay (örnek: 0.153 → 0.20) |
+| `accent` | — | `{color, class, quotaDefault}` | `color` grade'li çıktıdan ölçülen hedef (`fc:accentColor` `target`); `class` `classes`'tan (yoksa araç `signal` kullanır); kota sahne kaydında (`redQuota`) — `quotaDefault`'u yalnız `manifest validate` denetler, qc/fc okumaz |
+| `fonts` | — | `[{family, weights, italic?, source}]` | `motion-render vendor fonts` (ve `init`) `source: "google"` (ya da `source`'suz) aileleri indirir (lisans metniyle); Türkçe glif kontrolü qc#13 + `fc:glyph` (`family`, `chars` bildirilir) |
+| **`band`** | **ZORUNLU** | `[alt, üst]` pencere karelerinin ortalama luma %'si, grade sonrası | onaylı yönün look still'leri + storyboard panelleri (`qc` → `checks.band.mean`, `--mp4 auto` ile grade sonrası); hepsi içeride, kenarlara ≥ 2 puan pay; tipik genişlik 10–20 puan |
+| `profileBands` | — | profil bantları (ör. `typographic: [6, 14]`) | yalnız sahne `profile: "typographic"` kullanılıyorsa (yoksa araç [6, 14]) |
+| `burst` | — | `{luma, max}` patlama: luma > `luma` piksel payı > `max` → qc HATA | aydınlık world'de (`grade.chain: "light"` ise tanımsızken de `{250, 0.35}` ile açık) |
+| **`k1.mask`** | **ZORUNLU** | `dom` \| `ink` \| `alpha` (+ `selector`, `areaMin`, `heightMin`, `lyricMin`, `lyricSelector`) | açık zeminde koyu kahraman → `ink`; koyu zeminde açık kahraman → `alpha`; DOM öğesi (panel, kâğıt, cam) → `dom`. Eşik çekirdek tabanı 0.30 / 0.50; world yalnız **yükseltir** (`motion-render k1`). Alan yazılmazsa araç kaynak değerlerine düşer: `[data-hero]` · 0.35 / 0.55 · `lyricMin` 160 · `lyricSelector` `[data-fx=write]` — bu yüzden değerler açıkça yazılır |
+| `edgeDark.maxFalloff` (+ `maxDelta`) | — | köşe/merkez düşüm tavanı (+ kenar şeridi kararma sınırı, varsayılan 15/255) | gri kart (`MH_CARD=1`) → `frame-check --only edgeDark`; ölçülen + ~0.05 pay (örnek: 0.153 → 0.20) |
 | `grade` | — | `{chain: dark\|light\|lab\|none, params: {curves, colorbalance, vignette, black, pureSec}}` | `motion-render grade LOOK-A` provası; aydınlık world'de patlama (`burst`) kontrolü; siyah noktası + vinyet sırası bağlayıcı |
 | `classes` | — | renk sınıfları (`rMin`, `gMax`, `rgMin`, `gr`, `lMax`, …) | aksan çekirdek piksellerinin ≥ %99'u sınıfa girer, palet renklerinin hiçbiri girmez; `frame-check --only accentLocation` dışarıda 0 |
-| `camera` | — | `{maxPxPerFrame, stepJump, accel{max, floor}, …}` | kamera deneme sayfasında `probe --eval "JSON.stringify(window.__camSpeed(60, N))"` tepesi; `stepJump 2.5` ve `accel 0.15 / 2` çekirdek disiplinidir (gevşetilmez) |
-| `motion` | — | `{toolMaxPx, writeGlyphsPerSec, settlePx, …}` | `__tools` kancasıyla görünür alet hızı (`frame-check --only toolPath`), yazım süresi / glif, oturma tepesi; world'e özgü hareket sayıları (itiş, sarsıntı, CRT ızgarası…) aynı nesneye eklenebilir |
-| `supersample` | — | `{k2x, pad, blend, sxK, edgeMaxPx}` | Chromium tekniği: çekirdek ders değerleri (0.5 / 6 / 6 / 1.5 / 1.9); yalnız ölçümle değişir (`ss2 --plan`) |
+| `camera` | — | `{maxPxPerFrame, stepJump, maxSteps, accel{max, floor}, k3{v, minShare}, …}` (qc ivmesi `accel`; `fc:camera` `stepJump`/`maxSteps`/`maxPxPerFrame`/`k3`) | kamera deneme sayfasında `probe --eval "JSON.stringify(window.__camSpeed(60, N))"` tepesi; `stepJump 2.5` ve `accel 0.15 / 2` çekirdek disiplinidir (gevşetilmez) |
+| `motion` | — | `{toolMaxPx, writeGlyphsPerSec, settlePx, …}` (araçlardan yalnız `fc:toolPath` `toolMaxPx`'i okur; diğerleri world jsx ve reviewer içindir) | `__tools` kancasıyla görünür alet hızı (`frame-check --only toolPath`), yazım süresi / glif, oturma tepesi; world'e özgü hareket sayıları (itiş, sarsıntı, CRT ızgarası…) aynı nesneye eklenebilir |
+| `supersample` | — | `{k2x, pad, blend, sxK, edgeMaxPx}` | Chromium tekniği: çekirdek ders değerleri (0.5 / 6 / 6 / 1.5 / 1.9); yalnız ölçümle değişir. Araçlar bu alanı okumaz: `ss2 <id> --k <k2x> --pad <pad> --blend <blend> --plan` bayraklarına elle verilir; `sxK`/`edgeMaxPx` sahne kodu ve M-SX kararıdır |
+| `ours` · `k3` | — | OURS/K3 hedefleri `{shot, holdMax, movingMin}` · `{camMin, movingMin}` | `motion-render ours` okur (sahne > world > 1.67 s / 0.6 / 0.4 · %2) |
+| `bake` | — | `{noise: [{name, w, h, sigma, seed, amp?}], out}` | `motion-render world <ad> bake-noise` pişirir (`--out`, varsayılan `assets/fx`) |
 | `primitives` | — | world ilkellerinin adları | `world/*.jsx` dışa açılanlarla aynı |
 | `lessons` | — | ders dosyası yolu | `lessons.md` |
 

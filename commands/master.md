@@ -31,9 +31,10 @@ Uzun adımlar arka planda koşar ya da üst sınırlı beklenir. Zincir bir beti
 
 ```bash
 # 1. birleşik dizin: film kaydı için perde karelerine SABİT BAĞ (kopya değil) + sayfa ↔ dizin denetimi (fark 0)
-motion-render probe <FILM> --frames 0,<perde sınırları> --out out/probe/master/film.png
+motion-render probe <FILM> --frame 0 --frames <perde sınırları> --out out/probe/master/film.png
 # 2. film QC
-motion-render qc film
+motion-render qc <FILM>                  # bütün film kaydı, 16 kontrol → out/probe/<FILM>-qc.json
+motion-render qc film                    # grade tutarlılığı → out/probe/_film-grade-sheet.png + _film-qc.json
 motion-render ours <FILM> --no-cam
 # 3. perde sınırında son 12 kare: fade/filtre kapanışı yok
 motion-render frame-check <FILM> --only temporal

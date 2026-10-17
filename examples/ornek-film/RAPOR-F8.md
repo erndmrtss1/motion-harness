@@ -57,8 +57,8 @@ F9 cila listesine eklenenler:
 
 ## Dosyalar
 
-- **Bütün film:** `out/FILM-onizleme-ses.mp4` (0–115.72, 6943 kare, 1080p60, ses v2)
-- **Perde 6:** `out/scenes/P6.mp4`, `out/scenes/P6-ses.mp4`; animatik `out/scenes/P6-A.mp4`
+- **Bütün film:** `out/scenes/FILM-onizleme-ses.mp4` (0–115.72, 6943 kare, 1080p60, ses v2)
+- **Perde 6:** `out/scenes/P6.mp4`, `out/scenes/P6-ses.mp4`; animatik `out/scenes/P6_animatic.mp4`
 - **Kontak ve QC:** `out/probe/P6-contact.png`, `out/probe/P6-qc.json`, `out/probe/P6-fc.json`
 - **Kod:**
   - `p6.jsx` (yeni), `p5.jsx` (yalnız dışa aktarım; varsayılan eski çıktıyı veriyor, probe fark 0)

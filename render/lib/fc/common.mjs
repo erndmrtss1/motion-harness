@@ -2,7 +2,10 @@
 // kare seçimi (frames/range/step/at), kare kaynağı (kare dizini | mp4 | master), "incelendi" kayıtları.
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, OUT, FPS, WIDTH, HEIGHT, latestMp4 } from '../project.mjs';
+import { ROOT, OUT, FPS as FPS0, WIDTH, HEIGHT, latestMp4 } from '../project.mjs';
+// Etkin kare hızı (canlı bağlama): animatik kareleri için frame-check --step N → setStep(N) → FPS = fps/N.
+export let FPS = FPS0;
+export function setStep(n) { FPS = FPS0 / Math.max(1, n || 1); }
 import { CLASSES, resolveClass, readRaw, mp4FrameRGB } from '../img.mjs';
 
 // ── önem düzeyleri (tip varsayılanı; bildirimde "severity" ile değişir) ──────
@@ -144,4 +147,4 @@ export function classesFor(list, ctx) { return (list || []).map((x) => resolveCl
 export const r2 = (x) => (x == null || !Number.isFinite(x) ? x : Math.round(x * 100) / 100);
 export const r3 = (x) => (x == null || !Number.isFinite(x) ? x : Math.round(x * 1000) / 1000);
 export const tsec = (f) => +(f / FPS).toFixed(3);
-export { FPS, WIDTH, HEIGHT, ROOT, OUT };
+export { WIDTH, HEIGHT, ROOT, OUT };

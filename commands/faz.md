@@ -48,7 +48,7 @@ Her ajan isteği **tek görev, tek çıktı, en küçük bağlam** ilkesine uyar
    - `motion-render doctor`: bakiye yalnız okunur, disk ≥ 40 GB.
    - `world.json` (audio ve lookdev hariç her fazda zorunlu).
    - Onaylı sözlük (`P<n>` için).
-4. Uzun işler arka planda koşar ya da `motion-render wait … --timeout` ile beklenir. Elle bekleme döngüsü yazılmaz. Beklerken belge işleri yapılır (PLAYBOOK §2.4).
+4. Uzun işler arka planda koşar ya da `motion-render wait --id <id> --tag <T>|- --frames N --expect <s>` ile beklenir (üst sınır = 2 × expect). Elle bekleme döngüsü yazılmaz. Beklerken belge işleri yapılır (PLAYBOOK §2.4).
 
 ## 1. `audio`: ses hattı
 

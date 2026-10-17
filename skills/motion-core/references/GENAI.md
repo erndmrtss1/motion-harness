@@ -154,7 +154,7 @@ higgsfield auth login          # tarayıcıda OAuth; girişi kullanıcı kendisi
 
 - Her shot tek katmana atanır. Atama manifestte durur (`layer` / `layerV2.shots`).
 - Her A shot şu soruya "evet" demelidir: "üretken olmasa daha mı kötü olurdu?"
-- Oranlar **proje parametresidir** (`project.md §3`, `policy.layers.targets`), core varsayılanı yoktur. Reviewer film sonunda süre oranını ölçer.
+- Oranlar **proje parametresidir** (`project.md §9`, `policy.layers.targets`), core varsayılanı yoktur. Reviewer film sonunda süre oranını ölçer.
 - [ÖRNEK] kaynak projede ölçülen oran: A %14.8 · B %52.8 · C %32.4.
 
 ## 6. İçerik yasakları
@@ -215,9 +215,9 @@ higgsfield auth login          # tarayıcıda OAuth; girişi kullanıcı kendisi
 ```
 0  ihtiyaç listesi (research) → katalog (bir kez) → requests/<sahne>.json
 1  PİLOT: tek shot, ≤ 2 varyant, taslak çözünürlük, pilot tavanı
-2  motion-render gen requests/<sahne>.json --dry        tahmin tablosu (generate cost; kredi harcamaz)
+2  motion-render gen <sahne> --dry [--online-cost]      tahmin tablosu (ağsız: whitelist.<id>.credits ‖ istek budget; --online-cost → generate cost; kredi harcamaz)
        DUR → görev tavanı / film tavanı / rezerv aşılıyor · liste dışı ya da kara liste model · istem yok
-3  motion-render gen requests/<sahne>.json [--cap N]    bakiye önce → generate create … --wait → bakiye sonra
+3  motion-render gen <sahne> [--cap N]                  requests/<sahne>.json okunur · bakiye önce → generate create … --wait → bakiye sonra
        → inbox/<id>.<uzantı> (.part → rename) + inbox/<id>.json (yan dosya) · runs/<sahne>-<zaman>.json
        DUR → sapma > %10 (batch durur) · iş başarısız / çıktısız ama kredi kesildi (lost, §10)
 4  motion-render ingest --balance-before B --balance-after A
@@ -251,7 +251,7 @@ Toplu işte bir öğe başarısız olursa bütün iş durmaz. Öğe koşu kaydı
 - Dosya adı = varlık id'si. Yan dosya `<id>.json` model, istem, seed, gerçek kredi ve tahmini taşır.
 - **Conform:**
   - görüntü: kaynak korunur; hedef boyut (ör. 1920×1080) cover PNG;
-  - video: proje fps'i ve boyutu. Alfa varsa (rgba/argb/gbrap, VP9 alpha) RGBA PNG dizisi + damalı önizleme. Alfa yoksa H.264 + eleman/geçişte luma-key önizlemesi;
+  - video: `--fps` (varsayılan 30) ve proje boyutu. Alfa varsa (rgba/argb/gbrap, VP9 alpha) RGBA PNG dizisi + damalı önizleme. Alfa yoksa H.264 + eleman/geçişte luma-key önizlemesi;
   - istekte `trim` varsa kırpılır.
 - **Hash:** kaynağın sha256'sı.
   - Aynı hash manifestte varsa atlanır.
@@ -273,7 +273,7 @@ Klip proje fps'inden düşükse (ör. 24/30 → 60) önce motorla ara kare üret
 
 ### 9.3 `motion-render ingest scan <id>` (kare kare kanıt)
 
-- 1 s aralıkla **kaynak tam çözünürlükte** kareler: `out/probe/clipscan/<id>/tNN.png`.
+- 1 s aralıkla **kaynak tam çözünürlükte** kareler: `out/probe/clipscan/<id>/tNNN.png` (NNN = t × 10).
 - `motion.png`: ardışık kare |fark| birikimi orta kareye bindirilir. Artefakt çoğunlukla hareketli bölgededir.
 - `strip.png`: 1 s şerit. `scan.json`: saniye başına hareket ve en hareketli bölge kutusu (birikimin %40 üstü).
 - Araç kanıt üretir; tarama **gözle** yapılır. Bakılacaklar:
@@ -327,16 +327,16 @@ Yer: `assets/gen/manifest.json` → `{ note, schema, items[], ledger[] }`. Tek y
   "task": "<görev adı>", "date": "<tarih>",
   "balanceBefore": 500.00, "balanceAfter": 494.00, "diff": 6,
   "items": ["g-<ad>-a", "g-<ad>-b"], "creditsSum": 4,
-  "lost": [ { "ref": "<yerel kısa ad; servis iş kimliği değil>", "credits": 2, "reason": "HTTP 503, çıktı yok",
-              "refund": "pending", "checkedAt": "<tarih>" } ],
-  "match": false, "explained": true,
+  "lost": [ { "id": "<öğe id'si; servis iş kimliği değil>", "credits": 2, "reason": "HTTP 503, çıktı yok",
+              "refund": "pending", "refundDate": "<tarih; ingest refund yazar>" } ],
+  "match": false, "explained": "lost",
   "note": "fark = Σkredi + Σlost"
 }
 ```
 
 - `diff = balanceBefore − balanceAfter`; `creditsSum = Σ items[].credits`.
 - `match = |diff − creditsSum| < 0.005`.
-- `match:false` yalnız `lost[]` ile açıklanıyorsa (`|diff − creditsSum − Σ lost.credits| < 0.005` → `explained:true`) uyarıdır. Açıklanamıyorsa **hata → DUR**; neden bulunmadan yeni üretim yok.
+- `match:false` yalnız `lost[]` ile açıklanıyorsa (`|diff − creditsSum − Σ lost.credits| < 0.005` → `explained:"lost"`) uyarıdır. Açıklanamıyorsa **hata → DUR** (`ingest` çıkış 3); neden bulunmadan yeni üretim yok.
 - **503 / iade:**
   - İş HTTP 503 ya da `failed` dönüp çıktı vermeden kredi kesebilir. Kaynak projede bir büyütme işi böyle 2 kredi düşürdü. Bu `lost[]`'a yazılır, `match` açıklamalı kalır.
   - İade durumu `higgsfield account transactions --json` ile kontrol edilir: `refund: pending|granted|denied`.

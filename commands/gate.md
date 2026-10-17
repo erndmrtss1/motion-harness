@@ -44,6 +44,7 @@ Kaynaklar:
 
    - **Kayıtsız QC hatası varsa (çıkış 3) reviewer açılmaz.** Kapı açılmamış sayılır; tur sayılmaz. Hata director'a döner. "Muhtemelen kasıtlı" kabul değildir: düzeltilir ya da istisna önce sorulur.
    - Bayat kare varsa da reviewer açılmaz; önce yeniden render gerekir.
+   - `animatik` kapısında kareler `out/frames/<id>_animatic`'tedir (`render … --tag animatic`): qc/frame-check `--frames-dir out/frames/<id>_animatic`, contact `--dir out/frames/<id>_animatic --fstep 2`, ours `--dir out/frames/<id>_animatic --step 2`.
    - Kapı türüne göre: `varyant` ve `lookdev` için still'ler ve kontak sayfası; `master` için `qc film` ve `frame-check <FILM> --only temporal,identical,loudness,accentColor`; `live` için `motion-render live <sayfa> --qc`.
 3. **Bağımsız ölçüm.** Kapı sayısal bir ön koşula dayanıyorsa `motion:motion-measure` açılır. Örnekler: varlık/logo kabulü, K1, aksan ΔE, devir, senkron, canlı fps/gecikme.
    - İstek: ne · hangi kareler · ölçütün kaynağı.

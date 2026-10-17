@@ -171,15 +171,16 @@ r2 kendi tablosunu yazar (`madde | r1 bulgusu | r2 ölçümü | kapandı mı`) v
 
 ### 2.4 Bekleme ve arka plan işleri
 
-- Uzun işler (render, zincir, master) arka plan görevi olarak koşar; bitince bildirim gelir. Ya da üst sınırlı bekleme kullanılır: `motion-render wait --id <id> [--tag T] --timeout <s>`. Üst sınır, beklenen sürenin iki katıdır.
+- Uzun işler (render, zincir, master) arka plan görevi olarak koşar; bitince bildirim gelir. Ya da üst sınırlı bekleme kullanılır: `motion-render wait --id <id> --tag <T>|- --frames N [--expect <s>]` (`--tag -` = etiketsiz tam render). Üst sınır, beklenen sürenin (`--expect`) iki katıdır.
 - Elle `sleep`/`until` döngüsü **yasak**. Kaynak projede bir render 3 saat bekleme döngüsünde kaldı.
 - Bekçi çıkış kodları:
 
   | kod | anlamı | ne yapılır |
   |---|---|---|
-  | 4 | 120 s yeni kare yok | teşhis edilir |
+  | 4 | 120 s yeni kare yok (render bekçisi) | teşhis edilir |
   | 5 | kare atlandı | sayılır; atlanan kareler yeniden üretilir |
-  | 6 | disk < 40 GB | §9 |
+  | 6 | disk < 40 GB (render) · üst sınır doldu (`wait`) | §9 · teşhis |
+  | 7 | `wait`: 150 s yeni kare yok, sonuç dosyası yazılmadı (harness çöktü) | log sonu okunur, yeniden başlatılır |
 
 - Toplu render'da bir sahne başarısız olursa iş durmaz: hata loglanır, sıradaki sahneye geçilir, sonda atlanan sayısı raporlanır.
 - Çok adımlı zincirler bir betik dosyası olarak yazılıp tek arka plan komutuyla koşturulur. Betik, kullanılan zinciri belgeler.
@@ -300,9 +301,9 @@ motion-render doctor                 # ortam + Higgsfield oturumu + bakiye (yaln
 
 **Çıktılar:**
 
-- proje kökünde: `project.md` (§0–§13, §1 aynen), `scenes.json` (`manifest validate` ✓), `CLAUDE.md`;
+- proje kökünde: `project.md` (§0–§13, §1 aynen), `scenes.json` (sahnesiz; `manifest validate` world'ü denetler, ilk sahne eklenene dek "scenes boş" hatası verir — `init --demo` örnek sahneyle ✓), `CLAUDE.md`;
 - `assets/gen/manifest.json` (ledger iskeleti);
-- `docs/REVIEWER.md`, `docs/RETRO.md`, `out/RENDER_REPORT.md`;
+- `docs/` şablonları (`REVIEWER.md`, `RETRO.md`, `RENDER_REPORT.md`, `KUNYE.md`, `RAPOR.md`, `FAZ.md`, `SOZLUK.md`, `SES-KAYMA.md`, `TESLIM.md`); `out/RENDER_REPORT.md` şablondan açılır ve yalnız sona eklenir (otomatik özet: `motion-render report` → `out/RENDER_SUMMARY.md`);
 - `docs/INIT.md` kurulum raporu: kopyalanan · dönüştürülen · yazılan (şablon) · taşınmayan · malzeme · notlar.
 
 **Malzeme.** Kullanıcı malzemesi **yol olarak** bağlanır; kopyalanmaz, taşınmaz, silinmez. Her malzeme için §7'ye şunlar yazılır:
@@ -351,7 +352,7 @@ motion-render amap build --anchors amap.config.json                       # tasa
 2. **Ölçüm** (her still):
 
    ```bash
-   motion-render probe LOOK --frames a,b,c --out out/probe/look/<yön>.png
+   motion-render probe LOOK --frame a --frames b,c --out out/probe/look/<yön>.png   # b, c → <yön>-f000b.png, <yön>-f000c.png
    motion-render qc LOOK
    motion-render contact sheet out/probe/look/LOOK-sheet.png A1.png=A·açılış B1.png=B·açılış …
    ```
@@ -423,7 +424,7 @@ motion-render frame-check P<n> --only framing,toolPath,overlap,camera [--cand ad
 - Varyant anahtarı kendi shot'unun içindedir ve kilit an shot ortasındadır. Shot sonunda ortak geçiş anahtarı baskın olur; varyantlar aynı çıkar.
 
 ```bash
-motion-render probe P<n> --frames <kilit kareler> --set VAR=a --out out/probe/<faz>/var/a.png   # b, c için tekrar
+motion-render probe P<n> --frame <kilit kare> [--frames <diğer kilit kareler>] --set VAR=a --out out/probe/<faz>/var/a.png   # b, c için tekrar
 motion-render contact sheet out/probe/<faz>/S07-varyant.png a.png=a b.png=b c.png=c
 ```
 
@@ -439,18 +440,21 @@ motion-render contact sheet out/probe/<faz>/S07-varyant.png a.png=a b.png=b c.pn
 #### Adım 5 — Animatik (K7)
 
 ```bash
-motion-render render P<n> --scale 0.5 --step 2 --tag A --progress   # 960×540; step = fps / animatic.fps
-motion-render expo-post P<n>                                       # yalnız sahne içi iniş/dip varsa
-motion-render grade P<n> --animatic --audio
-motion-render contact P<n>
-motion-render ours P<n> --step 2
-motion-render qc P<n> --frames-dir out/frames/P<n>_A
-motion-render frame-check P<n> --frames-dir out/frames/P<n>_A --sheet
+motion-render render P<n> --scale 0.5 --step 2 --tag animatic --progress   # 960×540 → out/frames/P<n>_animatic; step = fps / 30
+motion-render expo-post P<n> --dir out/frames/P<n>_animatic --step 2      # yalnız sahne içi iniş/dip varsa
+motion-render grade P<n> --animatic                                      # → out/scenes/P<n>_animatic.mp4 @fps/2
+motion-render contact P<n> --dir out/frames/P<n>_animatic --fstep 2
+motion-render ours P<n> --dir out/frames/P<n>_animatic --step 2
+motion-render qc P<n> --frames-dir out/frames/P<n>_animatic --step 2   # etkin hız fps/2
+motion-render frame-check P<n> --frames-dir out/frames/P<n>_animatic --step 2 --sheet   # piksel tipleri; tasarım tipleri --step olmadan
+# sesli animatik: manifestte `animatic: {scale, step, fps}` alanlı animatik SAYFASI → motion-render grade <sayfa-id> [--audio P]
+# (normal sahnede --audio hata verir, çıkış 2; tam sahneye ses: motion-render ses <id>)
 ```
 
 - Ölçümler künyeye yazılır: K1, K3 shot başına, OURS, bant, aksan, devir.
 - Kısmi animatikte de perde OURS'u tahmin edilir.
 - 540p QC 60 fps'teki küçük metin titreşimini ve aksan ΔE'sini göstermez. **Tek aksan rengi grade sonrası tek karede, tam çözünürlükte erken ölçülür.**
+- `qc` ve `frame-check`'in adım bayrağı yoktur: adımlı animatik dizininde kare sayısı HATA'sı (N/2 ≠ N) ve eksik kare beklenir, kare numaraları adımla ölçeklenmez (dosya k = sahne karesi 2k). Animatikte bu iki araç eğilim verir; kare numaralı kontroller (anahtar kareler, `range`) tam render ya da `k1 contrast`/probe karelerinde karara bağlanır.
 - **Kapı turları animatikte yapılır**, üretken krediye dokunulmaz. Her turun bulgusu künyeye tablo olarak yazılır.
 
 #### Adım 6 — Bağımsız reviewer (animatik kapısı)
@@ -459,7 +463,7 @@ motion-render frame-check P<n> --frames-dir out/frames/P<n>_A --sheet
 - Akış §2.3'teki gibidir (kapı `animatik`, kapı-id `P<n>-animatik-r<k>`).
 - GEÇMEZ ise tek düzeltme turunda yapanın künyesine şu tablo girer: `| # | reviewer bulgusu | ağırlık | r<k> düzeltmesi | doğrulama (kare / probe) |`. r2 reviewer'ına bu tablo verilmez; yalnız madde → durum listesi ve değişen kare aralıkları verilir (§2.2).
 - ŞARTLI GEÇER ise şartlar kanıtla uygulanır ve aynı tabloya yazılır; yeni reviewer turu açılmaz, tam render başlar.
-- Düzeltme turunda yalnız etkilenen aralık yeniden çizilir (`--range a-b --resume`).
+- Düzeltme turunda yalnız etkilenen aralık yeniden çizilir (`--range a-b --tag <T> --resume`; `--range` etiketsiz çalışmaz).
 - **Kullanıcı animatik kapısı:**
   - projenin **ilk perdesinde** animatik kullanıcıya gider (DUR);
   - sonraki perdelerde faz istemi aksini demedikçe reviewer GEÇER kararı yeterlidir ("KAPI GEÇERSE DURMA").
@@ -491,7 +495,8 @@ motion-render frame-check P<n> --frames-dir out/frames/P<n>_A --sheet
 ```bash
 motion-render expo-post P<n>          # kayan nokta pozlama + TPDF dither (siyaha iniş, sahne içi dip)
 motion-render grade P<n>              # world grade zinciri; sahne sonu inişinde grade.fadeOut
-motion-render qc P<n> --mp4 auto      # 16 kontrol (K1, K6 dahil) → out/probe/P<n>-qc.json
+motion-render qc P<n> --mp4 auto      # 16 kontrol (K1 dahil) → out/probe/P<n>-qc.json
+motion-render k6 P<n>                 # K6 bileşen sayımı → out/probe/P<n>-k6.json (qc K6 ölçmez)
 motion-render frame-check P<n> --mp4 auto   # checks[]: accentLocation, accentColor, sharpness, temporal, seam, luma, ramp …
 motion-render contact P<n>
 motion-render ours P<n>               # OURS / K3
@@ -543,7 +548,7 @@ Taze reviewer (kapı `teslim`) şunları alır: mp4, kare dizini, kontak, qc/fc 
 ```bash
 # 1. birleşik dizin: film kaydı (slice:false) için out/frames/<FILM>/ perde karelerine SABİT BAĞ (kopya değil)
 #    sayfa ↔ dizin denetimi: birkaç kare probe ↔ dizin, fark 0
-motion-render probe <FILM> --frames 0,<sınır kareleri> --out out/probe/<faz>/film.png
+motion-render probe <FILM> --frame 0 --frames <sınır kareleri> --out out/probe/<faz>/film.png
 # 2. film QC (tek sayfa, manifest global aralıklar)
 motion-render qc film
 motion-render ours <FILM> --no-cam
@@ -554,7 +559,7 @@ motion-render master --tag v<N>                        # ProRes 422 HQ 10-bit + 
 # 5. loudness: −16 LUFS entegre / ≤ −1 dBTP, sessiz kuyruk dahil ölçülür; doğrusal kazanç, sınırlayıcı yok
 motion-render frame-check <FILM> --only loudness
 # 6. seam12 master üzerinde + 7. bit-eşlik: değişmeyen kareler önceki master'la ProRes'te bit-aynı (rgb48)
-motion-render frame-check <FILM> --only temporal,identical,accentColor   # src master; ref master:v<N-1>
+motion-render frame-check <FILM> --only temporal,identical,accentColor   # src master; ref master:out/master/<film>_v<N-1>.mov
 # 8. arşiv: FFV1 kayıpsız + framemd5 kare kare bit-exact; değişmeyen perdeler önceki arşive bağlanır
 motion-render arsiv --tag v<N> --link-from v<N-1>
 ```

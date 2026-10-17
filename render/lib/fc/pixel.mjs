@@ -14,7 +14,7 @@ import {
 } from './common.mjs';
 import { PAGE } from './design.mjs';
 
-const KF = FPS / 30;
+const kfNow = () => FPS / 30;   // FPS canlı bağlama (setStep)
 const sec2f = (s) => Math.round(s * FPS);
 async function frameSet(c, ctx, { src: srcOpt } = {}) {
   const src = srcOpt || frameSource(c, ctx);
@@ -37,7 +37,7 @@ async function luma(c, ctx) {
   const S = await frameSet(c, ctx); if (S.error) return unmeasured(c, S.error);
   // bant penceresi qc ile aynı: açılış (blackStart) ve çıkış (layer.exit) dışarıda; window:"all" hepsini ölçer
   if (c.window !== 'all') {
-    const sc = ctx.scene, openF = sc.blackStart ? Math.round(15 * KF) : 0, ex = sc.layer && sc.layer.exit, exitF = ex != null && ex * FPS < ctx.frames ? Math.round(ex * FPS) : ctx.frames;
+    const sc = ctx.scene, openF = sc.blackStart ? Math.round(15 * kfNow()) : 0, ex = sc.layer && sc.layer.exit, exitF = ex != null && ex * FPS < ctx.frames ? Math.round(ex * FPS) : ctx.frames;
     const inW = S.have.filter((f) => f >= openF && f < exitF); if (inW.length) S.have = inW;
   }
   const band = c.band !== undefined ? deref(c.band, ctx) : ctx.W.band, stat = c.stat || 'mean', scale = c.scale || (c.darkShare ? 'fast' : 'qc');
@@ -71,11 +71,11 @@ async function luma(c, ctx) {
       darkShare: dark.length ? series(S.have, dark.map(r3)) : undefined, grid: grids.length ? grids : undefined, sampled: S.have, missing: S.missing.length || undefined }, viol);
 }
 
-// ── 2 black ── qc.mjs:87,141-147,152-158,198-206 (boş siyah > %70, kesintisiz > 30·KF; son kare ham ≤ 2, mp4 0); son N kare Y (f10-chain.sh:37)
+// ── 2 black ── qc.mjs:87,141-147,152-158,198-206 (boş siyah > %70, kesintisiz > 30·kfNow(); son kare ham ≤ 2, mp4 0); son N kare Y (f10-chain.sh:37)
 async function black(c, ctx) {
   const S = await frameSet(Object.assign({ step: 1 }, c), ctx); if (S.error) return unmeasured(c, S.error);
   const sc = ctx.scene, N = ctx.frames, emptyMax = c.emptyMax != null ? c.emptyMax : 0.7, runMax = c.runMax != null ? c.runMax : sec2f(1.0);
-  const openF = sc.blackStart ? Math.round(15 * KF) : 0, ex = sc.layer && sc.layer.exit, exitF = ex != null && ex * FPS < N ? Math.round(ex * FPS) : N;
+  const openF = sc.blackStart ? Math.round(15 * kfNow()) : 0, ex = sc.layer && sc.layer.exit, exitF = ex != null && ex * FPS < N ? Math.round(ex * FPS) : N;
   const empty = new Map(), lum = new Map(), bright = new Map();
   for (const f of S.have) {
     const img = await S.src.read(f, 'qc'), Y = lumaPlane(img); let e = 0, b = 0, s = 0;
@@ -86,7 +86,7 @@ async function black(c, ctx) {
   const runScan = (pred, minLen, out) => { let r0 = null, prev = null; for (const f of [...S.have, Infinity]) { const on = f !== Infinity && pred(f); if (on && r0 == null) r0 = f; if (r0 != null && (!on || (prev != null && f !== prev + 1))) { if (prev - r0 + 1 > minLen) out.push([r0, prev]); r0 = on ? f : null; } prev = f; } };
   runScan((f) => f >= openF && f < exitF && empty.get(f) > emptyMax, runMax, runs);
   runs.forEach((r) => viol.push({ f: r[0], rule: 'boş siyah', run: r, frames: r[1] - r[0] + 1 }));
-  if (c.dark !== false) { runScan((f) => f >= openF && f < exitF && lum.get(f) < 8 && bright.get(f) < 0.0005, Math.round(15 * KF), dark); dark.forEach((r) => viol.push({ f: r[0], rule: 'karanlık', run: r })); }
+  if (c.dark !== false) { runScan((f) => f >= openF && f < exitF && lum.get(f) < 8 && bright.get(f) < 0.0005, Math.round(15 * kfNow()), dark); dark.forEach((r) => viol.push({ f: r[0], rule: 'karanlık', run: r })); }
   const cells = S.have.filter((f) => f % 12 === 0 && f >= openF && f < exitF && empty.get(f) > emptyMax);
   const last = {}, L = c.last === false ? null : Object.assign({ rawMax: 2, mp4Max: 0, n: 8 }, c.last || {});
   if (L && !sc.slice) {
@@ -356,7 +356,7 @@ async function accentLocation(c, ctx, data) {
   // kota: sınıf[0] pikselli kare koşuları (köprü: boşluk ≤ bridge kare), sayısı ≤ quota
   let runs;
   if (c.quota !== false && (c.quota != null || ctx.scene.redQuota != null)) {
-    const q = c.quota != null ? c.quota : ctx.scene.redQuota, bridge = c.bridge != null ? c.bridge : Math.round(2 * KF);
+    const q = c.quota != null ? c.quota : ctx.scene.redQuota, bridge = c.bridge != null ? c.bridge : Math.round(2 * kfNow());
     runs = []; for (const f of hasAcc) { const l = runs[runs.length - 1]; if (l && f - l[1] <= bridge + (c.step || 1)) l[1] = f; else runs.push([f, f]); }
     if (q != null && runs.length > q) viol.push({ f: runs[q][0], rule: 'kota', runs: runs.length, quota: q });
   }

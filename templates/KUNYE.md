@@ -1,6 +1,6 @@
 # F<n> · Perde <p> künyesi (S<a>–S<b>, <t0>–<t1> s, <N> kare @<fps>) — <ses zaman alanı>
 
-> Kararlar: `project.md` §<n>. Kod: `<p>.jsx` (+ paylaşılan: `<…>`). Sayfalar: `<P>.dc.html` (tam), animatik `--tag A`.
+> Kararlar: `project.md` §<n>. Kod: `<p>.jsx` (+ paylaşılan: `<…>`). Sayfalar: `<P>.dc.html` (tam), animatik `--tag animatic`.
 > Manifest `<P>`: `frames` <N>, `tc` <…>, `slice` <true|false>, `redQuota` <n>, `layer.exit` <s>, `review` <…>, `exceptions` <…>, `chromiumArgs` <…>.
 > Seçim: S<a> <v> · S<b> <v> (yapan + bağımsız reviewer). Kurallar: K1–K8, ön plan, <proje ilkesi>.
 > Bu künye yapanın belgesidir; **reviewer'a verilmez** (yalıtım). Rapor ve teslim belgesi buradan beslenir. Her "giderildi" doğrulama sütunuyla kanıtlanır.
@@ -71,7 +71,7 @@ Seçim S<a> <v> · S<b> <v> (yapan: <…> · reviewer: <…>; fark varsa güçl�
 
 ## Animatik reviewer turu: <KARAR> (§0.6 x/8, UCUZ <…>)
 
-Animatik: `out/scenes/<P>-A.mp4` (<kare>), kontak `out/probe/<P>-contact.png`.
+Animatik: `out/scenes/<P>_animatic.mp4` (<kare>), kontak `out/probe/<P>-contact.png`.
 
 - QC: <…>.
 - K1 <x/x> (<kare %alan/%yükseklik …>).

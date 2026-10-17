@@ -53,7 +53,7 @@ Ana oturum senin sayını yapanın sayısıyla yan yana koyar ve farkı raporlar
     - `ffmpeg`, `ffprobe`
   - Kendi betiklerin yalnız `out/measure/<iş>/` altına yazılır ve bağımlılıksız olur. Ham piksel için ffmpeg `-f rawvideo`, hesap için node.
   - Çıktısını kendiliğinden `out/probe/`'a yazan denetim araçlarını (`qc`, `frame-check`, `ours`, `run`) koşmazsın.
-  - Canlı ölçümde `motion-render live <sayfa> --qc` çıktısı yapanın QC'sidir. Sen kendi koşunu ayrı yoldan yaparsın: `probe --bench` ya da kendi zamanlama betiğin.
+  - Canlı ölçümde `motion-render live <sayfa> --qc` çıktısı yapanın QC'sidir. Sen kendi koşunu ayrı yoldan yaparsın: `probe <id> --frame N --bench N` ya da kendi zamanlama betiğin.
 - **Değer uydurmazsın.** Ölçüt `MEASURE.md`, `world.json`, `project.md` ya da `scenes.json`'da yoksa sonucu "ölçüt tanımsız" diye yazarsın; sayıyı yine verirsin.
 - **Yazma alanı** yalnız `out/measure/<iş>/`. Proje dosyalarına dokunmazsın. Varlık üretmezsin, kredi harcamazsın.
 - **Zevk yargısı yok.** §0.6 ve UCUZ reviewer'ın işidir. Sen yalnız sayı verirsin.
@@ -62,7 +62,7 @@ Ana oturum senin sayını yapanın sayısıyla yan yana koyar ve farkı raporlar
 
 | ölçü | kendi yöntemin |
 |---|---|
-| K1 kahraman alan / yükseklik | `world.json` `k1.mask` türüne göre (dom/ink/alpha) kendi maske eşiğin + bağlantılı bileşen kutusu; DOM kutusuyla çapraz kontrol (`probe --eval`) |
+| K1 kahraman alan / yükseklik | `world.json` `k1.mask` türüne göre (dom/ink/alpha) kendi maske eşiğin + bağlantılı bileşen kutusu; DOM kutusuyla çapraz kontrol (`probe <id> --frame N --eval JS`) |
 | keskinlik / kenar | yeşil kanal, kenar %10–90 geçiş genişliği (satır ve sütun medyanı) + Laplace varyansı |
 | aksan konumu / ΔE2000 | aksan sınıfı `world.json` `classes`'tan; izinli kutular dışındaki piksel sayısı; ton grade sonrası mp4 karesinden iç piksel medyanıyla |
 | devir / dikiş / ardışık fark | 480×270 gri MAD; sınır farkı ↔ komşu farkların büyüğü oranı |

@@ -127,11 +127,11 @@ async function sheet(A, PROBE) {
   comp.push({ input: Buffer.from(svg), left: 0, top: 0 });
   for (let i = 0; i < rows.length; i++) for (let k = 0; k < rows[i].imgs.length; k++)
     comp.push({ input: await sharp(rows[i].imgs[k].buf).resize(TW, TH).png().toBuffer(), left: LEFT + k * (TW + 10), top: HEAD + i * ROWH + 4 });
-  const sheetPng = path.join(PROBE_DIR, 'FILM-grade-sheet.png');
+  const sheetPng = path.join(PROBE_DIR, '_film-grade-sheet.png');
   await sharp({ create: { width: Wd, height: Hd, channels: 3, background: '#0d0d0d' } }).composite(comp).png().toFile(sheetPng + '.part.png');
   fs.renameSync(sheetPng + '.part.png', sheetPng);
   const redTotal = rows.reduce((a, r) => a + (r.qc ? r.qc.checks.red.signalRanges.length : 0), 0);
-  fs.writeFileSync(path.join(PROBE_DIR, 'FILM-qc.json'), JSON.stringify({ mode: PROBE ? 'probe' : 'mp4', groups: Object.fromEntries(Object.entries(groups).map(([g, rs]) => [g, { blackMedian: rs.blackMedian, scenes: rs.map((r) => r.s.id) }])),
+  fs.writeFileSync(path.join(PROBE_DIR, '_film-qc.json'), JSON.stringify({ mode: PROBE ? 'probe' : 'mp4', groups: Object.fromEntries(Object.entries(groups).map(([g, rs]) => [g, { blackMedian: rs.blackMedian, scenes: rs.map((r) => r.s.id) }])),
     scenes: rows.map((r) => ({ id: r.s.id, chapter: r.s.chapter, world: worldName(r.s, r.W), stats: r.st, blackMed: r.blackMed, meanAvg: r.meanAvg, flag: r.flag || null, qcErrors: r.qc ? r.qc.errors : null, redRanges: r.qc ? r.qc.checks.red.signalRanges.length : null, redQuota: r.s.redQuota })),
     flags, redTotal }, null, 1));
   console.log('✓ ' + rel(sheetPng) + ' · ' + rows.length + ' sahne · gruplar ' + Object.entries(groups).map(([g, rs]) => g + ' (siyah medyan ' + rs.blackMedian + ')').join(', ') +

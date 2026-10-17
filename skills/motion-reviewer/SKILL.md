@@ -268,7 +268,7 @@ Her denetimin sonucu üç değerden biridir: geçti / kaldı / ölçülemedi. Ka
 
 Animatikte ölçeğe bağlı ölçüler "tam renderda" olarak ertelenir: keskinlik, ince çizgi, metin kenarı. Bu ertelenen ölçüler karar dışıdır.
 
-Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alırsın, örnek: `motion-render probe <sayfa> --bench N` ya da kendi kısa betiğin. Çıktı yalnız `out/review/<kapı-id>/` altına gider. Yapanın canlı QC dosyası yönlendiricidir.
+Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alırsın, örnek: `motion-render probe <id> --frame N --bench N` ya da kendi kısa betiğin. Çıktı yalnız `out/review/<kapı-id>/` altına gider. Yapanın canlı QC dosyası yönlendiricidir.
 
 ---
 

@@ -1,7 +1,7 @@
 # RENDER_REPORT — <PROJE>
 
 > Yalnız **sona eklenir**; eski giriş silinmez. Düzeltme yeni girişte "düzeltme: …" diye yazılır.
-> `motion-render report` taslak satırları üretir; ölçüm ve karar satırları elle tamamlanır.
+> Girişler elle yazılır. `motion-render report` bu dosyayı **baştan yazar** (otomatik render özeti); elle girişler varken koşulmaz.
 > Faz başına bir giriş yazılır. Başlıkta render durumu bulunur: `render yok, DUR` · `animatik` · `TAM RENDER` · `master v<N>`.
 
 <!-- Giriş şablonu — kopyala, doldur, en sona ekle. -->

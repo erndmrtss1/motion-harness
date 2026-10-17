@@ -22,7 +22,7 @@
 - **#3 son 12 kare:**
   - P1–P5 `slice` → saf kare / fadeOut yok (kod + manifest).
   - Bulgular (yalnız rapor): P3 son tutuşunda iki ışık adımı (f3838/3840, ham ΔY −0.29/−0.22; oran 2.25–3.54); önizleme P5→P6 encode sıçraması 4.76 (master tek encode: 0.77); film başı ışık açılışı f4'te ani başlar (oran 1.07).
-- **#4 bütün film QC** (`out/probe/FILM-full-qc/`): hata 0 · 7038 kare · aksan 1 aralık (5526–5800) · ikincil sınıf 239 kare istisnada · glif 0 · fade yalnız film sonu · K1 38/38 · bant ort. %55.02 · OURS 0.517 · K3 22/22. Bütün film sayfası (117.3 s); manifest global aralıklar; kareler sabit bağ.
+- **#4 bütün film QC** (`out/probe/_film-qc.json`, `FILM-ours.json`): hata 0 · 7038 kare · aksan 1 aralık (5526–5800) · ikincil sınıf 239 kare istisnada · glif 0 · fade yalnız film sonu · K1 38/38 · bant ort. %55.02 · OURS 0.517 · K3 22/22. Bütün film sayfası (117.3 s); manifest global aralıklar; kareler sabit bağ.
 - **#5 master:**
   - `out/master/FILM_v1.mov` ProRes 422 HQ yuv422p10le 6469 MB · `FILM_v1.mp4` H.264 CRF 16 107 MB · 7038 kare / 117.30 s.
   - Ses −16.01 / −16.02 LUFS, −4.17 / −4.19 dBTP (doğrusal −3.54 dB; kuyruk dahil ölçüm). Tek sürekli encode.

@@ -104,12 +104,12 @@ kullanıcı
    - Yama dosyadan yapılır: Write/Edit. Heredoc ya da kabuk dizesiyle yama yapılmaz.
    - **Her yamadan sonra tek kare probe.** `PAGEERROR` ya da `[dc-runtime] x-import: FAILED` görürsen render'a geçmezsin (DUR-6).
    - Kontrast probe ve bant ayrıca kontrol edilir.
-7. **Animatik** (`render --scale 0.5 --step …`): qc, frame-check `--sheet`, contact, ours. Ölçümler künyeye yazılır. Kapı turları animatikte yapılır; krediye dokunulmaz.
+7. **Animatik** (`render --scale 0.5 --step 2 --tag animatic` → `grade --animatic`): kareler `out/frames/<id>_animatic`; qc ve frame-check `--frames-dir out/frames/<id>_animatic` (frame-check `--sheet`), contact `--dir out/frames/<id>_animatic --fstep 2`, ours `--dir out/frames/<id>_animatic --step 2`. Ölçümler künyeye yazılır. Kapı turları animatikte yapılır; krediye dokunulmaz.
 8. **Tam render** (ana oturum kapı GEÇER dedikten sonra):
    - kare bütçesi (> 20 dk ise aralıklara böl)
    - disk ≥ 40 GB
    - 2×/S× kuralları
-   - `run` ya da adım adım: render → (ss2) → (expo-post) → grade → qc → frame-check → contact → ours → ses
+   - `run` (render → (ss2) → (expo-post) → grade → qc → contact → ours) ya da adım adım; ardından frame-check ve ses
 
    Kısmi yeniden render PLAYBOOK §5 protokolüyle yapılır: yedek → aralığı sil → `--resume` → tanık kareler imgdiff 0 → `.part` → rename.
 9. **Yönetmen geçişi.**
@@ -139,7 +139,7 @@ kullanıcı
 - **Teşhis önce, sayıyla neden.** Düzeltmeden önce ölçersin; iki bağımsız deney yaparsın.
 - **Değişmeyen kare değişmez** (imgdiff 0). Paylaşılan bileşene eklenen parametrenin varsayılanı eski çıktıyı verir (probe fark 0).
 - **Bekleme üst sınırlıdır.**
-  - Uzun işler arka plan görevi olarak koşar ya da `motion-render wait --id <id> --timeout <beklenen × 2>` ile beklenir.
+  - Uzun işler arka plan görevi olarak koşar ya da `motion-render wait --id <id> --tag <T>|- --frames N --expect <beklenen s>` ile beklenir (üst sınır = 2 × expect).
   - Elle `sleep`/`until` döngüsü yazmazsın.
   - Render'lar sırayla koşar; zincirler betik dosyası olarak yazılır.
 - **Kaynak dosyalar.** Malzeme (`materials/`, kullanıcı varlıkları) yol olarak bağlanır. Silinmez, taşınmaz, kopyası değiştirilmez.

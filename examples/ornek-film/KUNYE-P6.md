@@ -2,7 +2,7 @@
 
 > **[ÖRNEK] Anonimleştirilmiş gerçek künye (kısaltılmış).** Yapı, kare numaraları, süreler ve ölçüler kaynak projeden aynen alındı. Kelimeler, nesne adları, renkler, marka ve world adı `[ÖRNEK]` ile değiştirildi. Alet adları genelleştirildi (alet A/B/C). Kaynak künyede sonraki fazlar (F8-B, F9, F10, F10-B, F11) aynı dosyaya bölüm olarak eklenmişti; burada F10 bölümü örnek olarak bırakıldı.
 
-Kararlar: `project.md` §23. Kod: `p6.jsx` (+ `p5.jsx` donmuş; yalnız dışa aktarım, perde bileşeni aynı) · world logo bileşenine isteğe bağlı aksan parametresi · film dağıtımı. Sayfalar: `P6.dc.html` (60 fps), animatik `--tag A`. Manifest P6: 657 kare, film 6286–6942, `slice: false` (son kare siyah denetlenir), `redQuota` 1 (logo), `layer.exit` 9.8333 s (film 114.6), `review.isik` (ışık çekilişi), `chromiumArgs`.
+Kararlar: `project.md` §23. Kod: `p6.jsx` (+ `p5.jsx` donmuş; yalnız dışa aktarım, perde bileşeni aynı) · world logo bileşenine isteğe bağlı aksan parametresi · film dağıtımı. Sayfalar: `P6.dc.html` (60 fps), animatik `--tag animatic`. Manifest P6: 657 kare, film 6286–6942, `slice: false` (son kare siyah denetlenir), `redQuota` 1 (logo), `layer.exit` 9.8333 s (film 114.6), `review.isik` (ışık çekilişi), `chromiumArgs`.
 
 ## Zaman (ses v2, `script/<ses-v2>.words.json`)
 

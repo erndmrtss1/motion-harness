@@ -57,7 +57,7 @@ if (!fs.existsSync(TPL)) log.atlandi.push('templates/ (paket şablon dizini yok)
   man.scenes = [];   // birimler /motion:faz ile eklenir
   if (has('demo')) {
     const src = fs.readFileSync(path.join(EX, 'demo.dc.html'), 'utf8'), m = /window\.OM_SCENES\s*=\s*'([^']*)'/.exec(src), dur = m ? JSON.parse(m[1]).reduce((a, s) => a + s.dur, 0) : 4;
-    man.scenes.push({ id: 'DEMO', file: 'demo.dc.html', tc: '00:00.00', frames: Math.round(dur * FPS), bg: '#000', keys: [0, Math.round(dur * FPS / 2)], blackStart: false, slice: true, checks: [], hooks: [], note: 'örnek world demosu (smoke); film sırasına girmez' });
+    man.scenes.push({ id: 'DEMO', file: 'demo.dc.html', tc: '00:00.00', frames: Math.round(dur * FPS), bg: '#000', keys: [Math.round(dur * FPS * 0.5), Math.round(dur * FPS * 0.8)], blackStart: false, slice: true, checks: [], hooks: [], note: 'örnek world demosu (smoke); film sırasına girmez' });
   }
   put('scenes.json', JSON.stringify(man, null, 2) + '\n', 'fps ' + FPS + ' · profil ' + PROFILE + ' · kapı ≥ ' + man.gate.taste + '/8');
 }

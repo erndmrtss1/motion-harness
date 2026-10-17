@@ -16,12 +16,12 @@ import { chromium } from 'playwright';
 import { ROOT, OUT, FPS, sceneById, readTimeline, sceneChecks, latestMp4, rel } from '../lib/project.mjs';
 import { worldFor } from '../lib/qc-common.mjs';
 import { withPage, chromiumArgs } from '../lib/page.mjs';
-import { worldDefaults, unmeasured, result } from '../lib/fc/common.mjs';
+import { worldDefaults, unmeasured, result, setStep } from '../lib/fc/common.mjs';
 import { TYPES } from '../lib/fc/index.mjs';
 import { evidenceSheet } from '../lib/fc/sheet.mjs';
 
 const argv = process.argv.slice(2);
-const VALUED = new Set(['--only', '--frames-dir', '--mp4', '--cand', '--set', '--checks', '--out']);
+const VALUED = new Set(['--only', '--frames-dir', '--mp4', '--cand', '--set', '--checks', '--out', '--step']);
 const argOf = (k) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
 const has = (k) => argv.includes(k);
 const pos = argv.filter((a, i) => !a.startsWith('--') && !VALUED.has(argv[i - 1]));
@@ -61,8 +61,11 @@ if (only) checks = checks.filter((c) => only.includes(c.type) || (c.name && only
 const tl = readTimeline(scene.file);
 const W = worldDefaults(worldFor(scene));
 const mp4Arg = argOf('--mp4');
+// --step N: animatik kareleri (render --step N) — piksel/ses tipleri etkin hız fps/N'de; tasarım tipleri (render'sız) tam hızda ayrıca koşulur.
+const STEP = Math.max(1, Math.round(+argOf('--step') || 1));
+if (STEP > 1) setStep(STEP);
 const ctx = {
-  scene, W, fps: FPS, frames: tl.frames, tl,
+  scene, W, fps: FPS / STEP, frames: Math.ceil(tl.frames / STEP), tl, step: STEP,
   framesDir: argOf('--frames-dir') ? path.resolve(argOf('--frames-dir')) : null,
   mp4: mp4Arg === 'auto' ? latestMp4(scene.id) : mp4Arg ? path.resolve(ROOT, mp4Arg) : null,
   probeDir: path.join(OUT, 'probe'), pageData: {}, hooks: { declared: hooks, loaded: [], missing: [] }, sheet: has('--sheet'),
@@ -72,7 +75,9 @@ const results = [];
 const t0 = Date.now();
 const bad = checks.filter((c) => !TYPES[c.type]);
 bad.forEach((c) => results.push(result(c, 'skip', 'bilinmeyen tip: ' + c.type)));
-const valid = checks.filter((c) => TYPES[c.type]);
+const valid = checks.filter((c) => TYPES[c.type] && !(STEP > 1 && TYPES[c.type].layer === 'design'));
+if (STEP > 1) checks.filter((c) => TYPES[c.type] && TYPES[c.type].layer === 'design')
+  .forEach((c) => results.push(result(c, 'skip', "tasarım tipi --step ile koşulmaz (render'sız; tam kare hızında: frame-check " + scene.id + ' --only ' + c.type + ')')));
 const pageChecks = valid.filter((c) => TYPES[c.type].page === true || (typeof TYPES[c.type].page === 'function' && TYPES[c.type].page(c, ctx)));
 
 // ── sayfa aşaması: tasarım kontrolleri + piksel/ses kontrollerinin kanca verisi (prefetch) ──

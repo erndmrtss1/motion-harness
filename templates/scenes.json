@@ -19,7 +19,7 @@
       "blackStart": false,
       "slice": false,
       "layer": { "open": 0, "exit": 19.9 },
-      "k1": { "hero": "dom", "areaMin": 0.30, "heightMin": 0.50, "lyricMin": 22, "keys": [] },
+      "k1": { "hero": "dom", "areaMin": 0.30, "heightMin": 0.50, "lyricMin": 160, "keys": [] },
       "camAccel": { "max": 0.15, "floor": 2 },
       "redQuota": 1,
       "accent": "signal",

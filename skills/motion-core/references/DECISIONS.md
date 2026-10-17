@@ -37,7 +37,7 @@
   - Kaynak görseldeki aksan da sayılır (istisnası ADR-015).
   - İzinli kutular (logo vb.) kare başı veridir, açıklama metni değildir.
 - **Sonuç:** film geneli sayım raporlanır; hakkı aşan sahne HATA.
-- **Pakette:** RULES AK-3; renk sınıfı `world.json → classes`, kota `scenes.json → redQuota`; `frame-check accentLocation` (izinli kutular dışında 0 px).
+- **Pakette:** RULES AK-3; renk sınıfı `world.json → classes`, kota `scenes.json → redQuota`; `frame-check --only accentLocation` (izinli kutular dışında 0 px).
 
 ## ADR-005 · Gren sahnede, grade encode'da — Kabul
 - **Bağlam:** gren `T` tohumlu olmalı (deterministik ve canlı). Grade sahne başına değil, film boyunca tek zincir olmalı.
@@ -71,7 +71,7 @@
 - **Sonuç:**
   - Çalışma kuralı oldu: yedek → aralığı sil → yeniden üret → tanık kareler aynı mı → kopya.
   - Kod ilgisiz yerde değiştiyse küçük metinde yanlış pozitif çıkabilir; içerik yan yana karşılaştırılır.
-- **Pakette:** RULES RH-6; `imgdiff stale`, `frame-check identical`; `render --range … --resume`.
+- **Pakette:** RULES RH-6; `imgdiff stale`, `frame-check --only identical`; `render --range a-b --tag <T> --resume`.
 
 ## ADR-010 · Sahte metin yok — Kabul
 - **Bağlam:** yer tutucu (lorem) metin, ölçümü ve okunurluk kararını boşa çıkarır. Ekranda neyin yazılacağı projeden projeye değişir.
@@ -140,14 +140,14 @@
     - A'da pozlama kapanışı yok; kesme hız tepesinde (K-06);
     - B'de `blackStart` kapalı;
     - grade, A'nın son karelerinde siyah noktasını kapatmaz.
-- **QC'de tanınma** (son kare kontrolü yerine sızıntı kontrolü):
+- **QC'de tanınma** (hedef mekanizma; pakette `qc` `cut`/`cutIn` alanlarını **okumaz** — çıkan sahne `slice: true` ile son kare kontrolünden muaf tutulur, aşağıdaki ölçüler `fc:ramp`/`fc:temporal` bildirimiyle alınır):
   - son 2 karede luma n−2'ye göre düşmez (tol 2);
   - artış tepesi ≤ %60;
   - n−3'ten önce siyaha iniş yok;
   - fade dedektörü sızıntıyı `cut` etiketiyle yazar, hata saymaz;
   - aksan sayımı değişmez.
 - **Sonuç:** yalnız ADR'li çiftte kullanılır. Kaynak projede tek geçişte uygulandı.
-- **Pakette:** manifest `cut` / `cutIn`; RULES SN-2 istisnası; `frame-check seam`.
+- **Pakette:** manifest `cut` / `cutIn` (belge kaydı; araçlar okumaz) + `slice: true`; RULES SN-2 istisnası; `frame-check --only seam,ramp`.
 
 ## ADR-022 · SERT ve VARSAYILAN kural ayrımı — Kabul
 - **Bağlam:** kurallar iki türlü birikti:

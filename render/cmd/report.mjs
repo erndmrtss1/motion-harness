@@ -1,4 +1,4 @@
-// motion-render report — out/RENDER_REPORT.md (render özeti)
+// motion-render report — out/RENDER_SUMMARY.md (otomatik render özeti; her koşuda yeniden yazılır). out/RENDER_REPORT.md elle tutulan, yalnız sona eklenen faz kaydıdır — bu komut ona dokunmaz.
 //
 //   motion-render report
 //
@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, SCENES, FPS, WIDTH, HEIGHT, readTimeline } from '../lib/project.mjs';
 
-if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('kullanım: motion-render report  → out/RENDER_REPORT.md'); process.exit(0); }
+if (process.argv.includes('--help') || process.argv.includes('-h')) { console.log('kullanım: motion-render report  → out/RENDER_SUMMARY.md'); process.exit(0); }
 const OUT = path.join(ROOT, 'out');
 const rd = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null);
 const analysis = JSON.parse(rd(path.join(OUT, 'logs', '_analysis.json')) || '{}');
@@ -138,5 +138,5 @@ ${auto.length ? auto.join('\n\n') : '—'}
 ${notes || '—'}
 `;
 fs.mkdirSync(OUT, { recursive: true });
-fs.writeFileSync(path.join(OUT, 'RENDER_REPORT.md'), md);
-console.log('✓ out/RENDER_REPORT.md · uyarılı ' + warnCount + ' · atlanan/render edilmemiş ' + skipped);
+fs.writeFileSync(path.join(OUT, 'RENDER_SUMMARY.md'), md);
+console.log('✓ out/RENDER_SUMMARY.md · uyarılı ' + warnCount + ' · atlanan/render edilmemiş ' + skipped);
