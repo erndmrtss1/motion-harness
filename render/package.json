@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "bin": { "motion-render": "bin/motion-render.mjs" },
   "engines": { "node": ">=20" },
-  "files": ["bin", "cmd", "lib", "runtime", "templates", "CONTRACT.md", "requirements.txt"],
+  "files": ["bin", "cmd", "lib", "py", "runtime", "CONTRACT.md", "BEKLENEN-SAPMA.md", "requirements.txt"],
   "dependencies": {
     "ffmpeg-static": "5.3.0",
     "playwright": "1.63.0",

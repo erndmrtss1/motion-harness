@@ -136,6 +136,7 @@ Kanca yoksa ilgili kontrol "ölçülemedi" UYARI verir (hata değil); `smoke` s�
 | `master [--tag vN] [--ids …]` · `arsiv [--tag vN] [--link-from vM]` | tek sürekli encode (ProRes 422 HQ + H.264) · FFV1 + framemd5 |
 | `ses <id…>` · `ses preview <id,id>` | sesli kopya / birleşik ön izleme |
 | `beats <audio> [--words w.json] [--out BEATS.md]` · `transcribe <audio> [--out pfx]` · `transcribe verify <spec>` | ses hattı (Whisper isteğe bağlı) |
+| `tts <metin.txt|"metin"> --out materials/ses.wav [--voice ad] [--words script/ses.words.json] [--list]` | kredisiz yerel TTS (Windows SAPI kelime zamanlı; macOS `say`; Linux `espeak-ng`) |
 | `amap build --anchors amap.config.json` · `audio-diff <a> <b>` | ses ↔ tasarım zamanı eşlemi · zarf korelasyonu + kayma tablosu |
 | `vendor [scripts] [fonts] [math]` | React/ReactDOM/Babel + Google Fonts (lisans metniyle) |
 | `gen <request> [--cap N] [--dry]` · `ingest [--balance-before N --balance-after M]` · `ingest review <id> kabul|ret|yedek "<not>"` · `ingest scan <id>` | Higgsfield üretim (CLI) · ledger |

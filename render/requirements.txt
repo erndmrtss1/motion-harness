@@ -1,0 +1,10 @@
+# @motion/harness — isteğe bağlı Python ekstrası (motion-render transcribe / transcribe verify).
+# Kurulum: motion-render init <proje> --with-whisper   (proje kökünde .venv kurar)
+#   ya da:  python -m venv .venv && .venv/Scripts/python -m pip install -r <paket>/render/requirements.txt   (POSIX: .venv/bin/python)
+# Sürümler kaynak hattın çalışan ortamından (Python 3.13). Model (large-v3, ≈ 3 GB) ilk koşuda Hugging Face'ten iner.
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+numpy==2.5.4
+av==19.0.1
+onnxruntime==1.31.0
+# geçişli (sabitlenmedi): tokenizers, huggingface_hub

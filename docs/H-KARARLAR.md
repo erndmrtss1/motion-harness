@@ -60,3 +60,12 @@ Durum: `uygulandı` · `bekliyor (DUR 1)` · `doğrulanacak (Hn)`.
 | D1-16 | frame-check 20 kontrol tipi; H2'de kaynak projenin künyelerinde kayıtlı izdüşüm sonuçlarını yeniden üretmesi parite testinin parçası. | hayır | H1/H2 |
 | D1-17 | Paket/depo/marketplace adı `motion-harness`, plugin adı `motion` (komut ad alanı `/motion:*`, HK-07). | **evet** — brief tek ad (`motion-harness`) varsayıyordu; `/motion:init` komut adı ancak bu ayrımla mümkün | H1 |
 | D1-18 | Salt-okunur kanıt ölçütü "atfedilemeyen değişiklik = 0" (HK-11). | **evet** — brief "her fazın sonunda fark 0" diyordu; canlı session `docs/`'a da yazdığı için | uygulandı |
+
+## Sınır notu (kullanıcı, H1–H5 boyunca geçerli)
+
+| id | kural | uygulama |
+|---|---|---|
+| SN-1 | `skills/motion-live` ve `/motion:live` GENEL yetenektir: OBS sayfası, ses zarfı, durum makinesi, ölçüm, panel. Belirli avatar tasarımı, karakter, kullanıcıya özgü görsel YOK; örnek avatar yalnız nötr geometrik yer tutucu. | runtime/live şablonu + skill; H5 öncesi denetim |
+| SN-2 | H4 "canli-avatar" brief'i atılacak eval projesidir; çıktısı pakete örnek olarak GİRMEZ (yalnız puan tablosu). D1-13'teki "eval kontaklarından biçim örneği" yalnız video eval'leri için geçerlidir. | evals/ yalnız brief + puan; examples/ canlı çıktı içermez |
+| SN-3 | Kullanıcının gerçek yayın-avatar uygulaması H5'ten SONRA, ayrı klasörde `/motion:init --profile live` ile başlar ve kendi GitHub deposuna gider; paket yalnız bağımlılıktır. | `/motion:init` `--profile`/`--world` argümanlarını kabul eder |
+| SN-4 | H5 raporunda tek satır doğrulama: "pakette kullanıcıya özgü içerik: 0". | H5 gizlilik + içerik taraması |

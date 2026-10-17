@@ -1,6 +1,6 @@
 ---
 description: Yeni motion projesi kurar (F0). Ön bilgili (frontmatter) bir brief dosyası verildiyse ya da klasörde varsa soru sormadan kurar (headless); yoksa kısa bir AskUserQuestion mülakatı yapar. Ardından motion-render init çalıştırır, project.md §1–§10, scenes.json, CLAUDE.md, ledger ve docs/ şablonlarını doldurur ve DUR ile biter.
-argument-hint: "[brief.md] [hedef-dizin]"
+argument-hint: "[brief.md] [hedef-dizin] [--profile full|light|live] [--world lookdev|example:<ad>]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -17,6 +17,7 @@ Bu komut yalnız kurar. Look-dev, ses ya da sahne işi yapmaz.
 0. Önce `${CLAUDE_PLUGIN_ROOT}/START.md`'yi oku (kullanıcı "START.md'yi oku" dediyse kastedilen bu dosyadır; yeni klasörde START.md yoktur). Ardından `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/SKILL.md`. Kurulum bitince hedef dizine `START.md`'nin bir kopyasını bırak (sonraki oturumlar için).
 1. `motion-render --version`'ı çalıştır. Komut yoksa ya da hata verirse dur ve kullanıcıyı `/motion:setup`'a yönlendir. Bu durumda kurulum yapma.
 2. Hedef dizini belirle. Argümanda brief dışında bir dizin verildiyse orası, verilmediyse çalışma dizini.
+   Argüman bayrakları mülakatın ilgili sorusunu önceden cevaplar (sorulmaz): `--profile full|light|live` → profil; `--world lookdev|example:<ad>` → world (example yalnız bu açık bayrakla). Örn. canlı bir proje: `/motion:init --profile live`.
 3. Hedefte `scenes.json` zaten varsa üzerine yazma. Mevcut projeyi raporla ve **DUR**.
 
 ## 1. Brief kaynağı (headless kurulum)
@@ -124,7 +125,7 @@ motion-render vendor scripts                                         # React/Rea
 
 `scenes` dizisi boş kalır; birimler `/motion:faz P<n>`'de eklenir.
 
-World `lookdev` ise `world/world.json` yazılmaz. Sahne kodu ancak look-dev'den sonra yazılır.
+World `lookdev` ise `motion-render init` yalnız bir `world/world.json` İSKELETİ yazar: `band` ve `k1.mask` "TANIMLANMADI" işaretlidir (yanında `world/README.md`); bu alanlar look-dev fazında ölçülerek doldurulur, dolmadan `qc` çalışmaz ("world.band tanımlı değil"). Sahne kodu ancak look-dev'den sonra yazılır.
 
 ## 5. Doğrula
 
