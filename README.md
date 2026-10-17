@@ -40,6 +40,8 @@ START.md'yi oku, /motion:init
 | `/motion:promote` | RETRO dersini core/world'e önerir |
 | `/motion:setup`, `/motion:doctor` | kurulum / ortam denetimi |
 
+Birden çok projeyi yukarıdan yönetecekseniz (faz istemi yazan, raporları denetleyen bir danışman oturumu): [templates/ADVISOR.md](templates/ADVISOR.md). Paketin değerlendirmesi: [evals/](evals/) ve [docs/H4-EVAL.md](docs/H4-EVAL.md).
+
 ## Sorun giderme
 
 | belirti | çözüm |
