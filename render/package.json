@@ -1,0 +1,24 @@
+{
+  "name": "@motion/harness",
+  "version": "1.0.0",
+  "description": "motion-harness render/ölçüm araçları: HTML/CSS 3B sahneleri Playwright/Chromium ile kare kare render, QC, frame-check, master, arşiv.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "bin": { "motion-render": "bin/motion-render.mjs" },
+  "engines": { "node": ">=20" },
+  "files": ["bin", "cmd", "lib", "runtime", "templates", "CONTRACT.md", "requirements.txt"],
+  "dependencies": {
+    "ffmpeg-static": "5.3.0",
+    "playwright": "1.63.0",
+    "pngjs": "7.0.0",
+    "sharp": "0.35.4"
+  },
+  "optionalDependencies": {
+    "potrace": "2.1.8"
+  },
+  "scripts": {
+    "smoke": "node bin/motion-render.mjs smoke",
+    "test": "node --test test/"
+  }
+}

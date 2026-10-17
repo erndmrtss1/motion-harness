@@ -1,0 +1,12 @@
+{
+  "name": "motion-harness",
+  "owner": { "name": "erndmrtss1" },
+  "description": "motion-harness: motion-grafik üretim süreci plugin'i (Claude Code).",
+  "plugins": [
+    {
+      "name": "motion",
+      "source": "./",
+      "description": "Motion-grafik üretim hattı: /motion:init, /motion:faz, /motion:gate, /motion:master, /motion:live …"
+    }
+  ]
+}
