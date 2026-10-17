@@ -1,0 +1,46 @@
+{
+  "note": "Üretken varlık manifesti ve kredi ledger'ı (assets/gen/manifest.json). Tek yazar: motion-render ingest. Elle düzenlenmez; kabul notu yalnız 'motion-render ingest review <id> kabul|ret|yedek \"<not>\"'. İş kimliği, sonuç URL'si ve hesap bilgisi yazılmaz.",
+  "schema": "1.0.0",
+  "doc": {
+    "items[]": {
+      "id": "g-<sahne>-<ad>-<n> (değişim yeni id ya da -vN; eskisine supersededBy)",
+      "type": "plate | element | transition | storyboard | logo",
+      "model": "<model id>",
+      "prompt": "<istem>",
+      "seed": "<sayı | null>",
+      "credits": "<gerçek kredi (bakiye farkından)>",
+      "creditsSource": "balance | estimate",
+      "sourceHash": "<sha256>",
+      "files": { "source": "<yol>", "conform": "<yol>", "frames": "<dizin>", "contact": "<png>", "preview": "<mp4>" },
+      "conform": { "w": 1920, "h": 1080, "fps": 60, "codec": "<…>", "frames": 0, "duration": 0 },
+      "alpha": "true | luma | false",
+      "license": "<plan> · <tarih> · <model>",
+      "scenes": ["<id>"],
+      "status": "draft | final",
+      "request": "requests/<dosya>.json#<id>",
+      "ingestedAt": "<ISO tarih>",
+      "warnings": ["<süre > sınır | büyütüldü | 16:9 değil kırpıldı>"],
+      "review": { "result": "kabul | ret | yedek", "note": "<kare kare kabul notu>", "by": "<yapan | reviewer>", "date": "<ISO tarih>" },
+      "supersededBy": "<id | yok>"
+    },
+    "ledger[]": {
+      "task": "<görev adı; kayıp varsa kısa açıklama>",
+      "date": "<ISO tarih>",
+      "balanceBefore": "<bakiye, görev öncesi canlı okuma>",
+      "balanceAfter": "<bakiye, görev sonrası canlı okuma>",
+      "diff": "<balanceBefore - balanceAfter>",
+      "items": ["<items[].id>"],
+      "creditsSum": "<items[].credits toplamı>",
+      "match": "<|diff - creditsSum| < 0.005; false ise lost[] ile açıklanmalı, açıklanamıyorsa DUR>"
+    },
+    "lost[]": {
+      "id": "<başarısız iş için yerel kimlik>",
+      "credits": "<kesilen kredi>",
+      "reason": "<ör. sunucu hatası, çıktı yok>",
+      "refund": "pending | granted | denied"
+    }
+  },
+  "items": [],
+  "ledger": [],
+  "lost": []
+}

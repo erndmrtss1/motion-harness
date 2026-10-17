@@ -14,6 +14,7 @@ Bu komut yalnız kurar. Look-dev, ses ya da sahne işi yapmaz.
 
 ## 0. Ön kontrol
 
+0. Önce `${CLAUDE_PLUGIN_ROOT}/START.md`'yi oku (kullanıcı "START.md'yi oku" dediyse kastedilen bu dosyadır; yeni klasörde START.md yoktur). Ardından `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/SKILL.md`. Kurulum bitince hedef dizine `START.md`'nin bir kopyasını bırak (sonraki oturumlar için).
 1. `motion-render --version`'ı çalıştır. Komut yoksa ya da hata verirse dur ve kullanıcıyı `/motion:setup`'a yönlendir. Bu durumda kurulum yapma.
 2. Hedef dizini belirle. Argümanda brief dışında bir dizin verildiyse orası, verilmediyse çalışma dizini.
 3. Hedefte `scenes.json` zaten varsa üzerine yazma. Mevcut projeyi raporla ve **DUR**.

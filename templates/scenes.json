@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "fps": 60,
+  "width": 1920,
+  "height": 1080,
+  "profile": "full",
+  "world": "world/world.json",
+  "audio": null,
+  "animatic": { "scale": 0.5, "fps": 30 },
+  "gate": { "taste": 7 },
+  "scenes": [
+    {
+      "id": "P1",
+      "file": "P1.dc.html",
+      "tc": "00:00.00",
+      "frames": 1200,
+      "bg": "#000",
+      "keys": [120, 480],
+      "blackStart": false,
+      "slice": false,
+      "layer": { "open": 0, "exit": 19.9 },
+      "k1": { "hero": "dom", "areaMin": 0.30, "heightMin": 0.50, "lyricMin": 22, "keys": [] },
+      "camAccel": { "max": 0.15, "floor": 2 },
+      "redQuota": 1,
+      "accent": "signal",
+      "exceptions": {},
+      "review": {},
+      "grade": { "fadeOut": null },
+      "expoPost": null,
+      "chromiumArgs": [],
+      "props": null,
+      "checks": [
+        { "type": "framing", "boxes": "$__boxes", "step": 3 },
+        { "type": "camera", "stepJump": 2.5, "maxSteps": 0 },
+        { "type": "black" },
+        { "type": "temporal", "src": "mp4", "at": "last", "window": 12, "maxRatio": 1.5 }
+      ],
+      "hooks": []
+    }
+  ]
+}
