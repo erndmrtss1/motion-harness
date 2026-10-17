@@ -1,0 +1,8 @@
+# satır sonları: her platformda aynı (Windows autocrlf=true klonlarında .sh/.mjs bozulmasın)
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.mp4 binary
+*.wav binary
