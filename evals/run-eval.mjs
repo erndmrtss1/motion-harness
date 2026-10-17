@@ -4,7 +4,7 @@
 // klasöre .claude/settings.json deny kuralları yazılır; ayrıca koşu sonunda transkript yasak yollar için denetlenir (score.mjs).
 //
 // Kullanım:
-//   node evals/run-eval.mjs --brief <ad|all> [--round 1] [--root <dizin>] [--max-turns 600] [--model <id>] [--deny <yol,yol>] [--dry]
+//   node evals/run-eval.mjs --brief <ad|all> [--round 1] [--root <dizin>] [--plugin <dizin>] [--max-turns 600] [--model <id>] [--deny <yol,yol>] [--dry]
 //   ad: evals/briefs/<ad>.md   ·   çıktı: <root>/<ad>-r<round>/  (+ transcript.jsonl, run.json)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,6 +22,7 @@ const MAX_TURNS = +opt('--max-turns', 600);
 const MODEL = opt('--model', null);
 const DENY = (opt('--deny', process.env.MOTION_EVAL_DENY || '')).split(',').filter(Boolean);   // erişilemeyecek mutlak yollar
 const DRY = args.includes('--dry');
+const PLUGIN = path.resolve(opt('--plugin', REPO));   // eval oturumunun yüklediği plugin (önerilen: temiz klon — kanıt klasörü içermez)
 
 const briefs = BRIEF === 'all'
   ? fs.readdirSync(path.join(HERE, 'briefs')).filter((f) => f.endsWith('.md')).map((f) => f.slice(0, -3))
@@ -46,7 +47,9 @@ function denyRules(paths) {
     const forms = [fwd];
     if (drive) forms.push('/' + drive[1].toLowerCase() + fwd.slice(2));   // //d/Edit/... biçimi
     for (const f of forms) for (const tool of ['Read', 'Edit', 'Write']) out.push(`${tool}(/${f.startsWith('/') ? f : '/' + f}/**)`);
-    out.push(`Bash(*${path.basename(fwd)}*)`);
+    // Bash: tam yol biçimleri (klasör adı tek başına kullanılmaz — aynı adlı plugin klonu engellenmesin)
+    out.push(`Bash(*${fwd}*)`, `Bash(*${fwd.split('/').join('\\')}*)`);
+    if (drive) out.push(`Bash(*/${drive[1].toLowerCase()}${fwd.slice(2)}*)`);
   }
   return out;
 }
@@ -71,17 +74,17 @@ for (const name of briefs) {
   const txt = fs.readFileSync(src, 'utf8');
   const meta = { live: /\bprofil:\s*live\b/.test(txt), audio: /\bses:\s*(tts|dosya:|muzik)/.test(txt) };
   const dir = path.join(ROOT, `${name}-r${ROUND}`);
+  if (DRY) { console.log('[dry] ' + dir + ' · plugin ' + PLUGIN + ' · deny ' + denyRules(DENY).length + ' kural'); continue; }
   if (fs.existsSync(dir)) { console.error('klasör zaten var (yeni tur için --round): ' + dir); process.exit(2); }
   fs.mkdirSync(path.join(dir, '.claude'), { recursive: true });
   fs.copyFileSync(src, path.join(dir, 'brief.md'));
-  fs.copyFileSync(path.join(REPO, 'START.md'), path.join(dir, 'START.md'));
+  fs.copyFileSync(path.join(PLUGIN, 'START.md'), path.join(dir, 'START.md'));
   fs.writeFileSync(path.join(dir, '.claude', 'settings.json'), JSON.stringify({ permissions: { deny: denyRules(DENY) } }, null, 2));
-  const argv = ['-p', PROMPT(meta), '--plugin-dir', REPO, '--output-format', 'stream-json', '--verbose',
+  const argv = ['-p', PROMPT(meta), '--plugin-dir', PLUGIN, '--output-format', 'stream-json', '--verbose',
     '--max-turns', String(MAX_TURNS), '--permission-mode', 'acceptEdits',
     '--allowedTools', 'Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Agent', 'Task', 'Skill', 'SlashCommand', 'TodoWrite', 'WebSearch', 'WebFetch'];
   if (MODEL) argv.push('--model', MODEL);
   const run = { brief: name, round: ROUND, dir, start: new Date().toISOString(), argv: argv.filter((a) => a !== PROMPT(meta)), deny: DENY.length };
-  if (DRY) { console.log('[dry] ' + dir + '\n  ' + cmd + ' ' + run.argv.join(' ')); runs.push(run); continue; }
   console.log(`▶ ${name} r${ROUND} → ${dir}`);
   const out = fs.createWriteStream(path.join(dir, 'transcript.jsonl'));
   const p = spawn(cmd, argv, { cwd: dir, shell, env: { ...process.env, MOTION_EVAL: '1' } });
@@ -96,4 +99,4 @@ for (const name of briefs) {
   })));
 }
 const done = await Promise.all(runs);
-fs.writeFileSync(path.join(ROOT, `runs-r${ROUND}.json`), JSON.stringify(done, null, 1));
+if (!DRY) fs.writeFileSync(path.join(ROOT, `runs-r${ROUND}.json`), JSON.stringify(done, null, 1));
