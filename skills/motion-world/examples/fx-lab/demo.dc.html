@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="motion-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&amp;family=Barlow+Condensed:wght@600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet" />
+<style>
+html, body { margin: 0; background: #000; }
+</style>
+<script>window.OM_SCENES = '[{"name":"FXLAB","dur":4,"desc":"ÖRNEK world fx-lab gösterimi (yer tutucu kelimeler)"}]';</script>
+<script>window.OM_PLAYBACK = '{"mode":"loop"}';</script>
+<script>window.GEN_BASE = '';</script>
+<script>window.__waitRaf = 2; window.__waitMs = 0;</script>
+</helmet>
+<!-- ÖRNEK world fx-lab · demo sahnesi · 4 s · tasarım uzayı 1920×1080 (Stage = görüntü alanı) · varsayılan değil -->
+<x-import component-from-global-scope="FXLabDemo" from="shared/motion-stage.jsx shared/motion-core.jsx world/fx-lab.jsx world/fx-rig.jsx world/fx-inst.jsx demo.jsx" style="position:absolute;inset:0"></x-import>
+</x-dc>
+</body>
+</html>

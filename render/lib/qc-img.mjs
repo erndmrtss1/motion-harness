@@ -96,6 +96,7 @@ export const jsTextRows = (cut) => `var rows=[], w2=document.createTreeWalker(do
    if(okh) vis++; } }
   rows.push([t2.slice(0,${cut}), +(parseFloat(s2.fontSize)*sc).toFixed(1), Math.round(rb.left), Math.round(rb.top), Math.round(rb.width), Math.round(rb.height), tot?+(vis/tot).toFixed(2):1, s2.color]); }`;
 // [data-hero] (seçici world.k1.selector) ızgarası 192×108 (10 px): hg, hy0, hy1 değişkenleri
+// Izgara 192×108 hücre; hücre = görünüm alanı / ızgara (1920×1080'de 10 CSS px — kaynakla aynı; başka boyutta orantılı).
 export const jsHeroGrid = (sel) => `var hg=new Uint8Array(192*108), hy0=108, hy1=-1; document.querySelectorAll(${JSON.stringify(sel || '[data-hero]')}).forEach(function(h){ var r=h.getBoundingClientRect(); if(r.width<1||r.height<1) return;
-  var x0=Math.max(0,Math.floor(r.left/10)), x1=Math.min(191,Math.floor((r.right-1)/10)), y0=Math.max(0,Math.floor(r.top/10)), y1=Math.min(107,Math.floor((r.bottom-1)/10));
+  var cw=(window.innerWidth||1920)/192, ch=(window.innerHeight||1080)/108, x0=Math.max(0,Math.floor(r.left/cw)), x1=Math.min(191,Math.floor((r.right-1)/cw)), y0=Math.max(0,Math.floor(r.top/ch)), y1=Math.min(107,Math.floor((r.bottom-1)/ch));
   for(var yy=y0;yy<=y1;yy++){ for(var xx=x0;xx<=x1;xx++) hg[yy*192+xx]=1; } if(y1>=y0){ hy0=Math.min(hy0,y0); hy1=Math.max(hy1,y1); } });`;

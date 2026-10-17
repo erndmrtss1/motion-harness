@@ -1,0 +1,77 @@
+{
+  "name": "fx-lab",
+  "version": "4.0.0",
+  "origin": "example:fx-lab",
+  "palette": {
+    "bg": "#16181B",
+    "desk": "#17191C",
+    "deskEdge": "#0E0F11",
+    "paper": "#F8F3E7",
+    "paperShade": "#E4E0D6",
+    "paperCool": "#DCE0E6",
+    "paperTone": "#CFCEC9",
+    "ink": "#151C2E",
+    "inkTech": "#1F3B70",
+    "inkLine": "#2B4C86",
+    "inkWash": "#7F95BE",
+    "inkText": "#16294F",
+    "graphite2B": "#2A2C31",
+    "graphiteHB": "#4F535A",
+    "graphite2H": "#9A9EA6",
+    "graphiteText": "#202226",
+    "shadow": "#141C2C",
+    "steel": "#A9AFB7",
+    "steelDark": "#5E646C",
+    "steelLight": "#DDE1E6",
+    "anod": "#1E2127",
+    "anodHi": "#3A3F48",
+    "knob": "#26292F",
+    "glass": "#0B1015",
+    "phosphor": "#EAF3FB",
+    "phosphorGlow": "#A0C4EA",
+    "grease": "#E9EDF1",
+    "keyCool": "#E9EDF3",
+    "placeholder": "#55595F",
+    "accentSrc": "#FF2236"
+  },
+  "accent": { "color": "#DB1D2E", "class": "signal", "quotaDefault": 1 },
+  "fonts": [
+    { "family": "Oswald", "weights": [500, 600], "source": "google" },
+    { "family": "Barlow Condensed", "weights": [600, 700], "source": "google" },
+    { "family": "JetBrains Mono", "weights": [500, 600], "source": "google" }
+  ],
+  "band": [40, 58],
+  "k1": { "mask": "ink", "selector": "[data-hero]", "areaMin": 0.35, "heightMin": 0.55, "lyricMin": 160 },
+  "edgeDark": { "maxFalloff": 0.20 },
+  "grade": {
+    "chain": "lab",
+    "params": {
+      "curves": "0/0 0.25/0.2430 0.5/0.5040 0.75/0.7500 1/0.990",
+      "colorbalance": "bs=0.015:bh=0.008",
+      "vignette": null,
+      "black": [8, 9, 10],
+      "pureSec": 0.2
+    }
+  },
+  "classes": {
+    "signal": { "rMin": 190, "gMax": 60, "bMax": 75, "rgMin": 150 },
+    "redInner": { "rMin": 140, "rgMin": 100, "rbMin": 90, "inner": 3 },
+    "redLoose": { "rgMin": 46, "rbMin": 36 },
+    "inkNavy": { "lMax": 69.999, "bMinusR": 8 },
+    "darkNeutral": { "lMax": 89.999, "rgAbsMax": 30 },
+    "metal": { "lMin": 195.001, "satMax": 25 },
+    "desk": { "lMax": 44.999, "rbAbsMax": 25 },
+    "emptyBlack": { "lMax": 15.2999 },
+    "visible": { "lMin": 77.001 }
+  },
+  "camera": { "maxPxPerFrame": 30, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 }, "persp": 2200, "drift": 0.35, "interp": "monotone" },
+  "motion": { "toolMaxPx": 57, "writeGlyphsPerSec": 12, "settlePx": 2, "nudgePx": 2, "vibPx": 1.5, "shutter": 180, "blurMinPx": 3, "easing": { "move": "inOut3", "line": "sine", "arrive": "out3" } },
+  "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "primitives": [
+    "FXWorld", "FXGrain", "FXDefs", "FXSheet", "FXGrid", "FXWrite", "FXGuide", "FXLeader", "FXStrike", "FXPen", "FXMoBlur",
+    "FXRuler", "FXCaliper", "FXTitleBlock", "FXBar", "FXFlow", "FXWindow", "FXPlateBox",
+    "FXCam", "FXLayer", "FXPaper", "FXPaperDefs", "FXFold", "FXStroke", "FXPrintHead", "FXPlotter", "FXRecorder", "FXDust",
+    "FXScope", "FXScreen", "FXKnob", "FXDial", "FXRule", "FXCal"
+  ],
+  "lessons": "lessons.md"
+}

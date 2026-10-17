@@ -1,0 +1,68 @@
+{
+  "name": "desk-paper",
+  "version": "2.0.0",
+  "origin": "example:desk-paper",
+  "palette": {
+    "bg": "#0A0908",
+    "desk": "#0C0B0A",
+    "ink": "#0E0C0A",
+    "ballpoint": "#1C2340",
+    "inkLow": "#2E3966",
+    "inkHigh": "#10162E",
+    "wetInk": "#7385CC",
+    "graphite": "#3A3B3D",
+    "pencilText": "#26272B",
+    "paperWhite": "#EEEBE4",
+    "paperAged": "#E6DCC3",
+    "offPaper": "#F2F4F7",
+    "lamp": "#D9AE52",
+    "warmPool": "#FFD9A3",
+    "fog": "#9BA3AD",
+    "ash": "#5A6068"
+  },
+  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "fonts": [
+    { "family": "Caveat", "weights": [400, 600], "source": "google" },
+    { "family": "Saira Condensed", "weights": [600, 700], "source": "google" },
+    { "family": "JetBrains Mono", "weights": [500], "source": "google" },
+    { "family": "Inter", "weights": [400, 500], "source": "google" }
+  ],
+  "band": [15, 30],
+  "k1": { "mask": "dom", "selector": "[data-hero]", "areaMin": 0.30, "heightMin": 0.50 },
+  "edgeDark": { "maxFalloff": 0.65 },
+  "grade": {
+    "chain": "dark",
+    "params": {
+      "curves": "0/0 0.25/0.2382 0.5/0.5078 0.75/0.7422 1/1",
+      "colorbalance": "bs=0.04:rh=0.03:bh=-0.04",
+      "vignette": 0.72,
+      "black": [10, 9, 8],
+      "pureSec": 0.4
+    }
+  },
+  "classes": {
+    "signal": { "rMin": 190, "gMax": 60, "bMax": 75, "rgMin": 150 },
+    "signalGlow": { "rMin": 150, "rgMin": 90, "rbMin": 80 },
+    "desk": { "lMax": 44.999, "rbAbsMax": 25 },
+    "emptyBlack": { "lMax": 15.2999 },
+    "visible": { "lMin": 77.001 }
+  },
+  "camera": {
+    "maxPxPerFrame": 7, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 },
+    "persp": 2200, "drift": 1, "tiltRead": [11, 13], "pushZ": 80, "glancePx": 40, "craneScaleMin": 0.10
+  },
+  "motion": {
+    "toolMaxPx": 24, "writeGlyphsPerSec": 30, "settlePx": 2,
+    "handPxPerSec": { "calm": 720, "angryMin": 1080, "angryMax": 1440, "firstLegible": 1080 },
+    "underlineDelay": 0.08, "lightMove": [0.8, 1.2], "anchorSlide": [0.5, 0.6], "flickerFrames30": 2, "flickerDip": 0.6,
+    "exposureDip": 0.4, "exposureDipDur": 0.3,
+    "shake": { "hand": 0.2, "manic": 0.35, "impactMin": 2, "impactMax": 3, "frameMax": 1 },
+    "push": { "px": 400, "dur": 0.5, "shadowLead": 0.08 }
+  },
+  "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "primitives": [
+    "DeskWorld", "DeskDefs", "DeskWrinkle", "DeskGrain", "DeskCamera", "DeskZLayer", "DeskPlane", "DeskPaper", "DeskPaperCorner",
+    "DeskInk", "DeskPencil", "DeskGlow", "DeskPenTip", "DeskHand", "DeskStroke", "DeskPrintHead", "DeskLampBeam", "DeskDust", "DeskLit"
+  ],
+  "lessons": "lessons.md"
+}

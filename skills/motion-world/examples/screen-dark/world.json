@@ -1,0 +1,65 @@
+{
+  "name": "screen-dark",
+  "version": "2.0.0",
+  "origin": "example:screen-dark",
+  "palette": {
+    "bg": "#0A0908",
+    "glass": "#0F0E0C",
+    "glassTop": "#14120F",
+    "glassBottom": "#0B0A08",
+    "key": "#D9AE52",
+    "warm": "#FFD9A3",
+    "phosphor": "#8FA89A",
+    "phosphorDark": "#5E7468",
+    "phosphorLight": "#C4D6CB",
+    "secondary": "#6E8A6A",
+    "fog": "#9BA3AD",
+    "ash": "#5A6068",
+    "loss": "#8E1D24",
+    "lossInk": "#C8434B",
+    "lossReadable": "#D78187",
+    "displayTop": "#F2F4F7",
+    "displayBottom": "#B8BEC6",
+    "labelText": "#C9CED4",
+    "faceLabel": "#4A504D"
+  },
+  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "fonts": [
+    { "family": "Saira Condensed", "weights": [600, 700], "source": "google" },
+    { "family": "Inter", "weights": [400, 500], "source": "google" },
+    { "family": "JetBrains Mono", "weights": [500], "source": "google" }
+  ],
+  "band": [12, 22],
+  "profileBands": { "typographic": [6, 14] },
+  "k1": { "mask": "dom", "selector": "[data-hero]", "areaMin": 0.30, "heightMin": 0.50 },
+  "edgeDark": { "maxFalloff": 0.55 },
+  "grade": {
+    "chain": "dark",
+    "params": {
+      "curves": "0/0 0.25/0.2382 0.5/0.5078 0.75/0.7422 1/1",
+      "colorbalance": "bs=0.04:rh=0.03:bh=-0.04",
+      "vignette": 0.72,
+      "black": [10, 9, 8],
+      "pureSec": 0.4
+    }
+  },
+  "classes": {
+    "signal": { "rMin": 190, "gMax": 60, "bMax": 75, "rgMin": 150 },
+    "bordo": { "rMin": 110, "rgMin": 70, "grMin": 0.27, "grMax": 0.45, "brMin": 0.27, "brMax": 0.5 },
+    "emptyBlack": { "lMax": 15.2999 },
+    "visible": { "lMin": 77.001 }
+  },
+  "camera": { "maxPxPerFrame": 10, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 }, "drift": 0.4, "glancePx": 40 },
+  "motion": {
+    "toolMaxPx": 57, "writeGlyphsPerSec": 20, "settlePx": 2,
+    "typeMsPerChar": 50, "crtRate": 30, "blinkSec": 0.6, "iconMinPx": 20, "labelGapPx": 16, "heroMinusSurroundMin": 25,
+    "push": { "px": 400, "dur": 0.5, "shadowLead": 0.08 }, "slideIn": { "px": 2100, "dur": 0.2, "blurMax": 14 }, "pop": { "from": 0.6, "dur": 0.24 },
+    "lightPull": { "r0": 1250, "dur": 0.2, "soft": 320 }, "layerZ": [8, 12], "layerTint": 0.012
+  },
+  "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "primitives": [
+    "ScreenWorld", "ScreenGrain", "ScreenGround", "ScreenGlass", "ScreenGrid", "ScreenCursor", "ScreenIcon", "ScreenDisplay",
+    "ScreenLabel", "ScreenSpark", "ScreenBody", "ScreenFace"
+  ],
+  "lessons": "lessons.md"
+}

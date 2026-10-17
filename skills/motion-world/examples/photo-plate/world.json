@@ -1,0 +1,43 @@
+{
+  "name": "photo-plate",
+  "version": "1.0.0",
+  "origin": "example:photo-plate",
+  "palette": {
+    "bg": "#07080A",
+    "lightNeutral": "#FFFFFF"
+  },
+  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "fonts": [],
+  "band": [12, 28],
+  "k1": { "mask": "alpha", "selector": "[data-hero]", "areaMin": 0.30, "heightMin": 0.50 },
+  "edgeDark": { "maxFalloff": 0.53 },
+  "grade": {
+    "chain": "dark",
+    "params": {
+      "curves": "0/0 0.25/0.2382 0.5/0.5078 0.75/0.7422 1/1",
+      "colorbalance": "bs=0.04:rh=0.03:bh=-0.04",
+      "vignette": 0.72,
+      "black": [10, 9, 8],
+      "pureSec": 0.4
+    }
+  },
+  "classes": {
+    "signal": { "rMin": 190, "gMax": 60, "bMax": 75, "rgMin": 150 },
+    "signalWide": { "rMin": 150, "rgMin": 90, "rbMin": 80 },
+    "emptyBlack": { "lMax": 15.2999 },
+    "visible": { "lMin": 77.001 }
+  },
+  "camera": {
+    "maxPxPerFrame": 10, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 }, "drift": 0.35,
+    "parallax": { "bg": 0.6, "subject": 1.0, "fg": 1.3, "pxMin": 4, "pxMax": 12, "bleedMin": 20, "bleedMax": 40 }
+  },
+  "motion": {
+    "toolMaxPx": 57, "writeGlyphsPerSec": 12, "settlePx": 2,
+    "upscaleMax": 1.25, "maskFlickerMax": 0.02, "loopMinGap": 0.5, "unreadableBlurPx": 4,
+    "extendDarken": 0.4, "extendBlurPx": 24, "extendMaskMin": 0.15,
+    "light": { "x": 0.5, "y": 0.435, "r": 0.443, "a": 0.05 }, "falloff": [0.22, 0.28], "vignette": [0.28, 0.35], "grain": 0.04, "open": 0.4
+  },
+  "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "primitives": [],
+  "lessons": "lessons.md"
+}

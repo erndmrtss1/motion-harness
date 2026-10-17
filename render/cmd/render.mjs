@@ -12,7 +12,6 @@
 //
 // GENEL KURAL: son kare t = (kare − 1)/fps'te alınır, `duration`'da değil. Çıkış tween'leri
 // `duration − 1/fps`'te bitmeli ki son kare tam sonuç (ör. opacity 0) olsun.
-import http from 'node:http';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -22,6 +21,7 @@ import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
 import { ffmpeg } from '../lib/ffmpeg.mjs';
 import { ROOT, FPS as FPS0, WIDTH, HEIGHT, SCENES, GLYPH_SCENES, sceneById, readTimeline } from '../lib/project.mjs';
+import { startServer, installRoutes, initScript } from '../lib/page.mjs';
 let FPS = FPS0;
 let MODULE_FAIL = false;   // sahne modülü yüklenemediyse recordVideo geri dönüşü yapılmaz (yanlış kare üretmesin)
 
@@ -43,185 +43,9 @@ setInterval(() => {
   process.exit(4);
 }, 5000).unref();
 
-// ── statik sunucu ──────────────────────────────────────────────────────────
-const MIME = {
-  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.jsx': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json', '.woff2': 'font/woff2', '.ttf': 'font/ttf',
-  '.otf': 'font/otf', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
-  '.mp4': 'video/mp4', '.webm': 'video/webm',
-};
-
-function startServer() {
-  const server = http.createServer((req, res) => {
-    let rel;
-    try { rel = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { rel = '/'; }
-    const file = path.join(ROOT, rel);
-    if (!file.startsWith(ROOT)) { res.writeHead(403).end(); return; }
-    fs.readFile(file, (err, buf) => {
-      if (err) { res.writeHead(404).end(); return; }
-      const head = {
-        'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
-        'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes',
-      };
-      // Range: video öğelerinde rastgele konuma seek için gerekli (206 Partial Content)
-      const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
-      if (m) {
-        const start = m[1] ? +m[1] : buf.length - +m[2];
-        const end = m[1] && m[2] ? Math.min(+m[2], buf.length - 1) : buf.length - 1;
-        if (start >= buf.length || start > end) { res.writeHead(416, { 'Content-Range': 'bytes */' + buf.length }).end(); return; }
-        res.writeHead(206, Object.assign(head, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + buf.length, 'Content-Length': end - start + 1 }));
-        res.end(buf.subarray(start, end + 1));
-        return;
-      }
-      res.writeHead(200, head);
-      res.end(buf);
-    });
-  });
-  return new Promise((ok) => server.listen(0, '127.0.0.1', () =>
-    ok({ base: 'http://127.0.0.1:' + server.address().port,
-      // video Range istekleri keep-alive bağlantı bırakır; close() onları beklemesin
-      close: () => { if (server.closeAllConnections) server.closeAllConnections(); server.close(); } })));
-}
-
-// ── ağ yönlendirme ────────────────────────────────────────────────────────
-// fonts/gf/map.json `motion-render vendor fonts` üretir; yoksa Google Fonts yüz istekleri iptal edilir (harness yine açılır).
-const GF_MAP_FILE = path.join(ROOT, 'fonts', 'gf', 'map.json');
-const GF_MAP = fs.existsSync(GF_MAP_FILE) ? JSON.parse(fs.readFileSync(GF_MAP_FILE, 'utf8')) : {};
-const CORS = { 'access-control-allow-origin': '*' };
-
-async function installRoutes(page, base, gate, log) {
-  await page.route('**/*', async (route) => {
-    const url = route.request().url();
-    const u = new URL(url);
-    if (u.origin === base) {
-      // Sahne modülleri, fontlar belgeye yüklenene kadar bekletilir: glif
-      // örneklemesi fallback yüzü önbelleğe alamasın.
-      if (u.pathname.endsWith('.jsx')) await gate.promise;
-      return route.continue();
-    }
-    let file = null, type = null;
-    if (u.hostname === 'unpkg.com') {
-      file = path.join(ROOT, 'vendor', decodeURIComponent(u.pathname)); type = 'text/javascript';
-    } else if (u.hostname === 'fonts.googleapis.com' && u.pathname.startsWith('/css')) {
-      file = path.join(ROOT, 'fonts', 'local.css'); type = 'text/css';
-    } else if (u.hostname === 'fonts.googleapis.com' && u.pathname.startsWith('/gf/')) {
-      file = path.join(ROOT, 'fonts', 'gf', path.basename(u.pathname)); type = 'font/woff2';
-    } else if (u.hostname === 'fonts.gstatic.com' && GF_MAP[u.pathname]) {
-      file = path.join(ROOT, 'fonts', 'gf', GF_MAP[u.pathname]); type = 'font/woff2';
-    } else if (u.hostname === 'cdn.jsdelivr.net' && u.pathname.startsWith('/npm/')) {
-      // Hyperframes: GSAP vb. — sürüm URL'de, vendor/<paket@sürüm>/… (render/vendor.mjs gsap)
-      file = path.join(ROOT, 'vendor', decodeURIComponent(u.pathname.slice('/npm/'.length))); type = 'text/javascript';
-    }
-    if (file && fs.existsSync(file)) {
-      return route.fulfill({ status: 200, contentType: type, headers: CORS, body: fs.readFileSync(file) });
-    }
-    log('ABORT (dış istek) ' + url);
-    return route.abort();
-  });
-}
-
-// ── sayfa içi hazırlık (addInitScript) ─────────────────────────────────────
-function initScript({ overrides, globals }) {
-  if (globals) Object.assign(window, globals);
-  try { localStorage.setItem('animstage-v3:t', '0'); } catch (e) {}
-
-  // Video: sahne yalnız video.dataset.t yazar (__harnessVideoSync), seek'i harness yapar.
-  // __syncVideos: data-t taşıyan her videoyu o zamana götürür, 'seeked' + kare verisini bekler.
-  // Video yoksa hemen false döner (diğer sahnelere ek maliyet yok).
-  window.__harnessVideoSync = true;
-  const once = (v, evs) => new Promise((r) => evs.forEach((e) => v.addEventListener(e, r, { once: true })));
-  window.__syncVideos = async function () {
-    const vids = [...document.querySelectorAll('video')].filter((v) => isFinite(parseFloat(v.dataset.t)));
-    if (!vids.length) {
-      // sahne isterse (window.__waitRaf) videosuz karede de 2 rAF: feImage data-URL gibi kare içi çözümler otursun
-      // sayı verilirse o kadar rAF (büyük 3B katmanların karoları otursun)
-      if (window.__waitRaf) { const n = typeof window.__waitRaf === 'number' ? window.__waitRaf : 2; for (let i = 0; i < n; i++) await new Promise((r) => requestAnimationFrame(() => r())); }
-      // window.__waitMs: rAF'lerden sonra süre (ms) + 2 rAF — dev 3B katmanların (M2 masası) raster işçileri yetişsin
-      if (window.__waitMs) { await new Promise((r) => setTimeout(r, window.__waitMs)); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))); }
-      return false;
-    }
-    await Promise.all(vids.map(async (v) => {
-      if (v.readyState < 1) await once(v, ['loadedmetadata', 'error']);
-      const vt = parseFloat(v.dataset.t);
-      if (v.seeking || Math.abs(v.currentTime - vt) > 1e-6) {
-        const done = once(v, ['seeked', 'error']);
-        v.currentTime = vt;
-        await done;
-      }
-      if (v.readyState < 2) await once(v, ['loadeddata', 'canplay', 'error']);
-    }));
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-    return true;
-  };
-
-  // Stage'i viewport'a (WIDTH×HEIGHT) birebir oturt: PlaybackBar gizli, ölçek 1,
-  // dış zemin siyah (şeffaf sahneler şimdilik siyah üzerine), Stage dışındaki
-  // katmanlar (şeffaflık etiketi, bilinmeyen-cue rozeti) altta kalır.
-  const CSS = '[data-om-starter]{background:#000!important;z-index:2147483646!important}' +
-    '[data-omelette-chrome],[data-om-unknown-cues]{display:none!important}' +
-    'svg[data-om-exportable-video-with-duration-secs]{transform:none!important;box-shadow:none!important}';
-
-  window.__seek = function (t) {
-    const el = document.querySelector('[data-om-exportable-video-with-duration-secs]');
-    if (!el) return false;
-    el.dispatchEvent(new CustomEvent('data-om-seek-to-time-frame', { detail: { time: t, sync: true } }));
-    return true;
-  };
-  window.__raf2 = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-  function fontKeys() {
-    const seen = new Map();
-    for (const f of document.fonts) {
-      const fam = /^["']/.test(f.family) ? f.family : '"' + f.family + '"';
-      const key = f.style + ' ' + f.weight + ' 32px ' + fam;
-      seen.set(key, f.family);
-    }
-    return [...seen.keys()];
-  }
-  window.__loadAllFonts = async function () {
-    const faces = [...document.fonts];
-    await Promise.all(faces.map((f) => f.load().catch(() => null)));
-    await Promise.all(fontKeys().map((k) => document.fonts.load(k, 'İŞĞÜÖÇ').catch(() => null)));
-    await document.fonts.ready;
-    return {
-      faces: faces.length,
-      loaded: faces.filter((f) => f.status === 'loaded').length,
-      failed: faces.filter((f) => f.status === 'error').map((f) => f.family + ' ' + f.weight),
-      keys: fontKeys().length,
-    };
-  };
-
-  let applied = false;
-  const t0 = Date.now();
-  async function tick() {
-    const booted = !document.querySelector('x-dc') && document.getElementById('dc-root');
-    if (booted && !applied && window.__dcSetProps && window.__dcRootName) {
-      window.__dcSetProps(window.__dcRootName(), overrides);
-      applied = true;
-    }
-    // boot, x-dc'yi kaldırıp helmet'i <head>'e yeniden kurar; CSS'e bağlı font
-    // yüzleri o an yeniden oluşur. Kapı yalnız yeni yüzler yüklenince açılır.
-    const links = [...document.querySelectorAll('link[rel~="stylesheet"]')];
-    // stil sayfası yoksa (font bağlantısız sayfa) beklenecek yüz yok: kapı hemen açılır
-    const ready = booted && applied && links.every((l) => l.sheet && document.head.contains(l));
-    const timedOut = Date.now() - t0 > 20000;
-    if (ready || timedOut) {
-      const info = await window.__loadAllFonts();
-      info.timedOut = !ready;
-      window.__harnessFontsReady(info);
-      return;
-    }
-    setTimeout(tick, 25);
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    const s = document.createElement('style');
-    s.id = '__harness_css';
-    s.textContent = CSS;
-    document.head.appendChild(s);
-    tick();
-  });
-}
+// ── sunucu · ağ yönlendirme · sayfa içi hazırlık: lib/page.mjs (frame-check ile tek kaynak) ──────────────────
+// startServer(): proje kökü 127.0.0.1'de (Range/206) · installRoutes(): unpkg → vendor/, Google Fonts → fonts/, diğer dış istekler iptal;
+//   .jsx istekleri font kapısı açılana dek bekletilir · initScript(): globaller, seek, video senkronu, font kapısı, Stage CSS.
 
 // ── yardımcılar ───────────────────────────────────────────────────────────
 function deferred() {

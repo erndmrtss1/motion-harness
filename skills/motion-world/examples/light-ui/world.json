@@ -1,0 +1,52 @@
+{
+  "name": "light-ui",
+  "version": "1.0.0",
+  "origin": "example:light-ui",
+  "palette": {
+    "bg": "#E5E5E5",
+    "canvas": "#E5E5E5",
+    "card": "#FFFFFF",
+    "ink": "#000000",
+    "surface2": "#F3F3F3",
+    "hairline": "#C6C6C6",
+    "textSecondary": "#979797",
+    "subhead": "#444444"
+  },
+  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 1 },
+  "fonts": [
+    { "family": "Saira Condensed", "weights": [700], "source": "google" },
+    { "family": "Inter", "weights": [400, 500], "source": "google" },
+    { "family": "JetBrains Mono", "weights": [400, 500], "source": "google" },
+    { "family": "Great Vibes", "weights": [400], "source": "google" }
+  ],
+  "band": [30, 55],
+  "burst": { "luma": 250, "max": 0.35 },
+  "k1": { "mask": "dom", "selector": "[data-hero]", "areaMin": 0.30, "heightMin": 0.50 },
+  "edgeDark": { "maxFalloff": 0.23 },
+  "grade": {
+    "chain": "light",
+    "params": {
+      "curves": "0/0 0.25/0.2450 0.5/0.5030 0.75/0.7520 1/0.985",
+      "colorbalance": "rh=0.015:bh=-0.015",
+      "vignette": 0.4,
+      "black": null,
+      "pureSec": 0.4
+    }
+  },
+  "classes": {
+    "signal": { "rMin": 190, "gMax": 60, "bMax": 75, "rgMin": 150 },
+    "hot": { "lMin": 250.001 },
+    "emptyBlack": { "lMax": 15.2999 },
+    "visible": { "lMin": 77.001 }
+  },
+  "camera": { "maxPxPerFrame": 10, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 }, "drift": 0.3 },
+  "motion": {
+    "toolMaxPx": 57, "writeGlyphsPerSec": 12, "settlePx": 2,
+    "arriveScaleFrom": 0.96, "dimBlurPx": [1, 2], "dimScale": 0.98, "focusBlurPx": [1, 2],
+    "radiusPx": [24, 64], "displayLineHeight": 0.9, "displayTrackingEm": -0.03, "microLabelPx": 12,
+    "keyLight": [0.04, 0.06], "falloff": [0.08, 0.12], "vignette": 0.12, "grain": 0.03, "canvasDeltaMax": 3
+  },
+  "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "primitives": [],
+  "lessons": "lessons.md"
+}
