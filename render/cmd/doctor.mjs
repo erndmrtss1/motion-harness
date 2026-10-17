@@ -121,6 +121,6 @@ else {
 
 const reqFail = checks.filter((c) => c.required && c.status === 'fail');
 const sum = { ok: checks.filter((c) => c.status === 'ok').length, fail: checks.filter((c) => c.status === 'fail').length, skip: checks.filter((c) => c.status === 'skip').length, requiredFail: reqFail.length };
-if (JSON_OUT) console.log(JSON.stringify({ ok: !reqFail.length, project: inProject ? path.basename(ROOT) : null, summary: sum, checks }, null, 1));
+if (JSON_OUT) console.log(JSON.stringify({ ok: !reqFail.length, project: inProject ? path.basename(ROOT) : null, summary: sum, ffmpeg: cap, checks }, null, 1));
 else console.log('doctor: ' + sum.ok + ' ✓ · ' + sum.fail + ' ✗' + (reqFail.length ? ' (zorunlu ' + reqFail.length + ': ' + reqFail.map((c) => c.name).join(', ') + ')' : '') + ' · ' + sum.skip + ' –' + (reqFail.length ? ' → HAZIR DEĞİL' : ' → hazır'));
 process.exitCode = reqFail.length ? 1 : 0;
