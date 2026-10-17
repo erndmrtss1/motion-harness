@@ -121,4 +121,4 @@ if (!has('no-vendor')) {
   } catch (e) { console.error('✗ vendor: ' + e.message + ' — ağ gelince: motion-render vendor --project ' + DIR); rc = rc || 1; }
 }
 console.log((rc ? '✗' : '✓') + ' init · sıradaki: ' + (WORLD ? 'motion-render manifest validate --project ' + DIR : 'look-dev (world.json band / k1.mask)'));
-process.exit(rc);
+process.exitCode = rc;   // process.exit değil: Windows'ta açık fetch tutamaçlarıyla çıkışta libuv iddiası (async.c) tetiklenebiliyor

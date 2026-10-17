@@ -22,6 +22,8 @@ import { ff as ffRun, probe as probe0 } from '../lib/ffmpeg.mjs';
 import { verifyFile, sha256, writeJson } from '../lib/gen-hf.mjs';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; }, has = (k) => args.includes('--' + k);
+// Üretken kilit: MOTION_NO_GENAI=1 (eval ve kredisiz koşular) → üretim/alım kapalı; ihlal girişimi çıkış 3.
+if (process.env.MOTION_NO_GENAI === '1' && !(false)) { console.error('✗ üretken kip kapalı (MOTION_NO_GENAI=1): motion-render ingest bu ortamda çalışmaz'); process.exit(3); }
 const OUT = path.resolve(ROOT, opt('out', 'assets/gen')), INBOX = path.resolve(ROOT, opt('inbox', path.join(path.relative(ROOT, OUT), 'inbox')));
 const MAN = path.join(OUT, 'manifest.json'), DRY = has('dry'), STATUS = opt('status', 'draft'), PLAN = opt('plan', 'Plus'), TODAY = new Date().toISOString().slice(0, 10);
 const W = WIDTH, H = HEIGHT, FPS = +opt('fps', 30);

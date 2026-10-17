@@ -90,6 +90,7 @@ else {
   add('Higgsfield CLI', v.status === 0 ? 'ok' : 'fail', v.status === 0 ? ver : 'çalışmıyor');
   const s = run('higgsfield account status --json', 60000);
   let acc = null; try { const j = JSON.parse(s.stdout || ''); if (j && j.credits != null) acc = { credits: j.credits, plan: j.subscription_plan_type }; } catch { /* oturum yok */ }
+  add('üretken kilit', process.env.MOTION_NO_GENAI === '1' ? 'ok' : 'skip', process.env.MOTION_NO_GENAI === '1' ? 'açık (MOTION_NO_GENAI=1): gen/ingest kapalı, yalnız bakiye okuma' : 'kapalı (üretken çağrı izinli; bütçe bekçisi GENAI.md)');
   add('Higgsfield oturumu', acc ? 'ok' : 'fail', acc ? 'credits ' + acc.credits + ' · plan ' + (acc.plan == null ? '—' : acc.plan) : 'oturum yok → higgsfield auth login');
 }
 

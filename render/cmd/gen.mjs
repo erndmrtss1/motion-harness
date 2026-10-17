@@ -21,6 +21,8 @@ import { ROOT } from '../lib/project.mjs';
 import { hf, hfBin, q, balance, costOnline, loadPolicy, offlineCost, download, stamp, writeJson } from '../lib/gen-hf.mjs';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; }, has = (k) => args.includes('--' + k);
+// Üretken kilit: MOTION_NO_GENAI=1 (eval ve kredisiz koşular) → üretim/alım kapalı (yalnız --dry açık); ihlal girişimi çıkış 3.
+if (process.env.MOTION_NO_GENAI === '1' && !(has('dry'))) { console.error('✗ üretken kip kapalı (MOTION_NO_GENAI=1): motion-render gen yalnız --dry ile çalışır'); process.exit(3); }
 const VALUED = new Set(['--only', '--use', '--param', '--cap', '--model', '--resolution', '--pad', '--task', '--refs', '--prompt', '--prompt-file', '--type', '--budget', '--accept', '--id-prefix', '--task-cap', '--rules', '--role']);
 const pos = args.filter((a, i) => !a.startsWith('--') && !VALUED.has(args[i - 1]));
 const G = path.join(ROOT, 'assets', 'gen'), INBOX = path.join(G, 'inbox'), rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');

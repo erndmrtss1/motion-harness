@@ -45,6 +45,30 @@ if (own.includes('--help') || own.includes('-h')) {
   console.log(head.length ? head.join('\n') : 'motion-render ' + cmd + ' — açıklama yok (render/CONTRACT.md §6)');
   process.exit(0);
 }
+// Süreçler arası ağır iş kilidi (MOTION_RENDER_LOCK=<dizin yolu>): birden çok oturum aynı makinede render/ölçüm yaparken
+// CPU'yu sırayla kullanır. mkdir atomiktir; sahibi ölmüşse kilit bayat sayılır. Alt süreçler MOTION_LOCK_HELD ile devralır.
+const HEAVY = new Set(['render', 'probe', 'ss2', 'run', 'qc', 'frame-check', 'fc', 'ours', 'k1', 'k6', 'grade', 'encode', 'expo-post', 'master', 'arsiv', 'live', 'smoke', 'contact']);
+if (process.env.MOTION_RENDER_LOCK && !process.env.MOTION_LOCK_HELD && HEAVY.has(cmd)) {
+  const lock = path.resolve(process.env.MOTION_RENDER_LOCK), owner = path.join(lock, 'owner.json');
+  const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+  let said = false;
+  for (;;) {
+    try {
+      fs.mkdirSync(lock);
+      fs.writeFileSync(owner, JSON.stringify({ pid: process.pid, cmd, cwd: process.cwd(), since: new Date().toISOString() }));
+      break;
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      let o = null; try { o = JSON.parse(fs.readFileSync(owner, 'utf8')); } catch { /* yazılıyor olabilir */ }
+      if (o && !alive(o.pid)) { fs.rmSync(lock, { recursive: true, force: true }); continue; }
+      if (!said) { console.log('… ağır iş kilidi bekleniyor (' + (o ? o.cmd + ' · pid ' + o.pid : 'başka oturum') + ')'); said = true; }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  process.env.MOTION_LOCK_HELD = '1';
+  process.on('exit', () => { try { const o = JSON.parse(fs.readFileSync(owner, 'utf8')); if (o.pid === process.pid) fs.rmSync(lock, { recursive: true, force: true }); } catch { /* yok */ } });
+  for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(130));
+}
 process.argv = [process.argv[0], file, ...argv];
 process.env.MOTION_CMD = cmd;
 await import(pathToFileURL(file).href);

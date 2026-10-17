@@ -12,6 +12,7 @@ import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import zlib from 'node:zlib';
 
 export const UA_WOFF2 = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36';
 export const SCRIPTS = [
@@ -23,8 +24,13 @@ export const CACHE = process.env.MOTION_CACHE || (process.platform === 'win32' &
 const ck = (url, ua) => path.join(CACHE, crypto.createHash('sha256').update(url + '\n' + (ua || '')).digest('hex').slice(0, 32));
 
 // İndir (önbellekli). fresh: önce ağ (CSS gibi değişebilen), ağ yoksa önbellek.
+// MOTION_OFFLINE=1: ağa hiç çıkılmaz; yalnız önbellek (yoksa açık hata — eval ve ağsız kurulumlar için).
 export async function get(url, headers = {}, { fresh = false } = {}) {
   const f = ck(url, headers['User-Agent']);
+  if (process.env.MOTION_OFFLINE === '1') {
+    if (fs.existsSync(f)) return fs.readFileSync(f);
+    throw new Error('çevrimdışı (MOTION_OFFLINE=1): önbellekte yok → ' + url.slice(0, 120));
+  }
   if (!fresh && fs.existsSync(f)) return fs.readFileSync(f);
   try {
     const r = await fetch(url, { headers, redirect: 'follow' });
@@ -73,6 +79,7 @@ export const parseFamilies = (s) => String(s || '').split(';').map((x) => x.trim
 
 export async function vendorFonts(root, fams) {
   if (!fams.length) { console.log('font · aile yok (world.json fonts ya da --families) — atlandı'); return null; }
+  if ((process.env.MOTION_FONT_SOURCE || '').toLowerCase() === 'npm' || process.env.MOTION_OFFLINE === '1') return vendorFontsNpm(root, fams);
   const GF_CSS = cssUrl(fams);
   const css = (await get(GF_CSS, { 'User-Agent': UA_WOFF2 }, { fresh: true })).toString('utf8');
   const re = /(?:\/\*\s*([\w-]+)\s*\*\/\s*)?@font-face\s*{([^}]*)}/g;   // alt küme yorumu olmayan blok da alınır
@@ -132,6 +139,83 @@ export async function writeLicenses(root, entries) {
     'OFL fontlar tek başına satılamaz; Ayrılmış Font Adı (RFN) varsa değiştirilmiş sürüm aynı adla dağıtılamaz.\n';
   await write(f, head + [...old.keys()].sort().map((k) => old.get(k)).join(''));
   console.log('font ✓ fonts/LICENSES.md (' + old.size + ' aile)');
+}
+
+// npm yolu (MOTION_FONT_SOURCE=npm ya da MOTION_OFFLINE=1): aileler @fontsource/<ad> paketlerinden — yalnız npm kayıt defterine çıkar
+// (npm önbelleği + paket önbelleği), lisans metni paketin LICENSE dosyasından. Çıktı Google yoluyla aynı biçim: fonts/gf/*.woff2,
+// fonts/local.css (unicode-range korunur; sayfadaki fonts.googleapis.com bağlantısı render'da buraya yönlenir), fonts/gf/map.json, LICENSES.md.
+// Küçük .tgz açıcı (npm paket arşivi: ustar; dış tar gerekmez — Windows'ta GNU/bsd tar farkından bağımsız).
+function untgz(file, dest) {
+  const buf = zlib.gunzipSync(fs.readFileSync(file));
+  for (let off = 0; off + 512 <= buf.length;) {
+    const h = buf.subarray(off, off + 512);
+    if (h.every((b) => b === 0)) break;
+    const str = (a, b) => h.subarray(a, b).toString('utf8').replace(/\0.*$/s, '');
+    const name = (str(345, 500) ? str(345, 500) + '/' : '') + str(0, 100), size = parseInt(str(124, 136).trim() || '0', 8), type = String.fromCharCode(h[156] || 48);
+    const body = buf.subarray(off + 512, off + 512 + size);
+    const out = path.resolve(dest, name);
+    if (!out.startsWith(path.resolve(dest))) throw new Error('arşivde güvensiz yol: ' + name);
+    if (type === '5') fs.mkdirSync(out, { recursive: true });
+    else if (type === '0' || type === '\0') { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, body); }
+    off += 512 + Math.ceil(size / 512) * 512;
+  }
+}
+async function npmFontPackage(family) {
+  const slug = family.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const pkgDir = path.join(CACHE, 'fontsource', slug);
+  if (!fs.existsSync(path.join(pkgDir, 'package', 'package.json'))) {
+    const { spawnSync } = await import('node:child_process');
+    fs.mkdirSync(pkgDir, { recursive: true });
+    const r = spawnSync('npm', ['pack', '@fontsource/' + slug, '--pack-destination', pkgDir, '--json', '--silent'],
+      { encoding: 'utf8', shell: process.platform === 'win32' });
+    let tgz = null; try { tgz = JSON.parse(r.stdout)[0].filename; } catch { /* aşağıda */ }
+    if (r.status !== 0 || !tgz) throw new Error('@fontsource/' + slug + ' alınamadı (npm pack): ' + String(r.stderr || r.stdout).trim().slice(-200));
+    untgz(path.join(pkgDir, tgz), pkgDir);
+  }
+  return { slug, dir: path.join(pkgDir, 'package'), pkg: JSON.parse(fs.readFileSync(path.join(pkgDir, 'package', 'package.json'), 'utf8')) };
+}
+export async function vendorFontsNpm(root, fams) {
+  const dir = path.join(root, 'fonts', 'gf'), lp = path.join(root, 'fonts', 'local.css');
+  const hadMath = fs.existsSync(lp) && /math-sub /.test(fs.readFileSync(lp, 'utf8'));
+  await fsp.mkdir(dir, { recursive: true });
+  let local = '/* fonts/local.css — motion-render vendor (npm @fontsource) tarafından üretildi.\n   unicode-range korunmuştur; dosyalar fonts/gf/ altında. Lisanslar: fonts/LICENSES.md */\n';
+  let files = 0, bytes = 0;
+  const lic = [];
+  for (const f of fams) {
+    const P = await npmFontPackage(f.family);
+    const avail = fs.readdirSync(P.dir).filter((n) => /^\d{3}(-italic)?\.css$/.test(n));
+    const want = (f.weights && f.weights.length ? f.weights : [400]).map(Number);
+    const styles = f.italic ? ['', '-italic'] : [''];
+    const used = [];
+    for (const w of want) for (const st of styles) {
+      const cssName = w + st + '.css';
+      if (!avail.includes(cssName)) { console.log('! font ' + f.family + ' ' + w + (st ? ' italik' : '') + ' pakette yok (var: ' + avail.map((n) => n.replace('.css', '')).join(', ') + ')'); continue; }
+      const css = fs.readFileSync(path.join(P.dir, cssName), 'utf8');
+      for (const m of css.matchAll(/(\/\*[^*]*\*\/\s*)?@font-face\s*{([^}]*)}/g)) {
+        const body = m[2], woff2 = /url\(\.\/files\/([^)]+\.woff2)\)/.exec(body);
+        if (!woff2) continue;
+        const src = path.join(P.dir, 'files', woff2[1]), dst = path.join(dir, woff2[1]);
+        if (!fs.existsSync(dst)) { await fsp.copyFile(src, dst); files++; bytes += fs.statSync(dst).size; }
+        const sub = /\/\*\s*([^*]+?)\s*\*\//.exec(m[1] || '');
+        local += '/* ' + (sub ? sub[1] : woff2[1]) + ' */\n@font-face {' + body.replace(/src:[^;]+;/, "src: url(gf/" + woff2[1] + ") format('woff2');") + '}\n';
+      }
+      used.push(w + st);
+    }
+    console.log('font ✓', f.family.padEnd(16), used.join(', ') || '—', '· @fontsource/' + P.slug + '@' + P.pkg.version);
+    const licFile = ['LICENSE', 'LICENSE.md', 'OFL.txt'].map((n) => path.join(P.dir, n)).find((x) => fs.existsSync(x));
+    lic.push({ family: f.family, version: P.pkg.version, slug: P.slug, license: P.pkg.license || 'bilinmiyor', text: licFile ? fs.readFileSync(licFile, 'utf8') : null });
+  }
+  await write(lp, local);
+  await write(path.join(dir, 'map.json'), '{}\n');   // npm yolunda Google yolu yok; render yalnız local.css'i kullanır
+  const lf = path.join(root, 'fonts', 'LICENSES.md');
+  let md = '# Font lisansları\n\n`motion-render vendor` (npm @fontsource) üretir. Fontlar pakete girmez; proje dosyaları dağıtılırken bu dosya fontlarla birlikte gider.\n' +
+    'OFL fontlar tek başına satılamaz; Ayrılmış Font Adı (RFN) varsa değiştirilmiş sürüm aynı adla dağıtılamaz.\n';
+  for (const l of lic) md += '\n## ' + l.family + ' — ' + l.license + '\n\n- Kaynak: npm @fontsource/' + l.slug + '@' + l.version + '\n' +
+    (l.text ? '\n<details><summary>Lisans metni</summary>\n\n```text\n' + l.text.replace(/\r\n/g, '\n').replace(/```/g, "'''").trim() + '\n```\n\n</details>\n' : '\n> Lisans metni pakette yok.\n');
+  await write(lf, md);
+  console.log('font ✓', files, 'woff2 dosyası,', (bytes / 1024).toFixed(0), 'KB → fonts/gf/, fonts/local.css · fonts/LICENSES.md (' + lic.length + ' aile)');
+  if (hadMath) await vendorMath(root);
+  return { css: 'npm:@fontsource', files, bytes };
 }
 
 // Noto Sans Math alt kümesi: (1) Noto Sans Math — ≥ ≤ ≠ ≈, σ Σ ∑ ∂ ∫ √ ∞, Yunan, 𝔼 ℙ ℝ, ASCII, matematik italik; (2) Noto Sans — alt/üst simgeler
