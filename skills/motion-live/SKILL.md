@@ -50,6 +50,24 @@ Disiplin aynıdır: look-dev, sözlük, varyant, animatik, taze reviewer, tek d�
 | kapı | §0.6 + UCUZ (kareler) | **iki ayak:** (1) `live --qc` sayıları (`out/probe/live-qc.json`) ve (2) taze reviewer'ın §0.6 ≥ 7/8 + UCUZ incelemesi. Reviewer `capture.mp4` / kare dizisini inceler ve canlı sayıları **kendi koşusuyla** alır. |
 | tam render / master | var | yok. Teslim: sayfa + panel + ayar JSON'u + `live-qc.json` + OBS notu + künye |
 
+**Canlı look-dev tarifi (ek betik yazma; üç yön aynı mekanizma ve aynı WAV ile yan yana):**
+
+```bash
+# 1. her yön bir adaptör: world/avatar-a.js · avatar-b.js · avatar-c.js (sözleşme §5; şablon placeholder-avatar.js)
+# 2. her yönü kendi klasörüne yakala (sayfa verilmezse paketin şablonu; proje dosyaları /__project/ altından sunulur)
+motion-render live --capture det --seconds 8 --avatar world/avatar-a.js --out out/lookdev/a
+motion-render live --capture det --seconds 8 --avatar world/avatar-b.js --out out/lookdev/b
+motion-render live --capture det --seconds 8 --avatar world/avatar-c.js --out out/lookdev/c
+# 3. her yönün canlı sayıları (kapı ölçütüyle aynı ölçüm; yön elenmeden önce bilinir)
+motion-render live --qc --seconds 8 --avatar world/avatar-a.js --out out/lookdev/a      # → out/lookdev/a/live-qc.json
+# 4. yan yana kontak: aynı karelerde üç yön (konuşuyor / dinliyor / boşta anları test WAV'ının olay zamanlarından seçilir)
+motion-render contact sheet out/lookdev/yonler.png --cols 3 --w 640   out/lookdev/a/capture-frames/00120.png=A·konuşuyor out/lookdev/b/capture-frames/00120.png=B·konuşuyor out/lookdev/c/capture-frames/00120.png=C·konuşuyor
+```
+
+- Aynı `--wav` (verilmezse paketin test WAV'ı) üç yönde de kullanılır; kareler karşılaştırılabilir olur.
+- `--out` verilmezse yakalama `out/live/`, ölçüm `out/probe/` altına yazılır. Look-dev'de yönler birbirinin üstüne yazmasın diye `--out` zorunlu kabul edilir.
+- Yön seçildikten sonra seçilen adaptör `live/index.html`'e bağlanır (§3); kapı ölçümü `--out` olmadan, sayfanın kendisiyle alınır.
+
 Canlı profilde §0.6 maddelerinin karşılığı:
 
 | madde | canlı karşılığı |
@@ -218,6 +236,7 @@ Kareler arası aynı nesnedir; saklanacaksa kopyalanır.
 ```bash
 motion-render live live/index.html --qc [--seconds 20] [--wav test.wav] [--fps 60] [--headful] [--channel msedge|chrome] [--gpu hw|sw] [--avatar …]
 motion-render live live/index.html --capture [det|rt] [--seconds 8] [--scale 1]     # kayıtlı etkileşim önizlemesi
+# ortak: [--avatar world/avatar-<yön>.js] [--settings live/ayarlar.json] [--out out/lookdev/<yön>]  (look-dev: yönleri ayrı klasörlere)
 ```
 
 **Ölçüm koşusu.**

@@ -33,7 +33,7 @@ Durum: `uygulandı` · `bekliyor (DUR 1)` · `doğrulanacak (Hn)`.
 | HK-10 | Sürüm kapıları: bu makinede Claude Code 2.1.263. `plugin eval` yerelde mevcut (`claude plugin --help`), `install --json` 2.1.268+, `validate` marketplace+plugin birlikte 2.1.289+. Install betiği bu sürüm kapılarına bağımlı bayrak kullanmaz; çıktı metinden ve çıkış kodundan okunur. Özel depo erişimi makinenin git kimliğiyle (gh `auth setup-git`); Claude Code'un kendi token'ı yok. | Taşınabilirlik: arkadaşın makinesindeki sürüm bilinmiyor. | H1 |
 | HK-11 | Salt-okunur ölçütü "kararlı bölge fark 0" yerine "**atfedilemeyen değişiklik = 0**": kararlı bölgede değişen her dosya `dev/hash-attribute.mjs` ile canlı Kaynak-A session transkriptindeki yazma çağrısına (doğrudan girdi ya da çağrılan betiğin içeriği) bağlanır. H0: 7 değişen (6 KÜNYE + TESLİM) · 7 atfedildi · 0 atfedilemeyen. | Canlı session `out/` dışında `docs/`'a da yazıyor (F11-B teslim turu); oynak bölgeyi tek taraflı genişletmek kullanıcının tanımını değiştirirdi. | uygulandı |
 | HK-12 | H0 süreç belgeleri (`docs/H0-ENVANTER.md`, `docs/h0/`) DUR 1 kararı (D1-10) verilene kadar git'e İŞLENMEZ. | Gerçek marka adları ve kullanıcı yolları içeriyor; bir kez commit edilirse push'ta geçmişle birlikte gider. | uygulandı |
-| HK-13 | DUR 1'e sunulan 13 karar (D1-01 … D1-13) `H0-ENVANTER.md §12`'de; onaylanana kadar H1 başlamaz. | Brief: DUR 1 envanter onayı. | bekliyor (DUR 1) |
+| HK-13 | DUR 1'e sunulan 13 karar (D1-01 … D1-13) `H0-ENVANTER.md §12`'de; onaylanana kadar H1 başlamaz. | Brief: DUR 1 envanter onayı. | onaylandı (2026-10-17) |
 
 ## DUR 1 kararları (kullanıcı onayı, 2026-10-17)
 
@@ -60,6 +60,16 @@ Durum: `uygulandı` · `bekliyor (DUR 1)` · `doğrulanacak (Hn)`.
 | D1-16 | frame-check 20 kontrol tipi; H2'de kaynak projenin künyelerinde kayıtlı izdüşüm sonuçlarını yeniden üretmesi parite testinin parçası. | hayır | H1/H2 |
 | D1-17 | Paket/depo/marketplace adı `motion-harness`, plugin adı `motion` (komut ad alanı `/motion:*`, HK-07). | **evet** — brief tek ad (`motion-harness`) varsayıyordu; `/motion:init` komut adı ancak bu ayrımla mümkün | H1 |
 | D1-18 | Salt-okunur kanıt ölçütü "atfedilemeyen değişiklik = 0" (HK-11). | **evet** — brief "her fazın sonunda fark 0" diyordu; canlı session `docs/`'a da yazdığı için | uygulandı |
+
+## Ara kararlar (H4–H5)
+
+| # | karar | gerekçe | durum |
+|---|---|---|---|
+| HK-14 | Tur 2 koşucusu 48,5. dakikada dışarıdan kesildi (araç kabuğunun arka plan görevi). Aynı session id'leriyle `claude -p --resume` ile kalan süre kadar sürdürüldü; 90 dk tavanı iki bölümün toplamına uygulandı; ayrı tur sayılmadı. | Kesinti oturumun hatası değil, koşturma ortamının. Yeni tur açmak 2 tur sınırını harcardı. | uygulandı |
+| HK-15 | Elektronik oturumunun iki `playwright install chromium` çağrısı ağ şartı 4'ün ihlalidir: tabloda "İHLAL (ağ)" olarak işaretlendi, ayrıca raporlandı. Oturum puanlandı ama geçerli sayılmadı. Paket ve koşucu düzeltildi (`doctor` çevrimdışı DUR, yasak listesi). | Şart 4: dış indirme gerekirse oturum durur ve raporlanır. Oturum durmadı → ihlal. | uygulandı |
+| HK-16 | Benzerlik değerlendirmesi look-dev düzeyinde GEÇMEZ (4 ihlal), teslim düzeyinde 0. Bulgu kurala çevrildi (yapısal eksen şartı, varsayılan çekiciler, GEÇMEZ sonrası yeniden kapı). Üçüncü eval turu açılmadı. | Brief: en çok 2 tur. Düzeltmeler eval ile **doğrulanmadı**; H5 raporunda açık nokta. | açık nokta |
+| HK-17 | Eval'in indirdiği Playwright önbellek klasörleri (chromium-1248, ffmpeg-1013) kullanıcı önbelleğinde bırakıldı, silinmedi. | Kullanıcı makinesinde silme yapılmaz; zararsız (yalnız disk). Kullanıcı isterse `npx playwright uninstall` ile temizler. | raporda |
+| HK-18 | Benzerlik reviewer'ı eval kipinde dosya yazmadı; raporu ajan çıktısından olduğu gibi `evidence/eval/benzerlik-r2.md`'ye kaydedildi. Depoya yalnız anonim özet girer (`docs/H4-EVAL.md`). | Şart 5 ve gizlilik: kaynak projeye ait içerik adları depoya girmez. | uygulandı |
 
 ## Sınır notu (kullanıcı, H1–H5 boyunca geçerli)
 

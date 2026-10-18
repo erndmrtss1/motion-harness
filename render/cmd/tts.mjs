@@ -1,5 +1,5 @@
 // motion-render tts — yerel, kredisiz metin → konuşma (ses hattını üretken çağrı olmadan sınamak için; taslak/yer tutucu ses).
-//   motion-render tts <metin.txt | "metin"> [--out materials/tts.wav] [--voice <ad>] [--rate 0] [--words script/<ad>.words.json] [--lang <kod>]
+//   motion-render tts <metin.txt | "metin"> [--out materials/tts.wav] [--voice <ad>] [--rate 0] [--words script/<ad>.words.json] [--lang <kod>] [--pad-to <s>]
 //   motion-render tts --list                       kurulu sesler
 // Windows: System.Speech (SAPI) — powershell -NoProfile; SpeakProgress olaylarından kelime başına ses konumu → words.json (transcribe.py
 //   şemasıyla aynı: {meta, segments, words[{i, w, t0, t1, p, seg}]}, meta.source = "sapi"). Kelime sonu: sonraki kelime başı ya da arada
@@ -15,7 +15,7 @@ import { ff, probe } from '../lib/ffmpeg.mjs';
 import { decodePcm, rmsDb, slugOf, put } from '../lib/audio-core.mjs';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; }, has = (k) => args.includes('--' + k);
-const VALUED = new Set(['--out', '--voice', '--rate', '--words', '--lang']);
+const VALUED = new Set(['--out', '--voice', '--rate', '--words', '--lang', '--pad-to']);
 const pos = args.filter((a, i) => !a.startsWith('--') && !VALUED.has(args[i - 1]));
 const P = (f) => path.resolve(ROOT, f), rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
 const psq = (s) => "'" + String(s).replace(/'/g, "''") + "'";   // PowerShell tek tırnak dizgesi
@@ -81,7 +81,9 @@ try {
   }
   // 48 kHz · 16 bit · mono
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  ff(['-i', rawF, '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', OUT + '.part.wav']); fs.renameSync(OUT + '.part.wav', OUT);
+  // --pad-to S: konuşmanın sonuna sessizlik ekleyip sesi tam S saniyeye tamamlar (proje sesi süresi = film süresi; kelime zamanları değişmez)
+  const PAD = opt('pad-to', null) != null ? +opt('pad-to') : null;
+  ff(['-i', rawF, '-ar', '48000', '-ac', '1', ...(PAD > 0 ? ['-af', 'apad', '-t', String(PAD)] : []), '-c:a', 'pcm_s16le', OUT + '.part.wav']); fs.renameSync(OUT + '.part.wav', OUT);
   const pr = probe(OUT), dur = pr.duration;
   console.log('✓ ' + rel(OUT) + ' · ' + (dur != null ? dur.toFixed(3) + ' s' : '?') + ' · 48 kHz mono 16 bit · ses ' + voiceInfo.name + (voiceInfo.culture ? ' (' + voiceInfo.culture + ')' : '') + ' · hız ' + RATE);
   if (!events) { console.log('kelime zamanı yok (' + process.platform + ') → words.json yazılmadı; motion-render transcribe ' + rel(OUT)); process.exit(0); }

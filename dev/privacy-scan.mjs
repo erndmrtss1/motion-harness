@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // Gizlilik taraması — git'e girecek her dosyada marka, kişi, parite, dosya yolu, e-posta, oturum kimliği arar.
 // Terim listesi git dışıdır: dev/privacy-terms.local.txt (satır başına bir düzenli ifade, # yorum).
-// Kullanım: node dev/privacy-scan.mjs [--all] [--json=rapor.json]
+// Kullanım: node dev/privacy-scan.mjs [--json=rapor.json] [--history] [--evidence=<dizin>]
 //   varsayılan: `git ls-files` + izlenmeyen ama yok sayılmayan dosyalar (yani commit'e girebilecek her şey).
+//   --history: ayrıca bütün commit'lerdeki her blob (geçmiş; silinmiş dosyalar dahil) aynı desenlerle taranır.
+//   --evidence=<dizin>: kanıt klasörünün (git dışı) depoya sızmadığı denetlenir: ağaçta/geçmişte o dizin altında yol 0;
+//     kanıt dosyalarından içeriği depodaki bir blob'la aynı olanlar listelenir (beklenen: yalnız paketin kendi şablon/çalışma zamanı kopyaları).
 // Çıkış: bulgu 0 → 0, aksi 1.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -59,10 +62,69 @@ function binaryCheck(f) {
   return out;
 }
 
+// --- geçmiş: bütün commit'lerdeki tekil blob'lar ---
+const git = (a, o = {}) => execFileSync('git', a, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28, ...o });
+let historyInfo = null, blobPaths = null;
+function historyBlobs() {
+  if (blobPaths) return blobPaths;
+  blobPaths = new Map();   // sha → Set(yol)
+  for (const l of git(['rev-list', '--all', '--objects']).split('\n')) {
+    const i = l.indexOf(' '); if (i < 0) continue;
+    const sha = l.slice(0, i), p = l.slice(i + 1);
+    if (!blobPaths.has(sha)) blobPaths.set(sha, new Set()); blobPaths.get(sha).add(p);
+  }
+  const types = git(['cat-file', '--batch-check'], { input: [...blobPaths.keys()].join('\n') + '\n' }).split('\n');
+  for (const t of types) { const [sha, type] = t.split(' '); if (type !== 'blob') blobPaths.delete(sha); }
+  return blobPaths;
+}
+if (args.includes('--history')) {
+  const blobs = historyBlobs(), current = new Set(files);
+  let scannedBlobs = 0;
+  for (const [sha, paths] of blobs) {
+    const f = [...paths][0];
+    if (skipExt.test(f)) { for (const p of paths) if (!current.has(p)) findings.push({ file: 'geçmiş:' + p, line: 0, kind: 'ikili-dosya', match: sha.slice(0, 10) }); continue; }
+    const txt = git(['cat-file', '-p', sha]); scannedBlobs++;
+    const lines = txt.split('\n');
+    for (const [kind, re] of [...builtin, ...terms]) lines.forEach((line, i) => {
+      re.lastIndex = 0;
+      for (const m of line.matchAll(re)) {
+        if ([...paths].every((p) => allow.some(a => a.file.test(p) && a.re.test(m[0])))) continue;
+        const key = [...paths].join('|') + ':' + (i + 1) + ':' + m[0];
+        if (findings.some((x) => x.key === key)) continue;
+        findings.push({ key, file: 'geçmiş:' + [...paths].join(','), line: i + 1, kind, match: m[0].slice(0, 80) });
+      }
+    });
+  }
+  const commits = git(['rev-list', '--all', '--count']).trim();
+  historyInfo = { commits: +commits, blobs: blobs.size, scannedTextBlobs: scannedBlobs };
+  // ağaçtaki bulgu geçmişte de görünür (son commit) → yalnız ağaçta olmayanları geçmiş bulgusu say
+  for (let k = findings.length - 1; k >= 0; k--) { const x = findings[k]; if (x.key && x.file.startsWith('geçmiş:') && findings.some((y) => !y.key && x.file.split(':')[1].split(',').includes(y.file) && y.line === x.line && y.match === x.match.slice(0, 80))) findings.splice(k, 1); }
+}
+// --- kanıt klasörü sızıntı denetimi ---
+let evidenceInfo = null;
+const evArg = args.find(a => a.startsWith('--evidence='))?.slice(11);
+if (evArg) {
+  const evRel = path.relative(root, path.resolve(root, evArg)).split(path.sep).join('/');
+  const inTree = files.filter((f) => f === evRel || f.startsWith(evRel + '/'));
+  const inHistory = git(['log', '--all', '--name-only', '--format=', '--', evRel]).split('\n').filter(Boolean);
+  const blobs = historyBlobs(), same = [];
+  let n = 0;
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (e.isFile()) { n++; const sha = git(['hash-object', '--no-filters', p]).trim(); if (blobs.has(sha)) same.push({ evidence: path.relative(root, p).split(path.sep).join('/'), repo: [...blobs.get(sha)] }); } } };
+  walk(path.resolve(root, evArg));
+  const pkgRe = /^(templates|render|skills|commands|agents|examples|evals\/briefs)\/|^START\.md$/;   // eval projesine paketten kopyalanan dosyalar
+  const nonPackage = same.filter((x) => !x.repo.some((r) => pkgRe.test(r)));
+  evidenceInfo = { dir: evRel, files: n, trackedInTree: inTree.length, pathsInHistory: inHistory.length, sameContentAsRepoBlob: same.length, sameContentNonPackage: nonPackage.length, nonPackage: nonPackage.slice(0, 20) };
+  for (const f of inTree) findings.push({ file: f, line: 0, kind: 'kanıt-sızıntısı', match: 'kanıt dosyası ağaçta' });
+  for (const f of inHistory) findings.push({ file: 'geçmiş:' + f, line: 0, kind: 'kanıt-sızıntısı', match: 'kanıt dosyası geçmişte' });
+  for (const x of nonPackage) findings.push({ file: x.evidence, line: 0, kind: 'kanıt-sızıntısı', match: 'içerik depoda: ' + x.repo.join(',') });
+}
+
 const byKind = findings.reduce((o, x) => (o[x.kind] = (o[x.kind] || 0) + 1, o), {});
-const report = { scanned: files.length, terms: terms.length, findings: findings.length, byKind, items: findings };
+const report = { scanned: files.length, terms: terms.length, history: historyInfo, evidence: evidenceInfo, findings: findings.length, byKind, items: findings.map(({ key, ...x }) => x) };
 if (jsonOut) fs.writeFileSync(jsonOut, JSON.stringify(report, null, 1));
 console.log(`gizlilik taraması: ${files.length} dosya · ${terms.length} yerel terim · bulgu ${findings.length}` +
   (findings.length ? '  ' + JSON.stringify(byKind) : ''));
+if (historyInfo) console.log(`  geçmiş: ${historyInfo.commits} commit · ${historyInfo.blobs} tekil blob · ${historyInfo.scannedTextBlobs} metin blob tarandı`);
+if (evidenceInfo) console.log(`  kanıt (${evidenceInfo.dir}): ${evidenceInfo.files} dosya · ağaçta ${evidenceInfo.trackedInTree} · geçmişte ${evidenceInfo.pathsInHistory} · depo blob'uyla aynı içerik ${evidenceInfo.sameContentAsRepoBlob} (paket dışı ${evidenceInfo.sameContentNonPackage})`);
 for (const x of findings.slice(0, 40)) console.log(`  ${x.file}:${x.line}  [${x.kind}]  ${x.match}`);
 process.exit(findings.length ? 1 : 0);

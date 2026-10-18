@@ -95,7 +95,7 @@ Reviewer beklenirken paralel iş yapılır: belgeler, sonraki birimin taslağı.
 | **GEÇER** | sonraki adım; "KAPI GEÇERSE DURMA". İstisna: projenin ilk perdesinin animatiği kullanıcıya gider (DUR) |
 | **ŞARTLI GEÇER** | Şartlar director'a verilir → uygulanır → kanıt (probe/kırpım, gerekirse measure) → sonraki adım. Yeni reviewer turu açılmaz; şartlar sonraki kapıda doğrulanır |
 | **GEÇMEZ r1** (evet ≥ 3) | `--tek` yoksa **tek düzeltme turu**. Director'a yalnız reviewer'ın "Somut düzeltme listesi" verilir. Etkilenen aralık PLAYBOOK §5 protokolüyle yeniden çizilir. §1'deki ölçüm tekrarlanır. Yeni reviewer açılır (r2) |
-| **GEÇMEZ r1** (evet < 3) | Düzeltme turu yok. Look-dev / storyboard / varyanta dönülür (DUR-11) |
+| **GEÇMEZ r1** (evet < 3) | Düzeltme turu yok. Look-dev / storyboard / varyanta dönülür (DUR-11); dönülen iş yeni bir taze reviewer kapısından geçmeden sonraki faza geçilmez (otomatik onay dahil) |
 | **GEÇMEZ r2** | **DUR — tek düzeltme turu tükendi, render yok.** Kontak + nedenler kullanıcıya gider. Tam render ya da teslim başlatılmaz (DUR-9) |
 
 4. Varyant ve look-dev kapısında yapanın seçimiyle reviewer'ın SEÇ/ELE kararı karşılaştırılır.

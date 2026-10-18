@@ -51,6 +51,7 @@ seslendirme (kayıt | TTS)  →  materials/<ses>.wav     scenes.json "audio" = T
   - `.txt`: düz metin;
   - `.dogrula.md`: güveni < 0.6 olan kelimeler, TC ve bağlamla. Kullanıcıya doğrulatılacak listedir.
 - **TTS de bu hattan geçer.** TTS'in verdiği kelime zamanları çapa adayıdır; akustikle (§5) doğrulanmadan kesme kurulmaz.
+- **Kredisiz yerel TTS:** `motion-render tts script/vo.txt --out materials/vo.wav --words script/vo.words.json [--voice ad] [--lang kod] [--pad-to <film süresi s>]`. `--pad-to` sesin sonuna sessizlik ekleyip dosyayı film süresine tamamlar (kelime zamanları değişmez); bunun için ayrı betik yazılmaz.
 
 ## 3. Klip doğrulaması (Whisper halüsinasyonu)
 

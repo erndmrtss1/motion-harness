@@ -61,6 +61,8 @@ world/
    | geçiş dili | ışıkla, nesneyle, CRT ile, cepheyle…; fade yasak | kare dizisi + fade dedektörü |
 
    Görevin beş ekseni — **malzeme, ışık, hareket grameri, tipografi, kamera dili** — her yön kartında ayrı ayrı yazılır.
+   - **Yapısal eksen şartı.** Ayrışan üç eksenden en az biri yapısaldır: kamera dili, hareket grameri ya da kompozisyon iskeleti (öğelerin kadrajdaki yeri, okuma sırası). Yalnız ışık / malzeme / ton değişen üç yön aynı iskeleti paylaşır → "renk/ışık takası", sürüm sayılır (eval bulgusu: üç yön aynı etiket konumu ve aynı nokta koordinatıyla çıktı).
+   - **Varsayılan çekiciler.** Bağımsız projeler en çok şu hazır görünümlere yakınsar: *koyu soğuk zemin + monospace + ince açık çizgi* ("terminal"), *krem/bej ızgara kâğıt + koyu bantlar* ("defter"), *mor-mavi gradyan + cam kart* ("SaaS"), *neon kontur + koyu ızgara* ("sentez"). Bir yön bunlardan birine düşüyorsa yön kartı bunu adıyla yazar ve kimlik zincirinden (madde 4) gerekçesini verir; gerekçesizse ELE. Üç yönden en çok biri çekici bölgede olabilir.
 2. **Her yön ölçülebilir.** Ölçülemeyen yön seçime sunulmaz: bant, kontrast, `k1.mask` (+ `selector`), aksan + sınıf, düşüm, hareket sayıları.
 3. **"Örnek world'ün bir versiyonu" geçerli yön değildir — UCUZ #11.** Test: yön, bir örnek world ya da önceki proje cinsinden
    "**X ama Y**" diye tarif edilebiliyorsa (ör. "teknik çizim ama koyu", "masa ama mavi") yön değildir, sürümdür → ELE.
@@ -276,6 +278,7 @@ Tam liste ve imzalar: `render/runtime/motion-core.jsx` başlık yorumu.
 ## 10. World kilit kontrol listesi
 
 - [ ] Üç yön kartı; her çift ≥ 3 eksende ayrışıyor; hiçbiri örnek world / önceki proje "X ama Y"si değil (UCUZ #11).
+- [ ] Her çiftte ayrışan eksenlerden en az biri yapısal (kamera / hareket / kompozisyon iskeleti); varsayılan çekici bölgedeki yön ≤ 1 ve gerekçeli.
 - [ ] Her yön ölçüldü (bant, kontrast, K1, düşüm, aksan, s/kare); rapor tablosu + kontak var.
 - [ ] Reviewer `lookdev` kaydı; kullanıcı yön seçimi (DUR) `DECISIONS.md`'de.
 - [ ] `world.json`: `band` + `k1.mask` (+ `selector`), `accent` + `classes`, `grade`, kamera/hareket eşikleri ölçülen değerlerle; kaynak sütunu `lessons.md`'de.

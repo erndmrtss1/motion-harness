@@ -407,6 +407,8 @@ Birim başına üç yön gelir. Her yön için şunlar yapılır:
    - Üç yön birbirinin renk/ışık takası olmamalıdır.
    - Eksenler PLAYBOOK §1'deki altı eksendir: ışık modeli · malzeme/zemin · ton (luma bandı) · tipografi · kamera dili · geçiş dili.
    - İki yön bu altı eksenin 3'ünden azında ayrışıyorsa ikisinden biri **ELE**: "yön değil, sürüm".
+   - Ayrışan eksenlerin hiçbiri yapısal değilse (kamera dili, hareket grameri, kompozisyon iskeleti: öğe konumları ve okuma sırası aynı) çift yine **ELE**: "renk/ışık takası". İskelet aynılığını kendi kırpımınla, öğe koordinatlarını karşılaştırarak gösterirsin.
+   - Varsayılan çekici bölgedeki yönleri (motion-world §2 madde 1: terminal · defter · SaaS · sentez) adıyla işaretlersin; yön kartında kimlik zincirinden gerekçe yoksa **ELE**; üç yönden ikisi aynı çekicideyse biri **ELE**.
    - Ayrışmayı kendi ölçümünle sayarsın: bant için luma %, ton ve palet için ΔE2000, tipografi için aile.
 5. Yön başına **SEÇ / ELE** kararı ve tek cümle kanıt yazılır.
 

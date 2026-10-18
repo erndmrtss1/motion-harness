@@ -54,6 +54,8 @@ if (!SUB) {
   if (!out || out.startsWith('--')) { console.error('kullanım: motion-render contact sheet <çıktı.png> [--cols 3] [--w 640] [--title "…"] a.png[=etiket] …'); process.exit(2); }
   const skip = new Set(); ['cols', 'w', 'title'].forEach((k) => { const i = args.indexOf('--' + k); if (i >= 0) { skip.add(i); skip.add(i + 1); } });
   const items = args.slice(1).filter((a, i) => !skip.has(i + 1)).map((a) => { const [f, ...l] = a.split('='); return { f, label: l.join('=') || path.basename(f, '.png') }; });
+  const bad = items.filter((it) => !fs.existsSync(path.resolve(it.f)) || fs.statSync(path.resolve(it.f)).isDirectory());
+  if (!items.length || bad.length) { console.error('contact sheet: ' + (items.length ? 'PNG dosyası değil / yok: ' + bad.map((b) => b.f).join(', ') : 'görüntü listesi boş') + '\nkullanım: motion-render contact sheet <çıktı.png> [--cols 3] [--w 640] [--title "…"] a.png[=etiket] …'); process.exit(2); }
   const C = +opt('cols', 3), W = +opt('w', 640), H = Math.round(W * 9 / 16), LB = 30, TT = opt('title', '') ? 46 : 0, rows = Math.ceil(items.length / C);
   const comp = [];
   for (let i = 0; i < items.length; i++) {

@@ -50,11 +50,12 @@ Birden çok projeyi yukarıdan yönetecekseniz (faz istemi yazan, raporları den
 | `motion-render` bulunamadı | `npm prefix -g` dizinini PATH'e ekleyin (Windows: `%APPDATA%\npm`); yeni terminal açın |
 | PowerShell betik çalıştırmıyor | `powershell -ExecutionPolicy Bypass -File .\install.ps1` biçimiyle çalıştırın |
 | Chromium inmiyor (proxy/kurumsal ağ) | `HTTPS_PROXY` ayarlayın, `cd render && npx playwright install chromium` |
+| Chromium önceden çalışıyordu, şimdi "Executable doesn't exist" | Playwright tarayıcı önbelleği kullanıcı çapında paylaşılır; başka bir Playwright kurulumu paketin sabitlediği sürümü silmiş olabilir. `cd render && npx playwright install chromium`, sonra `/motion:doctor` |
 | ffmpeg özelliği eksik (prores_ks, ffv1, loudnorm) | Windows: `winget install Gyan.FFmpeg`; macOS: `brew install ffmpeg`; sonra `MOTION_FFMPEG` ortam değişkenine yolunu yazın |
 | `marketplace add` başarısız (özel depo) | `gh auth login` ve `gh auth setup-git`; ya da klonlanmış klasörden kurun (varsayılan) |
 | Higgsfield oturumu yok | `npm i -g @higgsfield/cli` → `higgsfield auth login` → `/motion:doctor`. Anahtar `.env`'e yazılmaz; üretken varlık kullanmayan projeler etkilenmez |
 | render "disk < 40 GB" ile duruyor | kare dizinlerini arşivleyin ya da eşiği `MOTION_MIN_DISK_GB` ile değiştirin (60 fps ≈ 2 MB/kare) |
-| fontlar yüklenmiyor | proje kökünde `motion-render vendor fonts` (Google Fonts; lisans metni `fonts/LICENSES.md`) |
+| fontlar yüklenmiyor | proje kökünde `motion-render vendor fonts` (Google Fonts; lisans metni `fonts/LICENSES.md`). Google Fonts'a erişim yoksa `MOTION_FONT_SOURCE=npm` (npm `@fontsource` paketleri) |
 | Whisper (transkript) | isteğe bağlı: `motion-render init <dir> --with-whisper` (Python 3.10+, `render/requirements.txt`) |
 
 Kaldırma: `uninstall.ps1` / `uninstall.sh` (projelere dokunmaz). Değişiklikler: [CHANGELOG.md](CHANGELOG.md).

@@ -11,10 +11,10 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const ROOT = path.resolve(args.find((a, i) => !a.startsWith('--') && !['--round', '--json', '--md'].includes(args[i - 1])) || '.');
 const ROUND = +opt('--round', 1);
-const KARAR = /KARAR:\s*\**\s*(TESLİM GEÇER|ŞARTLI GEÇER|GEÇMEZ|GEÇER)\**\s*·\s*§0\.6\s*(\d)\s*\/\s*8/gi;
+const KARAR = /KARAR:\s*\**\s*(TESLİM GEÇER|ŞARTLI GEÇER|GEÇMEZ|GEÇER)\**\s*·\s*§0\.6\s*(\d)\s*\/\s*(\d)[^\n]*/gi;   // look-dev kapısı x/5, diğerleri x/8
 const SCRIPT_EXT = /\.(mjs|cjs|js|py|sh|ps1)$/i;
 const ALLOWED_JS = /(^|[\\/])(hooks|world|shared|live)[\\/]|\.jsx$|motion-runtime\.js$|[\\/]script[\\/][^\\/]+-amap\.js$|motion-manifest\.js$/i;
-const NET = /\b(curl|wget|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|git\s+(clone|fetch)|pip3?\s+install|-m\s+pip|winget|choco|brew|certutil|bitsadmin)\b/i;
+const NET = /\b(curl|wget|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|git\s+(clone|fetch)|pip3?\s+install|-m\s+pip|winget|choco|brew|certutil|bitsadmin)\b|playwright\s+install/i;   // playwright install: tarayıcıyı npm dışı CDN'den indirir
 const GEN = /(higgs(field)?|\bhf)\s+(generate|upload)|generate\s+create|motion-render\s+(gen|ingest)\b/i;
 
 function forms(p) {
@@ -47,7 +47,14 @@ async function scanTranscript(file, deny) {
         const c = String(b.input?.command || '');
         if (NET.test(c)) res.net.push(c.slice(0, 160));
         if (GEN.test(c)) res.gen.push(c.slice(0, 160));
-        if (/(>|tee|Out-File|Set-Content)\s*\S+\.(mjs|py|sh|ps1)\b/.test(c)) res.writtenScripts.add('(bash) ' + c.slice(0, 120));
+        // kabukla yazılan betik: hedef dosya; göreli hedef komuttaki `cd` dizinine, $DEĞİŞKEN aynı komuttaki atamaya göre çözülür
+        const cwd = (/(?:^|&&|;)\s*cd\s+["']?([^"'&;\n]+?)["']?\s*(?:&&|;|\n)/.exec(c) || [])[1];
+        const vars = Object.fromEntries([...c.matchAll(/(?:^|[\s;&])([A-Za-z_]\w*)=["']?([^\s"';&]+)/g)].map((m) => [m[1], m[2]]));
+        for (const m of c.matchAll(/(?:>|tee|Out-File|Set-Content)\s*["']?([^\s"';|&<>]+\.(?:mjs|py|sh|ps1))\b/g)) {
+          let t = m[1].replace(/\$\{?([A-Za-z_]\w*)\}?/g, (x, v) => vars[v] ?? x);
+          if (cwd && !/^([a-z]:)?[\\/]/i.test(t)) t = cwd.replace(/[\\/]$/, '') + '/' + t;
+          res.writtenScripts.add(t);
+        }
       }
       if (b.name === 'WebFetch' || b.name === 'WebSearch') res.net.push(b.name);
       if ((b.name === 'Agent' || b.name === 'Task') && b.input?.subagent_type) res.agents[b.input.subagent_type] = (res.agents[b.input.subagent_type] || 0) + 1;
@@ -61,17 +68,16 @@ async function scanTranscript(file, deny) {
 
 function reviewerStats(dir) {
   const out = { karar: [], gecmez: 0, tasteScores: [] };
+  // docs/REVIEWER.md + out/review/**.md; aynı KARAR satırı (birden çok dosyada) bir kez sayılır. Şablondaki yer tutucu (<…>) eşleşmez.
   const files = [path.join(dir, 'docs', 'REVIEWER.md')];
-  const rv = path.join(dir, 'out', 'review');
-  if (fs.existsSync(rv)) for (const d of fs.readdirSync(rv)) { const f = path.join(rv, d, 'karar.md'); if (fs.existsSync(f)) files.push(f); }
+  const walk = (d) => { if (!fs.existsSync(d)) return; for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.md$/i.test(e.name)) files.push(p); } };
+  walk(path.join(dir, 'out', 'review'));
   const seen = new Set();
   for (const f of files) {
     if (!fs.existsSync(f)) continue;
     for (const m of fs.readFileSync(f, 'utf8').matchAll(KARAR)) {
-      const k = m[0]; if (seen.has(k + f)) continue; seen.add(k + f);
-      if (f.endsWith('REVIEWER.md') || !files[0] || !fs.existsSync(files[0])) {
-        out.karar.push(m[1].toUpperCase() + ' ' + m[2] + '/8'); out.tasteScores.push(+m[2]); if (/GEÇMEZ/i.test(m[1])) out.gecmez++;
-      }
+      const k = m[0].trim(); if (seen.has(k)) continue; seen.add(k);
+      out.karar.push(m[1].toUpperCase() + ' ' + m[2] + '/' + m[3]); out.tasteScores.push(+m[2] / +m[3] * 8); if (/GEÇMEZ/i.test(m[1])) out.gecmez++;
     }
   }
   return out;
@@ -92,7 +98,9 @@ for (const dir of dirs) {
   const deliverables = tree.filter((l) => /^out\/(master|scenes|live)\/[^ ]+\.(mp4|mov|html)\s/.test(l) || /^live\/[^ ]+\.html\s/.test(l)).map((l) => l.split('  ')[0]);
   // out/measure ve out/review altındaki betikler bağımsız ölçüm/reviewer'ın kendi yöntemidir (tasarım gereği) → ad-hoc sayılmaz.
   const INDEP = /out[\\/](measure|review)[\\/]/i;
-  const allScripts = [...new Set([...(sum?.adhocScripts || []).map((x) => x.path || x), ...tr.writtenScripts])];
+  // aynı dosya mutlak ve göreli yolla gelebilir → oturum köküne göre göreli, ileri eğik çizgili biçimde tekilleştir
+  const norm = (x) => String(x).replace(/\\/g, '/').replace(/^.*?\/motion-eval-[^/]+-r\d+\//i, '').replace(/^\.\//, '');
+  const allScripts = [...new Set([...(sum?.adhocScripts || []).map((x) => x.path || x), ...tr.writtenScripts].map(norm))];
   const adhoc = allScripts.filter((x) => !INDEP.test(x)), indep = allScripts.filter((x) => INDEP.test(x));
   rows.push({
     brief: path.basename(dir).replace(/-r\d+$/, ''), exit: run.exit, timedOut: !!run.timedOut, minutes: run.minutes, turns: tr.turns, costUsd: tr.cost,
@@ -103,7 +111,7 @@ for (const dir of dirs) {
     phases: sum?.phases?.map((p) => p.name) || [], openIssues: sum?.openIssues || [],
     deliverables, live: live ? { pass: live.pass, fps: live.fps, latency: live.latency, dropped: live.dropped } : null,
     agents: tr.agents, tools: tr.tools,
-    verdict: tr.forbidden.length > 0 ? 'GEÇMEZ (yasak yol)' : tr.gen.length > 0 ? 'GEÇMEZ (üretken çağrı)' : 'puanlandı',
+    verdict: tr.forbidden.length > 0 ? 'GEÇMEZ (yasak yol)' : tr.gen.length > 0 ? 'GEÇMEZ (üretken çağrı)' : tr.net.length > 0 ? 'İHLAL (ağ: ' + tr.net.length + ' dış indirme)' : 'puanlandı',
   });
 }
 const out = { root: ROOT, round: ROUND, at: new Date().toISOString(), balance: runsMeta ? { start: runsMeta.balanceStart, end: runsMeta.balanceEnd, delta: runsMeta.balanceDelta } : null, rows };

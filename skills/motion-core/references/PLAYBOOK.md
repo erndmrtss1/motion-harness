@@ -139,6 +139,8 @@ Ardından gövde (~60 satır): Kontroller · §0.6 · UCUZ (VAR ve sınırda sat
 | **GEÇMEZ** (r2) | **DUR**: kontak + nedenler kullanıcıya; render yok (§6, DUR-9). Üçüncü tur açılmaz |
 | **GEÇMEZ** ve §0.6 evet < 3 | düzeltme turu açılmaz; look-dev / varyant / storyboard'a dönülür (DUR-11) |
 
+**Dönüşten sonra kapı yeniden açılır.** DUR-11 ile look-dev / varyant / storyboard'a dönülünce yeni iş **taze reviewer kapısından** geçmeden sonraki faza (sözlük, perde, render) geçilmez. Kullanıcı onayı ya da etkileşimsiz oturumdaki otomatik onay bir GEÇMEZ kapısını atlamaz; onay yalnız kapıyı geçmiş işi ilerletir (eval bulgusu: GEÇMEZ 1/5 sonrası yön kilitlenip kapısız perdeye geçildi).
+
 **Tek düzeltme turu.** Yalnız GEÇMEZ açar. Yapan yalnız r1'in somut düzeltme listesini uygular. r2 için **taze** reviewer açılır; ona verilenler:
 
 - r1 kaydı (`docs/REVIEWER.md`'den) — r1'in sayıları da referans değildir;

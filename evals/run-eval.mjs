@@ -62,7 +62,7 @@ export function pathForms(p) {
   if (drive) { forms.add('/' + drive[1].toLowerCase() + fwd.slice(2)); forms.add(drive[1].toLowerCase() + fwd.slice(1)); forms.add(drive[1].toLowerCase() + fwd.slice(1).replace(/\//g, '\\')); }
   return { fwd, drive, forms: [...forms] };
 }
-export const NET_CMDS = ['curl', 'wget', 'Invoke-WebRequest', 'Invoke-RestMethod', 'Start-BitsTransfer', 'git clone', 'git fetch', 'pip install', 'pip3 install', '-m pip', 'winget ', 'choco ', 'brew ', 'certutil', 'bitsadmin'];
+export const NET_CMDS = ['curl', 'wget', 'Invoke-WebRequest', 'Invoke-RestMethod', 'Start-BitsTransfer', 'git clone', 'git fetch', 'pip install', 'pip3 install', '-m pip', 'winget ', 'choco ', 'brew ', 'certutil', 'bitsadmin', 'playwright install'];
 export const GEN_CMDS = ['higgsfield generate', 'higgs generate', 'hf generate', 'higgsfield upload', 'higgs upload', 'hf upload', 'generate create', 'motion-render gen', 'motion-render ingest'];
 function settingsFor() {
   const deny = [];
@@ -94,7 +94,7 @@ function killTree(pid) {
 const PROMPT = (meta) => `START.md'yi oku (plugin içindeki ${'$'}{CLAUDE_PLUGIN_ROOT}/START.md), sonra /motion:init brief.md ile projeyi bu klasörde kur.
 
 EVAL KİPİ (otomatik değerlendirme koşusu — kullanıcı yok):
-- Her DUR noktasında sunacağın seçeneklerden önerilen (ilk) seçeneği kullanıcı onayı say; raporda "eval: otomatik onay" diye işaretle ve sıradaki faza geç. AskUserQuestion KULLANMA.
+- Her DUR noktasında sunacağın seçeneklerden önerilen (ilk) seçeneği kullanıcı onayı say; raporda "eval: otomatik onay" diye işaretle ve sıradaki faza geç. AskUserQuestion KULLANMA. Otomatik onay bir GEÇMEZ kapısını atlamaz: GEÇMEZ'den dönülen iş yeniden taze reviewer kapısından geçer (PLAYBOOK §1 kapı tablosu).
 - Faz sırası: init → ${meta.live ? 'lookdev → live (sayfa + /motion:live akışı) → motion-render live --qc → gate' : (meta.audio ? 'audio → ' : '') + 'lookdev → lexicon → P1 → master'}.
 - HEADLESS: bu oturum \`claude -p\`; tur bitince süreç kapanır. Ajanları ÖN PLANDA çalıştır (Agent → run_in_background: false) ve bekle; arka planda ajan bırakıp son mesajı yazma. Bütün fazlar (ya da süre tavanı) bitmeden durma.
 - Her fazı plugin komutlarıyla yürüt (/motion:faz <faz>, /motion:gate, /motion:master${meta.live ? ', /motion:live' : ''}); reviewer'ı her kapıda taze motion:motion-reviewer ajanı olarak aç.

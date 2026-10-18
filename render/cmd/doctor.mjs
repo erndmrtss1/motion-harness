@@ -63,7 +63,9 @@ try {
   const t0 = Date.now(), b = await chromium.launch({ timeout: 60000 }), v = b.version(); await b.close();
   add('Chromium (Playwright)', 'ok', v + ' · açılış ' + (Date.now() - t0) + ' ms', true);
 } catch (e) {
-  add('Chromium (Playwright)', 'fail', String(e.message || e).split('\n')[0] + ' → npx playwright install chromium', true);
+  // tarayıcı önbelleği paylaşılır; başka bir Playwright kurulumu sabit revizyonu silebilir (LESSONS L-221). Çevrimdışı kipte indirme önerilmez.
+  const fix = process.env.MOTION_OFFLINE === '1' ? ' → çevrimdışı kip: indirme yapma, DUR (kullanıcı paket klasöründe `npx playwright install chromium` çalıştırır)' : ' → paket klasöründe: npx playwright install chromium';
+  add('Chromium (Playwright)', 'fail', String(e.message || e).split('\n')[0] + fix, true);
 }
 
 // 5) proje (yalnız proje içindeyse)

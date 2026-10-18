@@ -3,7 +3,8 @@
 //   motion-render live [<sayfa.html>] [--port 4317]                       → yerel sunucu + OBS/panel URL'leri (Ctrl+C ile durur)
 //   motion-render live [<sayfa.html>] --qc [--seconds 20] [--wav t.wav] [--fps 60] [--warmup 1] [--headful] [--channel msedge|chrome] [--bg transparent]
 //   motion-render live [<sayfa.html>] --capture [det|rt] [--seconds 8] [--wav t.wav] [--fps 60] [--scale 1]
-//   ortak: [--avatar world/avatar-a.js] [--settings live/ayarlar.json] [--gpu hw|sw] (look-dev yönlerini aynı mekanizmayla sınamak için)
+//   ortak: [--avatar world/avatar-a.js] [--settings live/ayarlar.json] [--gpu hw|sw] [--out out/lookdev/a] (look-dev yönlerini aynı mekanizmayla,
+//          ayrı klasörlere sınamak için; --out verilmezse yakalama out/live/, ölçüm out/probe/)
 //
 // Sayfa verilmezse paketin şablonu (render/runtime/live/live.html) kullanılır.
 // --qc: test WAV'ı (yoksa üretilir: bilinen anlarda hece patlamaları + tıklar) Chromium'un sahte mikrofonuna verilir
@@ -50,6 +51,7 @@ const HEADFUL = has('--headful');
 const CHANNEL = argOf('--channel', null);
 const BG = argOf('--bg', null);
 const SCALE = +argOf('--scale', 1);
+const OUT_ARG = argOf('--out', null);   // look-dev: her yönün yakalaması/ölçümü ayrı klasöre (ör. out/lookdev/a) → yönler birbirinin üstüne yazmaz
 const PORT = +argOf('--port', 4317);
 // GPU: hw (varsayılan) = donanım hızlandırmalı çizim (OBS tarayıcı kaynağı da donanım hızlandırmayla koşar) · sw = yazılım (SwiftShader; en kötü durum)
 const GPU = argOf('--gpu', 'hw') === 'sw' ? 'sw' : 'hw';
@@ -75,8 +77,10 @@ function urlParamFile(flag) {
   const v = argOf(flag, null);
   if (!v) return null;
   const f = [path.resolve(v), path.resolve(ROOT, v)].find((c) => fs.existsSync(c));
-  if (!f || !inside(SERVE_ROOT, f)) { console.error('live: ' + flag + ' dosyası yok ya da sunum kökü dışında: ' + v); process.exit(2); }
-  return '/' + path.relative(SERVE_ROOT, f).split(path.sep).join('/');
+  if (f && inside(SERVE_ROOT, f)) return '/' + path.relative(SERVE_ROOT, f).split(path.sep).join('/');
+  // sayfa paketin şablonuysa proje dosyaları /__project/ altından sunulur (look-dev: şablon + world/avatar-<yön>.js, projeye kopyalamadan)
+  if (f && SERVE_ROOT !== ROOT && inside(ROOT, f)) return '/__project/' + path.relative(ROOT, f).split(path.sep).join('/');
+  console.error('live: ' + flag + ' dosyası yok ya da proje dışında: ' + v); process.exit(2);
 }
 const AVATAR_URL = urlParamFile('--avatar'), SETTINGS_URL = urlParamFile('--settings');
 const shown = (f) => (inside(ROOT, f) ? rel(f) : f === TEMPLATE ? 'render/runtime/live/live.html (şablon)' : path.basename(f));
@@ -106,9 +110,10 @@ function startServer(root, port) {
       }
       res.writeHead(405); return res.end();
     }
-    let f;
-    try { f = path.resolve(root, '.' + decodeURIComponent(u.pathname)); } catch { res.writeHead(400); return res.end(); }
-    if (f !== root && !inside(root, f)) { res.writeHead(403); return res.end(); }
+    let f, base = root, p = u.pathname;
+    if (root !== ROOT && p.startsWith('/__project/')) { base = ROOT; p = p.slice('/__project'.length); }
+    try { f = path.resolve(base, '.' + decodeURIComponent(p)); } catch { res.writeHead(400); return res.end(); }
+    if (f !== base && !inside(base, f)) { res.writeHead(403); return res.end(); }
     if (fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
     if (!fs.existsSync(f)) { res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('yok: ' + u.pathname); }
     res.writeHead(200, { 'content-type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-store' });
@@ -352,7 +357,7 @@ async function runQc() {
 let qc = null;
 if (QC) {
   qc = await runQc();
-  const outDir = path.join(OUT, 'probe');
+  const outDir = OUT_ARG ? path.resolve(ROOT, OUT_ARG) : path.join(OUT, 'probe');
   mkdir(outDir);
   const base = {
     tool: 'motion-render live --qc', date: new Date().toISOString(), page: shown(PAGE),
@@ -438,7 +443,7 @@ function markdown(r) {
 // 3) Yakalama: deterministik (elle sürüş) ya da gerçek zamanlı video
 // =================================================================================================
 if (CAPTURE && exitCode !== 1) {
-  const dir = path.join(OUT, 'live');
+  const dir = OUT_ARG ? path.resolve(ROOT, OUT_ARG) : path.join(OUT, 'live');
   mkdir(dir);
   const VW = Math.round(1920 * SCALE), VH = Math.round(1080 * SCALE);
   if (CAPTURE === 'det') {
