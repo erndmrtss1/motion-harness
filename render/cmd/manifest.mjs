@@ -146,6 +146,13 @@ if (sub === 'sync') {
     if (s.hooks != null) { if (!Array.isArray(s.hooks)) err(w, 'hooks dizi olmalı'); else s.hooks.forEach((h) => { if (typeof h !== 'string' || !fs.existsSync(path.join(ROOT, h))) err(w, 'kanca dosyası yok: ' + h); }); }
     if (s.animatic != null) { if (!isObj(s.animatic)) err(w, 'animatic nesne olmalı'); else { frac(w, 'animatic.scale', s.animatic.scale); if (s.animatic.step != null && !(isInt(s.animatic.step) && s.animatic.step >= 1)) err(w, 'animatic.step ≥ 1 tamsayı olmalı'); } }
     if (s.parent != null && !all.has(s.parent)) wrn(w, 'parent manifestte sahne değil: ' + s.parent);
+    // look-dev sayfası: iskelet kapısı (lookdev-diff) DOM'dan okur → sayfa ya da yüklediği .jsx'ler [data-hero] ya da __boxes sağlamalı
+    if (/^LOOK-/.test(s.id || '') && typeof s.file === 'string' && fs.existsSync(path.join(ROOT, s.file))) {
+      const html = fs.readFileSync(path.join(ROOT, s.file), 'utf8');
+      const jsx = [...html.matchAll(/from="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean).map((f) => path.join(ROOT, f.replace(/^\//, '')));
+      const src = [html, ...jsx.filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8'))].join('\n');
+      if (!/data-hero|__boxes/.test(src)) wrn(w, 'iskelet ölçülemez (lookdev-diff): sayfada ve yüklediği .jsx dosyalarında [data-hero] ya da __boxes yok — kahraman öğeye data-hero ekle');
+    }
   }
 
   if (args.includes('--json')) console.log(JSON.stringify({ errors: E, warnings: W }, null, 1));

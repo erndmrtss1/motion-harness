@@ -19,6 +19,7 @@
 // Kullanım:
 //   node evals/run-eval.mjs --brief <ad|all> [--round 1] [--root <dizin>] [--plugin <dizin>] [--evidence <dizin>]
 //                           [--minutes 90] [--max-turns 300] [--model <id>] [--deny <yol,yol>] [--dry]
+//                           [--seed <proje>] [--prompt-file <istem>] [--brief-file <brief>]   (kapı denemesi: hazır projeyle başla)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -41,6 +42,7 @@ const DENY = (opt('--deny', process.env.MOTION_EVAL_DENY || '')).split(',').map(
 const DRY = args.includes('--dry');
 const PROMPT_FILE = opt('--prompt-file', null);   // sonda: kendi istemi (ortam doğrulaması; puanlanmaz)
 const BRIEF_FILE = opt('--brief-file', null);     // sonda: briefs/ dışından brief
+const SEED = opt('--seed', null);                // kapı denemesi: oturum klasörü bu projenin kopyasıyla başlar (transkript/izin dosyaları hariç)
 const LOCK = path.join(ROOT, 'motion-eval-render.lock');
 
 const briefs = BRIEF === 'all'
@@ -201,6 +203,7 @@ for (const name of briefs) {
   }
   if (fs.existsSync(dir)) { console.error('klasör zaten var (yeni tur için --round): ' + dir); process.exit(2); }
   fs.mkdirSync(path.join(dir, '.claude'), { recursive: true });
+  if (SEED) fs.cpSync(path.resolve(SEED), dir, { recursive: true, filter: (f) => !/[\\/](\.claude|transcript\.jsonl|stderr\.log|run\.json|eval-summary\.json)$/.test(f) });
   fs.copyFileSync(src, path.join(dir, 'brief.md'));
   fs.copyFileSync(path.join(PLUGIN, 'START.md'), path.join(dir, 'START.md'));
   fs.writeFileSync(path.join(dir, '.claude', 'settings.json'), JSON.stringify(settings, null, 2));

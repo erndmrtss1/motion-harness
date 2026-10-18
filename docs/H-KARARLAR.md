@@ -75,6 +75,21 @@ Durum: `uygulandı` · `bekliyor (DUR 1)` · `doğrulanacak (Hn)`.
 | HK-21 | Eval'in indirdiği `chromium-1248`, `chromium_headless_shell-1248`, `ffmpeg-1013` Geri Dönüşüm Kutusu'na taşındı, kalıcı silme yapılmadı. Hepsi yalnız npx ile gelen Playwright 1.64.1'e aitti; paket 1.63.0 chromium-1243 ve ffmpeg-1011 kullanır (`doctor` 14 ✓). | Kullanıcı kararı (önbellek temizliği). Geri dönüşüm kutusu geri alınabilir yoldur. | uygulandı |
 | HK-22 | Puanlayıcının tur 3'teki iki yanlış pozitifi (kod içindeki `curl:` alanı, ASCII KARAR) düzeltildi ve bütün turlar yeniden puanlandı; tur 2'nin iki gerçek dış indirmesi aynen yakalanıyor. | Ölçüt yanlış ölçüyordu; ihlal sayısı yöntemin değil oturumun davranışını göstermeli. | uygulandı |
 
+## Faz 1.1 kararları (look-dev ayrışma aracı)
+
+| # | karar | brief'ten sapma | durum |
+|---|---|---|---|
+| HK-23 | 1.1.0'da K1 kapsamı yalnız video (tam kare) çiftleri; canlı karakter çiftleri 1.2'ye (silüet örtüşmesi + en-boy kipi). | evet | uygulandı |
+| HK-24 | İskelet ekseni pikselden DOM'a taşındı: `__boxes(T)` ya da DOM yürüyüşü; piksel yalnız palet ve gren için. Gerekçe: piksel iskeleti dokuya batıyordu, ağırlık taraması aşırı uydu (LOO 4/8). Ağırlık taraması yasak; ağırlıklar tasarımla sabit, yalnız eşik kalibre edilir. | hayır | uygulandı |
+| HK-25 | Kaynak çiftleri 1.1.0 iskelet kapsamı dışında (kaynağın DOM sayfası yok). Kaynağa karşı yalnız palet UYARI; taklit kararı reviewer'ın UCUZ #11'inde kalır. | evet | uygulandı |
+| HK-26 | Kapı tasarımı: iskelet SERT, palet/doku UYARI, varsayılan çekici UYARI. "Tamamen uyarı" seçeneği reddedildi. Not: K1a geçmediği için iskelet 1.1'de UYARI'ya düştü (HK-32 çıkış kuralı). | hayır | uygulandı (iskelet UYARI) |
+| HK-27 | K1a etiketi iskelete özgü: iki reviewer'ın yalnız-iskelet puanı; ikisi de ≥ 5 → POZ, ikisi de ≤ 3 → NEG, aksi belirsiz. S2 yalnız r3 ile etiketlendi (r2 kırpımdan, geçersiz). Bütünsel puan palet/doku UYARI eksenine kaydı. | evet (gerekçe YR-3) | uygulandı |
+| HK-28 | Gösterim: bileşen eşleme kaldırıldı; rol tabanlı 6×4 kaba bölge doluluk betimleyicisi (kahraman 0,4 · bant 0,2 · metin 0,2 · kenar 0,2; rol iki yönde yoksa atlanır; öğe sayısı girmez). | hayır | uygulandı |
+| HK-29 | K2 kapsamı: SERT iskelet ekseni yön içidir. Projeler arası teslim çiftlerinde iskelet bilgi amaçlı; K2 = teslim çiftlerinde palet UYARI yanlış pozitifi 0. | hayır | uygulandı |
+| HK-30 | K4 beklentileri tam kare etiketine göre: tur 3 elektronik GEÇMEZ ve ihlal ≥ 1 (A↔C dahil); tur 2 SaaS GEÇMEZ ve ihlal 3; tur 3 SaaS ihlal ≥ 1 (A↔C). | evet | K4 sonucu `evidence/1.1/K-1.1b.md` |
+| HK-31 | Şans düzeltmesi: rol IoU'su önsel ile düzeltilir, IoU_düz = max(0, (IoU − IoU_önsel)/(1 − IoU_önsel)). IoU_önsel = iki yönün önselle IoU'larının ortalaması (simetrik). Önsel = kalibrasyon setindeki 12 yönün rol başına ortalama doluluğu, etiket kullanılmadı (`render/lib/lookdev-prior.json`). | hayır | uygulandı |
+| HK-32 | Kareler arası maks ("herhangi bir kilit karede aynı iskelet"), kare başına değerler raporda; tek rolden gelen skora "(tek rol)" bayrağı. Çıkış kuralı (kesin): şans düzeltmesi + maks sonrası sınıf hatası 2 → iskelet UYARI ekseni, eşik 0,3 (NEG en yüksek 0,4 ile yön içi POZ en düşük 0,2'nin ortası). | hayır | uygulandı |
+
 ## Sınır notu (kullanıcı, H1–H5 boyunca geçerli)
 
 | id | kural | uygulama |

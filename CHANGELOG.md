@@ -2,6 +2,30 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## Yayımlanmamış — 1.1 (açık, etiketsiz)
+
+Look-dev ayrışması ölçüme bağlandı (H4 bulgusu; `evidence/1.1/K-1.1b.md`). Kabul ölçütü K1a (iskelet eşiği marjı) karşılanmadı. Bu yüzden iskelet ekseni SERT kapı olarak değil, **UYARI** olarak girdi ve 1.1.0 etiketi verilmedi.
+
+- **`motion-render lookdev-diff`**: look-dev yönlerinin sayfalarını render yoluyla açar.
+  - **İskelet:** DOM'dan bileşen kutuları okunur (`__boxes(T)` ya da DOM yürüyüşü; `[data-hero]`, `[data-doku]`; ışık/vinyet katmanları ve tam kare katmanlar hariç). Kutular kahraman/bant/metin/kenar rolleriyle 6×4 doluluk haritasına dönüşür. Şans düzeltmesi önsel dosyadan gelir (`render/lib/lookdev-prior.json`); kareler arası maks alınır; skor tek rolden geliyorsa bayrak konur.
+  - **Palet:** ekran görüntüsünden zemin ΔE2000 ve baskın renkler. Varsayılan çekici sözlüğü (terminal · defter · SaaS · sentez).
+  - **Seçenekler:** `--ref` önceki proje ya da örnek kontağına karşı yalnız palet ölçer; `--pages` rastgele sayfalar. Çıktı `.json` + `.md` ve KARAR satırına `ayrışma:` parçası.
+- **Kapı:** `/motion:gate` look-dev adımında aracı reviewer'dan önce koşar.
+  - Reviewer SKILL §12 madde 6: iskelet UYARI (eşik 0,3) ve palet UYARI (≥ 3,5) veren her çifte gerekçe zorunlu. KARAR satırı `ayrışma:` parçasını taşır (`templates/REVIEWER.md`).
+  - RULES YR-3 ve world SKILL'e look-dev sayfası sözleşmesi eklendi: kahraman `data-hero`, doku `data-doku`.
+- **`manifest validate`:** LOOK sayfasında ve yüklediği `.jsx`'lerde `data-hero` ya da `__boxes` yoksa "iskelet ölçülemez" uyarısı.
+- **LESSONS:** L-224 (piksel iskeleti dokuya batar; DOM'dan oku, şans düzelt), L-225 (look-dev kapısına tam kare, kırpım değil).
+- **Eval ve geliştirme:**
+  - `evals/run-eval.mjs --seed <proje>` (kapı denemesi: hazır projeyle başla).
+  - `dev/lookdev-calib.mjs` yalnız eşik kalibrasyonu yapar; ağırlık taraması yok.
+  - `dev/lookdev-prior.mjs` önsel haritayı üretir.
+
+### 1.2 yol haritası (1.1'den)
+1. **İskelet SERT kapı için gösterim.** 1.1 betimleyicisinde uzlaşılı "aynı iskelet" çiftlerinin bir kısmı (E3 A↔C 0,2, E2 B↔C 1,6) ilgisiz çiftlerle (0,4) aynı bandda kaldı. Kareler arası maks ve şans düzeltmesi yetmedi; kare başına medyan seçeneği de değerlendirilecek.
+2. **Canlı (bindirme) profil için silüet örtüşmesi ve en-boy kipi** (HK-23).
+3. **Doku/çizgi dili ekseni:** kaynağa iskelet karşılaştırması (sayfası olmayan kontak) şu an ölçülemiyor.
+4. **Koşucu yazma izni** oturum klasörüyle sınırlanacak; look-dev zaman kutusu.
+
 ## 1.0.0 — 2026-10-18
 
 İlk sürüm: kaynak bir motion-grafik projesinin üretim **süreci** tek bir Claude Code plugin'i (`motion`) ve bir render/ölçüm paketi (`@motion/harness`, komut `motion-render`) olarak paketlendi. Üslup taşınmaz: her proje kendi world'ünü look-dev'de kurar.
@@ -9,7 +33,7 @@ Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-pl
 ### Plugin (`motion`)
 - Komutlar: `/motion:init` (mülakat ya da ön-bilgili brief; `--profile`, `--world`), `/motion:setup`, `/motion:faz <audio|lookdev|lexicon|P<n>>`, `/motion:gate`, `/motion:master`, `/motion:promote`, `/motion:doctor`, `/motion:live`.
 - Ajanlar: `motion-director` (yapan), `motion-research` (kaynak/sözlük/üretken istek), `motion-measure` (bağımsız ölçüm), `motion-reviewer` (her kapıda taze, salt-okur; hafızası `docs/REVIEWER.md`).
-- Skill'ler: `motion-core` (SKILL + PLAYBOOK, RULES — 241 kural ve yaratıcılık kuralı, MEASURE — qc 16 kontrol + frame-check 20 tip, GENAI, AUDIO, DOCS-TEMPLATES, LESSONS — 223 core ders (219 kaynak + 4 eval), PATTERNS — 54 kalıp kartı "ilham/uyarı", DECISIONS — 16 ADR), `motion-world` (WORLD-SPEC + örnek world'ler: fx-lab, desk-paper, screen-dark, light-ui, photo-plate — ÖRNEK, varsayılan değil), `motion-reviewer` (§0.6 8 madde, UCUZ 11 işaret, tek düzeltme turu), `motion-live` (OBS canlı profil).
+- Skill'ler: `motion-core` (SKILL + PLAYBOOK, RULES — 241 kural ve yaratıcılık kuralı, MEASURE — qc 16 kontrol + frame-check 20 tip, GENAI, AUDIO, DOCS-TEMPLATES, LESSONS — 225 core ders (219 kaynak + 6 eval ve 1.1), PATTERNS — 54 kalıp kartı "ilham/uyarı", DECISIONS — 16 ADR), `motion-world` (WORLD-SPEC + örnek world'ler: fx-lab, desk-paper, screen-dark, light-ui, photo-plate — ÖRNEK, varsayılan değil), `motion-reviewer` (§0.6 8 madde, UCUZ 11 işaret, tek düzeltme turu), `motion-live` (OBS canlı profil).
 - Şablonlar: project.md, scenes.json, CLAUDE.md, KÜNYE, REVIEWER, RETRO, TESLİM, RENDER_REPORT, RAPOR, FAZ, SES-KAYMA, SÖZLÜK, ledger.
 - Kurulum: `install.ps1` / `install.sh` (idempotent, adım adım ✓/✗), `uninstall.*`, `doctor.*`.
 
@@ -52,7 +76,7 @@ Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-pl
 
 ## 1.1 yol haritası (planlanan; eval bulgularından)
 
-1. **Ayrışma ölçümü araçla:** `motion-render lookdev-diff` gibi bir araç, yönler arasında kompozisyon iskeletini (öğe kutuları, okuma sırası), zemin/palet ΔE2000'ini ve tipografi ailesini sayıyla karşılaştıracak. Yapısal eksen şartı ve varsayılan çekici denetimi reviewer'ın gözüne bırakılmayacak; kapı bu sayıya bağlanacak. Tur 3'te kural metin olarak paketteydi ama oturum reviewer'ları onu uygulamadı.
+1. **Ayrışma ölçümü araçla** (1.1'de UYARI olarak geldi; SERT kapı 1.2): `motion-render lookdev-diff` gibi bir araç, yönler arasında kompozisyon iskeletini (öğe kutuları, okuma sırası), zemin/palet ΔE2000'ini ve tipografi ailesini sayıyla karşılaştıracak. Yapısal eksen şartı ve varsayılan çekici denetimi reviewer'ın gözüne bırakılmayacak; kapı bu sayıya bağlanacak. Tur 3'te kural metin olarak paketteydi ama oturum reviewer'ları onu uygulamadı.
 2. **Projeler arası hafıza olmadan çeşitlilik:** bağımsız oturumların aynı hazır görünümlere (krem kâğıt, koyu terminal, neon halka) yakınsaması. Örnek world'lerin etkisi ölçülecek; look-dev yönlerinin çıkış noktası brief'in kimlik zincirine bağlanacak.
 3. **Teslime ulaşma süresi:** light profilde look-dev zaman kutusu, animatik ve kapı turlarının kısaltılması. Tur 3'te 12 s'lik film 150 dk'da master'a ulaşmadı; canlı look-dev 68 dk sürdü.
 4. **Koşucu:** yazma izni oturum klasörüyle sınırlanacak (tur 3'te iki oturum yardımcı betiği geçici dizine yazdı); Terminal paneli sanallaştırmasının erken tespiti.

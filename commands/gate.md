@@ -47,6 +47,7 @@ Kaynaklar:
    - **Kayıtsız QC hatası varsa (çıkış 3) reviewer açılmaz.** Kapı açılmamış sayılır; tur sayılmaz. Hata director'a döner. "Muhtemelen kasıtlı" kabul değildir: düzeltilir ya da istisna önce sorulur.
    - Bayat kare varsa da reviewer açılmaz; önce yeniden render gerekir.
    - `animatik` kapısında kareler `out/frames/<id>_animatic`'tedir (`render … --tag animatic`): qc/frame-check `--frames-dir out/frames/<id>_animatic`, contact `--dir out/frames/<id>_animatic --fstep 2`, ours `--dir out/frames/<id>_animatic --step 2`.
+   - **Look-dev kapısında ayrışma ölçümü (1.1):** `motion-render lookdev-diff` → `out/review/lookdev-diff.json` + `.md`. Önceki proje ya da örnek world kontağı varsa `--ref <kontak.png>@<C>x<R>+<şerit>` eklenir. Reviewer'a her yönün kilit karelerinin **tam karesi** verilir, kırpım değil (LESSONS L-225). Komut "iskelet ölçülemedi" diyorsa look-dev sayfasının kahraman öğesine `data-hero` eklenir (`manifest validate` uyarısı).
    - Kapı türüne göre: `varyant` ve `lookdev` için still'ler ve kontak sayfası; `master` için `qc film` ve `frame-check <FILM> --only temporal,identical,loudness,accentColor`; `live` için `motion-render live <sayfa> --qc`.
 3. **Bağımsız ölçüm.** Kapı sayısal bir ön koşula dayanıyorsa `motion:motion-measure` açılır. Örnekler: varlık/logo kabulü, K1, aksan ΔE, devir, senkron, canlı fps/gecikme.
    - İstek: ne · hangi kareler · ölçütün kaynağı.
@@ -69,6 +70,7 @@ Kurallar: ${CLAUDE_PLUGIN_ROOT}/skills/motion-reviewer/SKILL.md · RULES.md · M
 World: world/world.json · Örnekler (#11): ${CLAUDE_PLUGIN_ROOT}/skills/motion-world/examples/
 Manifest: scenes.json (birim <id>)
 Çıktılar: out/frames/<id>[_tag]/ · out/scenes/<…>.mp4 · out/probe/<id>-qc.json · out/probe/<id>-fc.json (+ sheet) · kontak <yol> · A/B <yol> · assets/gen/manifest.json
+[lookdev] Ayrışma: out/review/lookdev-diff.md (iskelet + palet UYARI; gerekçe zorunlu) · yönlerin tam kareleri
 [r2] Önceki kayıt: docs/REVIEWER.md "<birim> · <tür> · r1" · Değişen kare aralıkları: <…> · Madde → durum: <1 → UYGULANDI f…, …> (sayısız)
 Lütfen özellikle bak: <madde listesi; kare aralığıyla>
 Yazma alanı: out/review/<kapı-id>/ · kaydı docs/REVIEWER.md sonuna ekle · ilk satır KARAR.
@@ -99,6 +101,7 @@ Reviewer beklenirken paralel iş yapılır: belgeler, sonraki birimin taslağı.
 | **GEÇMEZ r2** | **DUR — tek düzeltme turu tükendi, render yok.** Kontak + nedenler kullanıcıya gider. Tam render ya da teslim başlatılmaz (DUR-9) |
 
 4. Varyant ve look-dev kapısında yapanın seçimiyle reviewer'ın SEÇ/ELE kararı karşılaştırılır.
+5. **Look-dev kaydı denetlenir.** KARAR satırı `ayrışma:` parçasını taşır; `lookdev-diff` UYARI veren her çift (iskelet ≥ eşik, palet ≥ 3,5, iki yön aynı çekicide) için kayıtta görsel adı + öğe ile gerekçe vardır. Gerekçe eksikse GEÇER/ŞARTLI GEÇER kabul edilmez: kayıt eksik sayılır, aynı turda taze reviewer açılır. İskelet ekseni SERT olduğunda (1.2; `ISKELET_MOD`) eşik üstü yön içi çift kapıyı GEÇMEZ yapar ve metinle geçilemez.
    - Uyuşmazlıkta güçlü gerekçe kazanır ve rapora yazılır.
    - Kararsızsa açık karar → **DUR**.
    - #11 ile ELE edilen yön, kullanıcının açık isteği olmadan geri alınmaz.

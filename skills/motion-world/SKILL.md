@@ -97,6 +97,7 @@ world/
 3. **Tek look sahnesi** `LOOK.jsx` (`LOOK-A/B/C.dc.html` sayfaları yalnız `world/lookdev/<yön>/*.jsx` yükleme listesiyle ayrışır). Tahtalar §4'teki
    mekanizmayla bu tek sahneden çizilir: look board (filmin üç kilit anı: açılış, en yoğun an, kahraman metin/kapanış), gri kart, anahtar kare,
    karşılaştırma tahtası (tek değişken: palet ya da font adayı), gerekirse varyant tahtası, seçilen yön için galeri.
+   Look-dev sayfasında kahraman öğe `data-hero` taşır (ya da sahne `__boxes(T)` kancasını sağlar); doku/ışık katmanları `data-doku` ile işaretlenir. `motion-render lookdev-diff` iskeleti bu DOM'dan okur; `manifest validate` eksikse "iskelet ölçülemez" uyarısı verir.
 4. **Look-dev karesi:** kelimenin söylendiği an değil; son okunacak öğenin yazımı bittikten sonra **+0.1 s** (RULES VR-5).
 5. **Ölçüm** (her yön, `motion-measure` ajanı ya da yapan):
 
@@ -279,6 +280,7 @@ Tam liste ve imzalar: `render/runtime/motion-core.jsx` başlık yorumu.
 
 - [ ] Üç yön kartı; her çift ≥ 3 eksende ayrışıyor; hiçbiri örnek world / önceki proje "X ama Y"si değil (UCUZ #11).
 - [ ] Her çiftte ayrışan eksenlerden en az biri yapısal (kamera / hareket / kompozisyon iskeleti); varsayılan çekici bölgedeki yön ≤ 1 ve gerekçeli.
+- [ ] `motion-render lookdev-diff` koşuldu; UYARI veren çiftlerin gerekçesi yön kartında; kahraman öğe `data-hero` taşıyor.
 - [ ] Her yön ölçüldü (bant, kontrast, K1, düşüm, aksan, s/kare); rapor tablosu + kontak var.
 - [ ] Reviewer `lookdev` kaydı; kullanıcı yön seçimi (DUR) `DECISIONS.md`'de.
 - [ ] `world.json`: `band` + `k1.mask` (+ `selector`), `accent` + `classes`, `grade`, kamera/hareket eşikleri ölçülen değerlerle; kaynak sütunu `lessons.md`'de.

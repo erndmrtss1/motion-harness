@@ -48,7 +48,8 @@ Her kapı aşağıdaki bloğun bir kopyasıdır. Reviewer doldurur ve sona ekler
 
 ````markdown
 ## <YYYY-AA-GG> · <birim> · <kapı> · r<k>: <KARAR>
-KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>
+KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>[ · ayrışma: iskelet A↔B a, A↔C b, B↔C c (eşik t, UYARI) · palet A↔B x, A↔C y, B↔C z · uyarı n]
+<yalnız lookdev kapısında:> Ayrışma gerekçeleri: <UYARI veren her çift için görsel adı + öğe + neden ayrı yön / ELE; "(tek rol)" skorları belirtilir>
 <yalnız r2 GEÇMEZ ise:> DUR: tek düzeltme turu tükendi, render yok
 
 Güncellik: <probe ↔ kayıtlı kare imgdiff sonucu> · Kapsam: <kare sayısı, açılan tam boy kare sayısı> · Yöntem: <kendi betikleri: out/review/<kapı-id>/m-*.mjs>
