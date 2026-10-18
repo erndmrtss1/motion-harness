@@ -11,10 +11,29 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const ROOT = path.resolve(args.find((a, i) => !a.startsWith('--') && !['--round', '--json', '--md'].includes(args[i - 1])) || '.');
 const ROUND = +opt('--round', 1);
-const KARAR = /KARAR:\s*\**\s*(TESLİM GEÇER|ŞARTLI GEÇER|GEÇMEZ|GEÇER)\**\s*·\s*§0\.6\s*(\d)\s*\/\s*(\d)[^\n]*/gi;   // look-dev kapısı x/5, diğerleri x/8
+const KARAR = /KARAR:\s*\**\s*(TESL[İI]M GE[ÇC]ER|[ŞS]ARTLI GE[ÇC]ER|GE[ÇC]MEZ|GE[ÇC]ER)\**\s*·\s*§0\.6\s*(\d)\s*\/\s*(\d)[^\n]*/gi;   // ASCII yazım (SARTLI GECER) da kabul   // look-dev kapısı x/5, diğerleri x/8
 const SCRIPT_EXT = /\.(mjs|cjs|js|py|sh|ps1)$/i;
 const ALLOWED_JS = /(^|[\\/])(hooks|world|shared|live)[\\/]|\.jsx$|motion-runtime\.js$|[\\/]script[\\/][^\\/]+-amap\.js$|motion-manifest\.js$/i;
 const NET = /\b(curl|wget|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|git\s+(clone|fetch)|pip3?\s+install|-m\s+pip|winget|choco|brew|certutil|bitsadmin)\b|playwright\s+install/i;   // playwright install: tarayıcıyı npm dışı CDN'den indirir
+// Ağ komutu yalnız KOMUT konumunda sayılır: heredoc gövdesi (yazılan dosyanın içeriği) atılır, komut ayırıcılarla bölünür,
+// her parçanın ilk sözcüğüne bakılır (ör. kod içindeki `curl: 0` nesne alanı komut değildir — tur 3 yanlış pozitifi).
+const NET_HEAD = /^(curl|wget|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|winget|choco|brew|certutil|bitsadmin)(\.exe)?$/i;
+function netCommands(cmd) {
+  const body = cmd.replace(/<<-?\s*(['"]?)(\w+)\1[^\n]*\n[\s\S]*?\n\s*\2\s*(?=\n|$)/g, '<<heredoc');
+  const hits = [];
+  for (let seg of body.split(/&&|\|\||;|\||\n|\$\(|`/)) {
+    seg = seg.trim().replace(/^(\w+=\S*\s+)+/, '').replace(/^(sudo|exec|time)\s+/, '');
+    const w = seg.split(/\s+/), head = (w[0] || '').replace(/^["']|["']$/g, ''), base = head.split(/[\\/]/).pop();
+    const next = w.slice(1).join(' ');
+    if (NET_HEAD.test(base)
+      || (/^git$/i.test(base) && /^(clone|fetch)\b/i.test(next))
+      || (/^pip3?$/i.test(base) && /^install\b/i.test(next))
+      || (/^python3?$/i.test(base) && /^-m\s+pip\b/i.test(next))
+      || ((/^npx$/i.test(base) && /^(-y\s+)?(@?playwright\S*)\s+install\b/i.test(next)) || (/playwright(\.cmd)?$/i.test(base) && /^install\b/i.test(next)))
+      || (/^node$/i.test(base) && /playwright\S*cli\.js\s+install\b/i.test(next))) hits.push(seg.slice(0, 160));
+  }
+  return hits;
+}
 const GEN = /(higgs(field)?|\bhf)\s+(generate|upload)|generate\s+create|motion-render\s+(gen|ingest)\b/i;
 
 function forms(p) {
@@ -45,7 +64,8 @@ async function scanTranscript(file, deny) {
       for (const f of F) if (low.includes(f)) { res.forbidden.push({ tool: b.name, path: f, input: s.slice(0, 200) }); break; }
       if (b.name === 'Bash' || b.name === 'PowerShell') {
         const c = String(b.input?.command || '');
-        if (NET.test(c)) res.net.push(c.slice(0, 160));
+        for (const h of netCommands(c)) res.net.push(h);
+        if (NET.test(c)) res.netText = (res.netText || 0) + 1;   // metin eşleşmesi (bilgi; ihlal sayılmaz)
         if (GEN.test(c)) res.gen.push(c.slice(0, 160));
         // kabukla yazılan betik: hedef dosya; göreli hedef komuttaki `cd` dizinine, $DEĞİŞKEN aynı komuttaki atamaya göre çözülür
         const cwd = (/(?:^|&&|;)\s*cd\s+["']?([^"'&;\n]+?)["']?\s*(?:&&|;|\n)/.exec(c) || [])[1];
@@ -77,7 +97,8 @@ function reviewerStats(dir) {
     if (!fs.existsSync(f)) continue;
     for (const m of fs.readFileSync(f, 'utf8').matchAll(KARAR)) {
       const k = m[0].trim(); if (seen.has(k)) continue; seen.add(k);
-      out.karar.push(m[1].toUpperCase() + ' ' + m[2] + '/' + m[3]); out.tasteScores.push(+m[2] / +m[3] * 8); if (/GEÇMEZ/i.test(m[1])) out.gecmez++;
+      const kk = m[1].toUpperCase().replace(/^SARTLI/, 'ŞARTLI').replace(/^TESLIM/, 'TESLİM').replace(/GECER$/, 'GEÇER').replace(/GECMEZ$/, 'GEÇMEZ');
+      out.karar.push(kk + ' ' + m[2] + '/' + m[3]); out.tasteScores.push(+m[2] / +m[3] * 8); if (/GEÇMEZ/.test(kk)) out.gecmez++;
     }
   }
   return out;

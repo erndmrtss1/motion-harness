@@ -50,13 +50,32 @@ export async function vendorScripts(root) {
   const rt = path.join(root, 'motion-runtime.js');
   if (fs.existsSync(rt)) { const src = fs.readFileSync(rt, 'utf8'); for (const u of src.match(/https:\/\/unpkg\.com\/[^'" ]+/g) || []) if (!SCRIPTS.some((s) => s.url === u)) console.log('! motion-runtime.js bilinmeyen unpkg adresi (SRI tablosunda yok): ' + u); }
   for (const { url, sri } of SCRIPTS) {
-    const buf = await get(url);
+    // unpkg/önbellek olmazsa (çevrimdışı kip, boş ya da görünmeyen önbellek, unpkg'ye erişim yok) aynı dosya npm paketinden alınır:
+    // unpkg npm tarball'ını olduğu gibi sunar → aynı bayt, aynı SRI. Yalnız npm kayıt defterine çıkılır (eval tur 3 bulgusu).
+    let buf, via = '';
+    try { buf = await get(url); } catch (e) { buf = await npmScript(url, e); via = ' (npm)'; }
     const got = 'sha384-' + crypto.createHash('sha384').update(buf).digest('base64');
     if (got !== sri) { try { fs.rmSync(ck(url)); } catch { /* yut */ } throw new Error('SRI uyuşmadı: ' + url + '\n  beklenen ' + sri + '\n  gelen    ' + got); }
+    if (via) { fs.mkdirSync(CACHE, { recursive: true }); fs.writeFileSync(ck(url) + '.part', buf); fs.renameSync(ck(url) + '.part', ck(url)); }   // sonraki koşu önbellekten
     const out = path.join(root, 'vendor', new URL(url).pathname);
     await write(out, buf);
-    console.log('vendor ✓', rel(root, out), (buf.length / 1024).toFixed(0) + ' KB', 'SRI ok');
+    console.log('vendor ✓', rel(root, out), (buf.length / 1024).toFixed(0) + ' KB', 'SRI ok' + via);
   }
+}
+// unpkg adresi → npm paketi: https://unpkg.com/<paket>@<sürüm>/<dosya> → `npm pack <paket>@<sürüm>` → package/<dosya>
+async function npmScript(url, cause) {
+  const m = /^https:\/\/unpkg\.com\/((?:@[^/]+\/)?[^@/]+)@([^/]+)\/(.+)$/.exec(url);
+  if (!m) throw cause;
+  const [, pkg, ver, file] = m, pkgDir = path.join(CACHE, 'npm', pkg.replace(/[\\/]/g, '__') + '@' + ver);
+  if (!fs.existsSync(path.join(pkgDir, 'package', file))) {
+    const { spawnSync } = await import('node:child_process');
+    fs.mkdirSync(pkgDir, { recursive: true });
+    const r = spawnSync('npm', ['pack', pkg + '@' + ver, '--pack-destination', pkgDir, '--json', '--silent'], { encoding: 'utf8', shell: process.platform === 'win32' });
+    let tgz = null; try { tgz = JSON.parse(r.stdout)[0].filename; } catch { /* aşağıda */ }
+    if (r.status !== 0 || !tgz) throw new Error(cause.message + '\n  npm yedeği de alınamadı (npm pack ' + pkg + '@' + ver + '): ' + String(r.stderr || r.stdout).trim().slice(-200));
+    untgz(path.join(pkgDir, tgz), pkgDir);
+  }
+  return fs.readFileSync(path.join(pkgDir, 'package', file));
 }
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');

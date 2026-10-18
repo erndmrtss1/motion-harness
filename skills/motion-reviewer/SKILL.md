@@ -147,7 +147,7 @@ Her madde **evet / hayır** olarak işaretlenir. Kanıtı kendi kırpımındır.
 | `live` | **≥ 7/8** |
 
 - Uygulanan eşik = max(profil eşiği, `scenes.json` `gate.taste`). Proje eşiği yükseltebilir, düşüremez.
-- Değerlendirilebilen madde sayısı `n` 8'den azsa eşik şöyle hesaplanır: **en çok (8 − profil eşiği) "hayır"**. Örnek: durağan still'de `n = 5`; full için eşik 4/5, light için 3/5.
+- Değerlendirilebilen madde sayısı `n` 8'den azsa eşik şöyle hesaplanır: **en çok (8 − profil eşiği) "hayır"**. Örnek: durağan still'de `n = 5`; full için eşik 4/5, light için 3/5, live için 4/5. KARAR satırının `kapı` alanına bu dönüştürülmüş eşik yazılır (ör. `kapı lookdev live ≥4/5`), 8'lik eşik değil.
 - **Evet < 3** ise karar GEÇMEZ olur ve geri dönüş noktası **look-dev / storyboard** olur. Düzeltme turu açılmaz, tasarım geri döner.
 
 ---

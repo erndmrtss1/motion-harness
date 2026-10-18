@@ -19,7 +19,7 @@
 > - kimliksiz prosedür maddeleri `GENAI §n` / `AUDIO §n`;
 > - `—` = kural yok, yalnız teknik bilgi.
 >
-> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval dersleri L-220…L-222 = 222) + §9'da world sınıfı liste. Ham kaynaklar:
+> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval dersleri L-220…L-223 = 223) + §9'da world sınıfı liste. Ham kaynaklar:
 > - tuzak arşivi 71 (63 core);
 > - skill / world / ADR / değişiklik kaydı / bellek dersleri 144 (105 core);
 > - kaynak proje retrosu 72;
@@ -377,6 +377,7 @@
 - **L-220 · Headless oturumda arka plan ajanı** — `claude -p` turu bitince süreç kapanır; arka planda başlatılan ajan ve iş de ölür. Etkileşimsiz oturumda ajan ve uzun iş ön planda çalıştırılır, bütün adımlar bitmeden son mesaj yazılmaz. · *eval* · *—*
 - **L-221 · Paylaşılan tarayıcı önbelleği** — Playwright tarayıcıları kullanıcı çapında paylaşılan önbellektedir (`ms-playwright`); makinedeki başka bir Playwright kurulumu kendi temizliğinde paketin sabitlediği Chromium revizyonunu silebilir. Belirti: `Executable doesn't exist`. `motion-render doctor` bunu yakalar. Çevrimiçi oturumda onar: paket klasöründen `npx playwright install chromium`. Çevrimdışı/eval kipinde (`MOTION_OFFLINE=1`) indirme yapılmaz → DUR, kullanıcı onarır. · *eval* · *—*
 - **L-222 · Eksik araç için betik yazmadan önce** — Ad-hoc betik yazmadan önce `motion-render <komut> --help` ve skill tariflerine bakılır. Eval'de iki boşluk böyle çıktı: ses süresini filme tamamlama (`tts --pad-to`) ve canlı look-dev yönlerini ayrı yakalama/ölçme (`live --avatar … --out out/lookdev/<yön>`). · *eval* · *—*
+- **L-223 · Masaüstü uygulamasının terminali `%LOCALAPPDATA%`'yı sanallaştırır** — Claude masaüstü uygulaması (Windows, paketli) Terminal panelinden başlatılan süreçlere `%LOCALAPPDATA%`'nın ayrı bir görünümünü verir: önbellekler (`motion-harness\cache`, olası `ms-playwright`) orada boş ya da farklı görünür. Kurulumu, uzun koşuları ve eval koşucusunu normal bir PowerShell/terminal penceresinden başlat; Claude Code oturumunun kendi Bash aracı gerçek görünümü kullanır. `vendor` artık önbellek görünmezse npm'e döner. · *eval* · *—*
 
 ---
 

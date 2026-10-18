@@ -2,6 +2,8 @@
 
 Claude Code için motion-grafik üretim hattı (plugin `motion`). Kanıtlanmış bir üretim **sürecini** taşır — kapılar, ölçüm (`qc` + `frame-check`), bağımsız reviewer, 3 yönlü varyant, animatik, tek düzeltme turu, DUR noktaları, rapor — ama hiçbir görsel **üslubu** varsayılan getirmez: her proje kendi dilini look-dev'de sıfırdan kurar.
 
+> **Bilinen boşluk (1.0.0):** look-dev'de "üç gerçekten farklı yön" kuralı eval'de doğrulanmadı. Üç turluk eval'de taze reviewer look-dev düzeyinde her turda 4 benzerlik ihlali saydı: aynı iskeletli yönler ve projeler arası krem kâğıt / koyu terminal yakınsaması. Kaynak projeyi taklit (UCUZ #11) her turda geçti. Yönleri seçerken iskeletin (kadraj, öğe yerleri, okuma sırası) gerçekten değiştiğini kendiniz de denetleyin. Düzeltme planı: [CHANGELOG.md](CHANGELOG.md) "1.1 yol haritası", ayrıntı [docs/H4-EVAL.md](docs/H4-EVAL.md).
+
 ## Kurulum (3 satır)
 
 Windows (PowerShell):
@@ -49,6 +51,7 @@ Birden çok projeyi yukarıdan yönetecekseniz (faz istemi yazan, raporları den
 | `/motion:*` komutları görünmüyor | Claude Code'u yeniden başlatın ya da oturumda `/reload-plugins`; `claude plugin list` içinde `motion@motion-harness` olmalı |
 | `motion-render` bulunamadı | `npm prefix -g` dizinini PATH'e ekleyin (Windows: `%APPDATA%\npm`); yeni terminal açın |
 | PowerShell betik çalıştırmıyor | `powershell -ExecutionPolicy Bypass -File .\install.ps1` biçimiyle çalıştırın |
+| Kurulum ya da render "önbellekte yok" / Chromium bulunamadı diyor, ama başka pencerede çalışıyor | Claude masaüstü uygulamasının Terminal paneli `%LOCALAPPDATA%`'nın ayrı (sanallaştırılmış) bir görünümünü kullanır. `install.ps1`'i ve uzun koşuları normal bir PowerShell penceresinden çalıştırın |
 | Chromium inmiyor (proxy/kurumsal ağ) | `HTTPS_PROXY` ayarlayın, `cd render && npx playwright install chromium` |
 | Chromium önceden çalışıyordu, şimdi "Executable doesn't exist" | Playwright tarayıcı önbelleği kullanıcı çapında paylaşılır; başka bir Playwright kurulumu paketin sabitlediği sürümü silmiş olabilir. `cd render && npx playwright install chromium`, sonra `/motion:doctor` |
 | ffmpeg özelliği eksik (prores_ks, ffv1, loudnorm) | Windows: `winget install Gyan.FFmpeg`; macOS: `brew install ffmpeg`; sonra `MOTION_FFMPEG` ortam değişkenine yolunu yazın |

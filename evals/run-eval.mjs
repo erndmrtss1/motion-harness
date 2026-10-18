@@ -13,6 +13,9 @@
 //  4. Ağ: yalnız npm kayıt defteri + Anthropic. MOTION_OFFLINE=1 (vendor önbellek dışına çıkmaz), MOTION_FONT_SOURCE=npm (@fontsource).
 //  5. Çıktılar (transkript, dosya ağacı, QC/fc JSON, kontaklar, belgeler) <kanıt>/eval/<brief>-r<tur>/ altına kopyalanır.
 //
+// Koşucuyu normal bir terminalden başlat: Claude masaüstü uygulamasının Terminal paneli %LOCALAPPDATA%'yı sanallaştırır
+// (önbellekler oturumlara boş görünür; LESSONS L-223 — tur 3 bulgusu).
+//
 // Kullanım:
 //   node evals/run-eval.mjs --brief <ad|all> [--round 1] [--root <dizin>] [--plugin <dizin>] [--evidence <dizin>]
 //                           [--minutes 90] [--max-turns 300] [--model <id>] [--deny <yol,yol>] [--dry]
