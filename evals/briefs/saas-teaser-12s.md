@@ -1,8 +1,8 @@
 ---
 motion-brief: 1
 ad: ledger-teaser
-konu: A 20-second teaser for a fictional team-budgeting SaaS called "Ledgerly", with a short voice-over
-sure: 20
+konu: A 12-second teaser for a fictional team-budgeting SaaS called "Ledgerly", with a short voice-over
+sure: 12
 ses: tts
 dil: en
 profil: light
@@ -17,8 +17,8 @@ fps: 60
 boyut: 1920x1080
 ---
 Voice-over (English, local TTS voice; render it with `motion-render tts`):
-"Budgets used to live in ten spreadsheets. Now your team plans in one place. Every request, every approval, in real time.
-Ledgerly. Spend with confidence."
+"Budgets used to live in ten spreadsheets. Now every approval happens in one place. Ledgerly. Spend with confidence."
+(≈ 9.7 s with the default local voice; the final card holds after the last word.)
 
 Audience: team leads at small companies who are tired of chasing budget approvals in email. The film moves from scattered
 fragments (many small, disconnected pieces) to a single calm structure, and lands on the product name. The "approval" moment

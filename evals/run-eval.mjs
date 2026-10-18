@@ -72,10 +72,16 @@ function settingsFor() {
     for (const a of abs) for (const tool of ['Read', 'Edit', 'Write']) deny.push(`${tool}(${a}/**)`);
     for (const f of forms) deny.push(`Bash(*${f}*)`);
   }
+  { // plugin klasörü okunur ama yazılmaz (tur 2: oturum plugin'in render/ klasöründen tarayıcı kurdu)
+    const { fwd, drive } = pathForms(PLUGIN);
+    for (const a of drive ? ['//' + fwd, '//' + drive[1].toLowerCase() + fwd.slice(2)] : ['/' + fwd]) for (const tool of ['Edit', 'Write']) deny.push(`${tool}(${a}/**)`);
+  }
   for (const c of [...NET_CMDS, ...GEN_CMDS]) deny.push(`Bash(*${c.trim()}*)`);
   deny.push('WebFetch', 'WebSearch');
   return { permissions: { deny, defaultMode: 'acceptEdits' }, env: {
     MOTION_NO_GENAI: '1', MOTION_OFFLINE: '1', MOTION_FONT_SOURCE: 'npm', MOTION_RENDER_LOCK: LOCK, MOTION_EVAL: '1',
+    // tarayıcı indirmesi (playwright install) dışarı çıkamaz: yerel kapalı porta yönlenir ve başarısız olur (şart 4, tur 2 bulgusu)
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1', PLAYWRIGHT_DOWNLOAD_HOST: 'http://127.0.0.1:9',
   } };
 }
 
@@ -98,6 +104,7 @@ EVAL KİPİ (otomatik değerlendirme koşusu — kullanıcı yok):
 - Faz sırası: init → ${meta.live ? 'lookdev → live (sayfa + /motion:live akışı) → motion-render live --qc → gate' : (meta.audio ? 'audio → ' : '') + 'lookdev → lexicon → P1 → master'}.
 - HEADLESS: bu oturum \`claude -p\`; tur bitince süreç kapanır. Ajanları ÖN PLANDA çalıştır (Agent → run_in_background: false) ve bekle; arka planda ajan bırakıp son mesajı yazma. Bütün fazlar (ya da süre tavanı) bitmeden durma.
 - Her fazı plugin komutlarıyla yürüt (/motion:faz <faz>, /motion:gate, /motion:master${meta.live ? ', /motion:live' : ''}); reviewer'ı her kapıda taze motion:motion-reviewer ajanı olarak aç.
+- ASIL HEDEF TESLİM: ${meta.live ? 'canlı sayfa + panel + `motion-render live --qc` (out/probe/live-qc.json) + canlı kapı' : 'out/master/ altında master mp4 (/motion:master)'}. Önce teslime ulaş, cila teslimden sonra.
 - Süre tavanı ${MINUTES} dk: önce bütün fazların asgari geçerli hâlini bitir (kısa render, light ayarlar), sonra cila.
 - Üretken (kredi harcayan) çağrı YASAK ve kilitli (MOTION_NO_GENAI=1). Bakiye okumak serbest.
 - Ağ: yalnız npm kayıt defteri. Fontlar \`motion-render vendor fonts\` ile npm @fontsource'tan gelir (MOTION_FONT_SOURCE=npm). WebFetch/WebSearch ve curl/wget kapalı. Bir adım dış indirme gerektirirse DUR: o adımı atla, eval-summary.json openIssues'a yaz.
@@ -114,6 +121,13 @@ function copyEvidence(dir, dst) {
   const probe = path.join(dir, 'out', 'probe');
   if (fs.existsSync(probe)) for (const f of fs.readdirSync(probe)) if (/\.(json|md)$/.test(f) || /contact|sheet|kontak/i.test(f)) take(path.join('out', 'probe', f));
   for (const sub of ['review', 'measure']) take(path.join('out', sub));
+  const outDir = path.join(dir, 'out');   // look-dev/still/kontak görselleri ve teslim mp4 (kare dizinleri, ProRes ve arşiv hariç)
+  const walkOut = (d, rel) => { if (!fs.existsSync(d)) return; for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const r = path.join(rel, e.name), p = path.join(d, e.name);
+    if (e.isDirectory()) { if (!/^(frames|capture-frames|archive|logs)$/.test(e.name)) walkOut(p, r); continue; }
+    if (/\.(png|jpe?g|webp|json|md|mp4)$/i.test(e.name) && fs.statSync(p).size < 150e6) take(r);
+  } };
+  walkOut(outDir, 'out');
   const lines = [];   // dosya ağacı (kare dizinleri özetlenir)
   const walk = (d, rel = '', depth = 0) => {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
@@ -162,7 +176,7 @@ for (const name of briefs) {
     const argvR = ['-p', cont, '--resume', span.sid, '--plugin-dir', PLUGIN, '--output-format', 'stream-json', '--verbose',
       '--max-turns', String(MAX_TURNS), '--permission-mode', 'acceptEdits',
       '--allowedTools', 'Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Agent', 'Task', 'Skill', 'SlashCommand', 'TodoWrite',
-      '--disallowedTools', 'WebFetch', 'WebSearch'];
+      '--disallowedTools', 'WebFetch', 'WebSearch', 'PowerShell'];
     if (MODEL) argvR.push('--model', MODEL);
     const run = { brief: name, round: ROUND, dir, evidence: ev, start: span.t0, resumedAt: new Date().toISOString(), firstLegMinutes: +span.minutes.toFixed(1), minutesCap: MINUTES, maxTurns: MAX_TURNS, deny: DENY, interrupted: 'dış sonlandırma (koşucu süreci) → --resume' };
     console.log(`▶ devam ${name} r${ROUND} · ilk bölüm ${span.minutes.toFixed(1)} dk · kalan ${left.toFixed(1)} dk`);
@@ -192,7 +206,7 @@ for (const name of briefs) {
   const argv = ['-p', PROMPT_FILE ? fs.readFileSync(PROMPT_FILE, 'utf8') : PROMPT(meta), '--plugin-dir', PLUGIN, '--output-format', 'stream-json', '--verbose',
     '--max-turns', String(MAX_TURNS), '--permission-mode', 'acceptEdits',
     '--allowedTools', 'Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Agent', 'Task', 'Skill', 'SlashCommand', 'TodoWrite',
-    '--disallowedTools', 'WebFetch', 'WebSearch'];
+    '--disallowedTools', 'WebFetch', 'WebSearch', 'PowerShell'];
   if (MODEL) argv.push('--model', MODEL);
   const run = { brief: name, round: ROUND, dir, evidence: ev, start: new Date().toISOString(), minutesCap: MINUTES, maxTurns: MAX_TURNS, deny: DENY };
   console.log(`▶ ${name} r${ROUND} → ${dir}`);

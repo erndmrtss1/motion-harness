@@ -1,11 +1,11 @@
 ---
 motion-brief: 1
 ad: led-flasor
-konu: Bir 555 zamanlayıcının LED'i nasıl yakıp söndürdüğünü anlatan 20 saniyelik teknik açıklayıcı
-sure: 20
+konu: Bir 555 zamanlayıcının LED'i nasıl yakıp söndürdüğünü anlatan 12 saniyelik teknik açıklayıcı
+sure: 12
 ses: yok
 dil: tr
-profil: full
+profil: light
 world: lookdev
 genai_butce: 0
 yasaklar: [stok devre fotoğrafı, gerçek marka/ürün adı, ekran dolusu madde işaretli metin, neon parlama klişesi]
@@ -16,7 +16,7 @@ teslim: [master, h264]
 fps: 60
 boyut: 1920x1080
 ---
-Elektronik meraklısı genç bir izleyiciye, klasik "LED flaşör" devresinin kalbini 20 saniyede göster.
+Elektronik meraklısı genç bir izleyiciye, klasik "LED flaşör" devresinin kalbini 12 saniyede göster.
 Devre: 9 V besleme, 555 zamanlayıcı astable modda, iki direnç, bir kondansatör, bir LED.
 Anlatılacak döngü: kondansatör R1+R2 üzerinden dolar → gerilim eşiğe (2/3 Vcc) ulaşınca çıkış düşer, LED söner →
 kondansatör R2 üzerinden boşalır → tetik seviyesine (1/3 Vcc) inince çıkış yükselir, LED yanar → döngü tekrar eder.
