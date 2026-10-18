@@ -463,6 +463,7 @@ Ayrıca durduran ama DUR sayılmayan araç çıkışları: disk < 40 GB (çıkı
 | tek düzeltme turu | her kapıda 1 | her kapıda 1 | her kapıda 1 |
 | tam render | fps tam; 2×/S× kuralları | fps tam; 2×/S× kuralları | yok (sayfa teslim edilir) |
 | canlı ölçütler | — | — | **≥ 60 fps · gecikme ≤ 100 ms · düşen kare 0** |
+| video dosyası kuralları (K3 kamera payı/OURS, son kare siyah, fade, devir/dikiş, master loudness) | uygulanır | uygulanır | **uygulanmaz** (sayfa gerçek zamanlıdır; yerine PR-3 + kayıt üzerinde §0.6; istisna kaydı gerekmez) |
 | master + arşiv | ProRes + H.264 + FFV1 arşiv (MS-*) | master zorunlu; arşiv isteğe bağlı | yok; sayfa + `live` ölçüm JSON'ı |
 
 `light` ve `live` ayrımları paket kararıdır (kaynak projede yalnız `full` koştu); ayrıntılı akış [PLAYBOOK.md](PLAYBOOK.md) §0.2, canlı profil `motion-live` skill'i.

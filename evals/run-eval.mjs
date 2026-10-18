@@ -129,6 +129,16 @@ function copyEvidence(dir, dst) {
   fs.writeFileSync(path.join(dst, 'tree.txt'), lines.join('\n') + '\n');
 }
 
+// Devam kipi (--resume): dış bir sebeple kesilen turun oturumları aynı session id ile kalan süre kadar sürdürülür
+// (aynı tur; transkripte eklenir). Süre = tavan − önceki koşunun transkriptteki ilk/son zaman damgası farkı.
+const RESUME = args.includes('--resume');
+function transcriptSpan(file) {
+  const L = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').filter(Boolean) : [];
+  let sid = null, t0 = null, t1 = null;
+  for (const l of L) { let e; try { e = JSON.parse(l); } catch { continue; } if (!sid && e.session_id) sid = e.session_id; if (e.timestamp) { t0 = t0 || e.timestamp; t1 = e.timestamp; } }
+  return { sid, t0, t1, minutes: t0 && t1 ? (Date.parse(t1) - Date.parse(t0)) / 60000 : 0 };
+}
+
 fs.mkdirSync(ROOT, { recursive: true });
 const { cmd, shell } = claudeBin();
 const settings = settingsFor();
@@ -142,6 +152,36 @@ for (const name of briefs) {
   const meta = { live: /\bprofil:\s*live\b/.test(txt), audio: /\bses:\s*(tts|dosya:|muzik)/.test(txt) };
   const dir = path.join(ROOT, `motion-eval-${name}-r${ROUND}`), ev = path.join(EVID, `${name}-r${ROUND}`);
   if (DRY) { console.log('[dry] ' + dir + ' · kanıt ' + ev + ' · deny ' + settings.permissions.deny.length + ' kural'); continue; }
+  if (RESUME) {
+    const span = transcriptSpan(path.join(dir, 'transcript.jsonl')), left = Math.max(0, MINUTES - span.minutes);
+    if (!span.sid) { console.error('devam: session id yok: ' + dir); continue; }
+    if (left < 1) { console.log('devam: süre doldu (' + span.minutes.toFixed(1) + ' dk) · ' + name); continue; }
+    const cont = 'Bu oturum dış bir sebeple (değerlendirme koşucusu) kesildi; kaldığın yerden devam et. Aynı EVAL KİPİ kuralları geçerli ' +
+      '(ajanlar ön planda, AskUserQuestion yok, DUR → önerilen seçenek, üretken çağrı ve dış ağ yasak). Kalan süre ' + Math.floor(left) +
+      ' dk: önce yarım kalan kapıyı bitir, sonra sıradaki fazlara geç; sonunda eval-summary.json yaz.';
+    const argvR = ['-p', cont, '--resume', span.sid, '--plugin-dir', PLUGIN, '--output-format', 'stream-json', '--verbose',
+      '--max-turns', String(MAX_TURNS), '--permission-mode', 'acceptEdits',
+      '--allowedTools', 'Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Agent', 'Task', 'Skill', 'SlashCommand', 'TodoWrite',
+      '--disallowedTools', 'WebFetch', 'WebSearch'];
+    if (MODEL) argvR.push('--model', MODEL);
+    const run = { brief: name, round: ROUND, dir, evidence: ev, start: span.t0, resumedAt: new Date().toISOString(), firstLegMinutes: +span.minutes.toFixed(1), minutesCap: MINUTES, maxTurns: MAX_TURNS, deny: DENY, interrupted: 'dış sonlandırma (koşucu süreci) → --resume' };
+    console.log(`▶ devam ${name} r${ROUND} · ilk bölüm ${span.minutes.toFixed(1)} dk · kalan ${left.toFixed(1)} dk`);
+    const out = fs.createWriteStream(path.join(dir, 'transcript.jsonl'), { flags: 'a' });
+    const p = spawn(cmd, argvR, { cwd: dir, shell, env: { ...process.env, ...settings.env }, stdio: ['ignore', 'pipe', 'pipe'] });
+    p.stdout.pipe(out);
+    p.stderr.on('data', (d) => fs.appendFileSync(path.join(dir, 'stderr.log'), d));
+    const timer = setTimeout(() => { run.timedOut = true; console.log(`⏱ ${name} tavan → durduruluyor`); killTree(p.pid); }, left * 60000);
+    runs.push(new Promise((ok) => p.on('close', (code) => {
+      clearTimeout(timer);
+      run.end = new Date().toISOString(); run.exit = code;
+      run.minutes = +(span.minutes + (Date.parse(run.end) - Date.parse(run.resumedAt)) / 60000).toFixed(1);
+      fs.writeFileSync(path.join(dir, 'run.json'), JSON.stringify(run, null, 1));
+      try { copyEvidence(dir, ev); } catch (e) { run.copyError = e.message; }
+      console.log(`■ ${name} r${ROUND} çıkış ${code}${run.timedOut ? ' (tavan)' : ''} · toplam ${run.minutes} dk`);
+      ok(run);
+    })));
+    continue;
+  }
   if (fs.existsSync(dir)) { console.error('klasör zaten var (yeni tur için --round): ' + dir); process.exit(2); }
   fs.mkdirSync(path.join(dir, '.claude'), { recursive: true });
   fs.copyFileSync(src, path.join(dir, 'brief.md'));
