@@ -96,6 +96,7 @@ const PROMPT = (meta) => `START.md'yi oku (plugin içindeki ${'$'}{CLAUDE_PLUGIN
 EVAL KİPİ (otomatik değerlendirme koşusu — kullanıcı yok):
 - Her DUR noktasında sunacağın seçeneklerden önerilen (ilk) seçeneği kullanıcı onayı say; raporda "eval: otomatik onay" diye işaretle ve sıradaki faza geç. AskUserQuestion KULLANMA.
 - Faz sırası: init → ${meta.live ? 'lookdev → live (sayfa + /motion:live akışı) → motion-render live --qc → gate' : (meta.audio ? 'audio → ' : '') + 'lookdev → lexicon → P1 → master'}.
+- HEADLESS: bu oturum \`claude -p\`; tur bitince süreç kapanır. Ajanları ÖN PLANDA çalıştır (Agent → run_in_background: false) ve bekle; arka planda ajan bırakıp son mesajı yazma. Bütün fazlar (ya da süre tavanı) bitmeden durma.
 - Her fazı plugin komutlarıyla yürüt (/motion:faz <faz>, /motion:gate, /motion:master${meta.live ? ', /motion:live' : ''}); reviewer'ı her kapıda taze motion:motion-reviewer ajanı olarak aç.
 - Süre tavanı ${MINUTES} dk: önce bütün fazların asgari geçerli hâlini bitir (kısa render, light ayarlar), sonra cila.
 - Üretken (kredi harcayan) çağrı YASAK ve kilitli (MOTION_NO_GENAI=1). Bakiye okumak serbest.

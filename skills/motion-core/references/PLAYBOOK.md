@@ -184,6 +184,7 @@ r2 kendi tablosunu yazar (`madde | r1 bulgusu | r2 ölçümü | kapandı mı`) v
 
 - Toplu render'da bir sahne başarısız olursa iş durmaz: hata loglanır, sıradaki sahneye geçilir, sonda atlanan sayısı raporlanır.
 - Çok adımlı zincirler bir betik dosyası olarak yazılıp tek arka plan komutuyla koşturulur. Betik, kullanılan zinciri belgeler.
+- **Etkileşimsiz oturum (headless, `claude -p`):** ajanlar ve uzun işler ön planda (`Agent` → `run_in_background: false`; Bash ön planda ya da `motion-render wait`) koşturulur ve beklenir. Headless süreç tur bitince kapanır; arka planda bırakılan ajan ve iş de ölür (eval tur 1'de üç oturum bu yüzden look-dev ortasında bitti).
 
 ### 2.5 Faz içi ara mesajlar
 

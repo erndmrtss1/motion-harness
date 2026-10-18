@@ -30,7 +30,7 @@ async function scanTranscript(file, deny) {
   const rl = readline.createInterface({ input: fs.createReadStream(file, 'utf8'), crlfDelay: Infinity });
   for await (const line of rl) {
     let ev; try { ev = JSON.parse(line); } catch { continue; }
-    if (ev.type === 'result') { res.turns = ev.num_turns; res.cost = ev.total_cost_usd; res.durationMs = ev.duration_ms; res.isError = ev.is_error; }
+    if (ev.type === 'result') { res.results = (res.results || 0) + 1; res.turns = (res.turns || 0) + (ev.num_turns || 0); res.cost = (res.cost || 0) + (ev.total_cost_usd || 0); res.durationMs = (res.durationMs || 0) + (ev.duration_ms || 0); res.isError = ev.is_error; }   // headless: bildirimle ek turlar olabilir → toplam
     const blocks = ev.message?.content;
     if (!Array.isArray(blocks)) continue;
     for (const b of blocks) {
@@ -90,12 +90,15 @@ for (const dir of dirs) {
   const live = fs.existsSync(lq) ? JSON.parse(fs.readFileSync(lq, 'utf8')) : null;
   const tree = fs.existsSync(path.join(dir, 'tree.txt')) ? fs.readFileSync(path.join(dir, 'tree.txt'), 'utf8').split('\n') : [];
   const deliverables = tree.filter((l) => /^out\/(master|scenes|live)\/[^ ]+\.(mp4|mov|html)\s/.test(l) || /^live\/[^ ]+\.html\s/.test(l)).map((l) => l.split('  ')[0]);
-  const adhoc = [...new Set([...(sum?.adhocScripts || []).map((x) => x.path || x), ...tr.writtenScripts])];
+  // out/measure ve out/review altındaki betikler bağımsız ölçüm/reviewer'ın kendi yöntemidir (tasarım gereği) → ad-hoc sayılmaz.
+  const INDEP = /out[\\/](measure|review)[\\/]/i;
+  const allScripts = [...new Set([...(sum?.adhocScripts || []).map((x) => x.path || x), ...tr.writtenScripts])];
+  const adhoc = allScripts.filter((x) => !INDEP.test(x)), indep = allScripts.filter((x) => INDEP.test(x));
   rows.push({
     brief: path.basename(dir).replace(/-r\d+$/, ''), exit: run.exit, timedOut: !!run.timedOut, minutes: run.minutes, turns: tr.turns, costUsd: tr.cost,
     forbiddenAttempts: tr.forbidden.length, forbidden: tr.forbidden.slice(0, 5), netAttempts: tr.net.length, net: tr.net.slice(0, 5),
     genAttempts: tr.gen.length, gen: tr.gen.slice(0, 5), deniedResults: tr.denied,
-    adhocScripts: adhoc.length, adhocList: adhoc,
+    adhocScripts: adhoc.length, adhocList: adhoc, independentScripts: indep.length,
     reviewer: rv, gecmez: rv.gecmez, reviews: rv.karar.length, tasteMin: rv.tasteScores.length ? Math.min(...rv.tasteScores) : null,
     phases: sum?.phases?.map((p) => p.name) || [], openIssues: sum?.openIssues || [],
     deliverables, live: live ? { pass: live.pass, fps: live.fps, latency: live.latency, dropped: live.dropped } : null,
@@ -105,9 +108,9 @@ for (const dir of dirs) {
 }
 const out = { root: ROOT, round: ROUND, at: new Date().toISOString(), balance: runsMeta ? { start: runsMeta.balanceStart, end: runsMeta.balanceEnd, delta: runsMeta.balanceDelta } : null, rows };
 const jo = opt('--json'); if (jo) fs.writeFileSync(jo, JSON.stringify(out, null, 1));
-const md = ['| brief | süre (dk) | tur | yasak yol | ağ | üretken | ad-hoc betik | reviewer kararları | GEÇMEZ | §0.6 en düşük | teslim | sonuç |',
-  '|---|---:|---:|---:|---:|---:|---:|---|---:|---:|---|---|',
-  ...rows.map((r) => `| ${r.brief} | ${r.minutes ?? '—'}${r.timedOut ? ' (tavan)' : ''} | ${r.turns ?? '—'} | ${r.forbiddenAttempts} | ${r.netAttempts} | ${r.genAttempts} | ${r.adhocScripts} | ${r.reviewer.karar.join(', ') || '—'} | ${r.gecmez} | ${r.tasteMin ?? '—'} | ${r.deliverables.join(', ') || (r.live ? 'live-qc ' + (r.live.pass ? '✓' : '✗') : '—')} | ${r.verdict} |`)].join('\n');
+const md = ['| brief | süre (dk) | tur | yasak yol | ağ | üretken | ad-hoc betik | bağımsız ölçüm betiği | reviewer kararları | GEÇMEZ | §0.6 en düşük | teslim | sonuç |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---|---|',
+  ...rows.map((r) => `| ${r.brief} | ${r.minutes ?? '—'}${r.timedOut ? ' (tavan)' : ''} | ${r.turns ?? '—'} | ${r.forbiddenAttempts} | ${r.netAttempts} | ${r.genAttempts} | ${r.adhocScripts} | ${r.independentScripts} | ${r.reviewer.karar.join(', ') || '—'} | ${r.gecmez} | ${r.tasteMin ?? '—'} | ${r.deliverables.join(', ') || (r.live ? 'live-qc ' + (r.live.pass ? '✓' : '✗') : '—')} | ${r.verdict} |`)].join('\n');
 const mo = opt('--md'); if (mo) fs.writeFileSync(mo, md + '\n');
 console.log(md);
 if (out.balance) console.log(`\nbakiye ${out.balance.start} → ${out.balance.end} (Δ ${out.balance.delta})`);

@@ -92,7 +92,10 @@ if (sub === 'sync') {
   if (MAN.audio != null) { if (typeof MAN.audio !== 'string') err(M, 'audio dize ya da null olmalı'); else if (!fs.existsSync(path.join(ROOT, MAN.audio))) wrn(M, 'audio dosyası yok: ' + MAN.audio); }
   if (MAN.animatic != null) { if (!isObj(MAN.animatic)) err(M, 'animatic nesne olmalı'); else { frac(M, 'animatic.scale', MAN.animatic.scale); if (MAN.animatic.fps != null && !(isNum(MAN.animatic.fps) && MAN.animatic.fps > 0)) err(M, 'animatic.fps pozitif olmalı'); } }
   if (MAN.gate != null) { if (!isObj(MAN.gate)) err(M, 'gate nesne olmalı'); else if (MAN.gate.taste != null && !(isNum(MAN.gate.taste) && MAN.gate.taste >= 0 && MAN.gate.taste <= 8)) err(M, 'gate.taste 0–8 olmalı'); }
-  if (!Array.isArray(MAN.scenes) || !MAN.scenes.length) err(M, 'scenes boş olmayan dizi olmalı');
+  // live profilinde video sahnesi yoktur: scenes boş dizi geçerlidir (canlı sayfa live/ altında; ölçüm live --qc).
+  if (!Array.isArray(MAN.scenes)) err(M, 'scenes dizi olmalı');
+  else if (!MAN.scenes.length && MAN.profile !== 'live') err(M, 'scenes boş olmayan dizi olmalı (live profili dışında)');
+  else if (!MAN.scenes.length) wrn(M, 'live profili: sahne yok (beklenen) — kapı ölçümü motion-render live --qc');
 
   // sahneler
   const ids = new Set(), all = new Set((MAN.scenes || []).map((s) => s && s.id));

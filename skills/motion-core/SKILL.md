@@ -225,6 +225,8 @@ Render uzun sürer: arka planda başlat, `motion-render wait --id <id> --tag <T>
 
 Komutlar: `/motion:init` (F0 kurulum; brief ön-bilgisi varsa soru sormaz) · `/motion:setup` (ortam kurulumu) · `/motion:doctor` (ortam denetimi) · `/motion:faz` (bir fazı PLAYBOOK'a göre yürütür) · `/motion:gate` (kapı: belgeler → qc/frame-check → bağımsız ölçüm → taze reviewer → tek düzeltme turu) · `/motion:master` (film master zinciri) · `/motion:live` (canlı profil) · `/motion:promote` (dersleri core/world/proje katmanına taşır; core'a yalnız öneri).
 
+Etkileşimsiz oturumda (`claude -p`, `MOTION_EVAL=1`) ajanlar ön planda çalıştırılır (`run_in_background: false`); arka planda ajan bırakıp turu bitirmek süreci ve ajanı öldürür (LESSONS L-220).
+
 Ajan türü bulunamazsa genel amaçlı ajan açılır ve isteme "Önce `agents/<ad>.md` dosyasını oku ve oradaki rolü birebir üstlen" yazılır.
 
 ---

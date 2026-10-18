@@ -374,6 +374,7 @@
 - **L-217 · `String.replace` dolar desenleri** — Yerine konan metindeki `$'`, `$&`, `$1` desen olarak işlenir → `s.replace(a, () => b)`. · *traps* · *MT-8*
 - **L-218 · Kilitli mp4** — Oynatıcıda açık mp4'ün üzerine yazılamadı (EPERM) → zaman damgalı ad + "en son" çözümleyici; kullanıcının uygulaması kapatılmaz. · *traps* · *ÇK-10*
 - **L-219 · Konsol kodlaması** — Windows konsolu ✓ gibi karakterleri basamadı → araç stdout'u UTF-8'e zorlanır; dosyalar UTF-8. · *retro* · *—*
+- **L-220 · Headless oturumda arka plan ajanı** — `claude -p` turu bitince süreç kapanır; arka planda başlatılan ajan ve iş de ölür. Etkileşimsiz oturumda ajan ve uzun iş ön planda çalıştırılır, bütün adımlar bitmeden son mesaj yazılmaz. · *eval* · *—*
 
 ---
 

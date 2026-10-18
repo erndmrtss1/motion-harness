@@ -540,6 +540,16 @@
       if (typeof api._onAvatar === 'function') api._onAvatar(api._avatar);
       return api._avatar;
     },
+    // Tepki kaydı (proje adaptörü genişletir): def = { dur: s, kick?: {kanal: hız}, f(p 0..1) → {pitch,yaw,roll,x,y,scale,mouth,eyes} }.
+    // Aynı adla kayıt öncekini değiştirir; panel listesi REACTIONS'tan okunur. Tuş eşlemesi ayarlarda (keys) yapılır.
+    registerReaction(name, def, label) {
+      if (!name || !/^[a-z0-9_-]+$/i.test(name)) throw new Error('registerReaction: ad [a-z0-9_-] olmalı');
+      if (!def || typeof def.f !== 'function' || !(def.dur > 0)) throw new Error('registerReaction: { dur > 0, f(p) } gerekli');
+      if (['dinle', 'sessiz', 'sifirla'].includes(name)) throw new Error('registerReaction: ' + name + ' ayrılmış (durum anahtarı)');
+      RX[name] = { kick: {}, ...def };
+      REACTIONS[name] = label || name;
+      return Object.keys(RX);
+    },
   });
 
   const role = (document.currentScript && document.currentScript.dataset.role) || 'stage';
