@@ -65,19 +65,19 @@
 ## §0.3 YARATICILIK KURALI (zorunlu)
 
 > **Paket kaynak projenin SÜRECİNİ taşır (kapılar, ölçüm, reviewer, varyantlar, DUR, rapor), ÜSLUBUNU değil.**
-> Kâğıt / pafta / cetvel / rapido dili **fx-lab** world'üne aittir. Bir world seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.
+> Kâğıt / pafta / cetvel / rapido dili **focusfx-paper** world'üne (kütüphane) aittir. Bir world seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.
 > `/motion:init`'te **"yeni world"** seçilirse look-dev fazı brief'ten **sıfırdan** bir dil kurar: **3 gerçekten farklı yön** (malzeme, ışık, hareket grameri, tipografi, kamera dili); her yön **ölçülebilirdir** — bant, kontrast ve K1 maske tanımı `world.json`'a yazılır.
-> **"fx-lab'in bir versiyonu"** sayılan yön varyant olarak kabul edilmez; reviewer'ın UCUZ listesine **#11 "önceki projeyi taklit"** eklenmiştir.
+> Yeni world kurulurken **"bir kütüphane world'ünün versiyonu"** sayılan yön varyant olarak kabul edilmez; reviewer'ın UCUZ listesinde **#11 "seçilmemiş world'e ya da önceki projeye benzerlik"** vardır. Seçilmiş world'e benzerlik özelliktir (HK-36).
 > Kurallar (K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi, §0.6) üslup değil **DİSİPLİNDİR**: her world'de geçerlidir; ama **eşikleri ve ölçüm maskeleri world başına yeniden tanımlanır**.
 > Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, kopyalanmaz. Bulunan yeni kalıp world'e **K-yeni** olarak yazılır ve `/motion:promote` ile core'a önerilir.
 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
 | YR-1 | Paket süreç taşır, üslup taşımaz; core'da hiçbir görsel değer (palet, font, primitif, alet, geçiş kalıbı, grade parametresi, bant, maske) yoktur. | rev (UCUZ #11) | yok | — | hayır | SERT | kaynak projenin değerleri genel skill'e sızmıştı (kanıtsız varsayılanlar) |
-| YR-2 | World seçilmedikçe primitif/renk/font/alet/geçiş kalıbı gelmez; `skills/motion-world/examples/<ad>/` yalnız **örnektir**, kopyalanmak için değil okumak içindir. | rev | yok | — | **evet** (world) | SERT | jenerik dünya dili kimliksiz çıktı verdi |
+| YR-2 | World seçilmedikçe primitif/renk/font/alet/geçiş kalıbı gelmez; `skills/motion-world/library/<ad>/` yalnız kullanıcı seçerse projenin world'ü olur (`/motion:init --world <ad>`); seçilmemişse okumak içindir, kopyalanmaz. | rev | yok | — | **evet** (world) | SERT | jenerik dünya dili kimliksiz çıktı verdi |
 | YR-3 | Yeni world'de look-dev **3 gerçekten farklı yön** üretir; iki yön şu eksenlerin **en az üçünde** ayrışır: malzeme/zemin · ışık modeli · ton (bant) · hareket grameri · tipografi · kamera dili · geçiş dili. Aynı yönün renk/açı değişkeleri üç yön sayılmaz. Ayrışan eksenlerden en az biri yapısaldır (kamera dili · hareket grameri · kompozisyon iskeleti); varsayılan çekici görünümdeki (terminal · defter · SaaS · sentez) yön ≤ 1 ve gerekçeli (motion-world §2). Ölçüm: `motion-render lookdev-diff` — iskelet (DOM kutuları, 6×4 rol doluluğu, kareler arası ortalama) ve palet; 1.1'de ikisi de UYARI (iskelet eşik 2,2 · palet ≥ 3,5), uyarı veren çifte reviewer gerekçesi zorunlu; iskelet SERT kapısı 1.2'de. | rev (eksen sayımı), VR-1 | 3 yön · ≥ 3 eksen | — | hayır | SERT | aynı dilin açı/renk değişkeleri "varyant" sanıldı |
 | YR-4 | Her yön ölçülebilir teslim edilir: `band`, kontrast hedefi, `k1.mask` (+ `selector`), `accent`, `classes`, `grade.chain` `world.json`'a yazılır; ölçülemeyen yön seçime sunulmaz. Zorunlu alan eksikse `manifest validate` hata verir, ilgili kontrol "ölçülemedi" der ve **değer uydurulmaz**; ölçülemeyen SERT kural geçmiş sayılmaz. | `manifest validate`, M-QC7, M-K1 | — | — | **evet** (world) | SERT | sayısı olmayan dil QC'de "geçti ama okunmuyor" verdi |
-| YR-5 | "Örnek world'ün / önceki projenin versiyonu" sayılan yön varyant değildir (UCUZ #11). | rev | — | — | hayır | SERT | paket bir önceki filmin dilini taşıma riski |
+| YR-5 | Yeni world kurulurken "kütüphane world'ünün / önceki projenin versiyonu" sayılan yön varyant değildir (UCUZ #11); world seçilmişse üç yön world içinde yapısal eksenlerde ayrışır (motion-world §2.7). | rev | — | — | hayır | SERT | paket bir önceki filmin dilini taşıma riski |
 | YR-6 | Kurallar disiplindir: her world'de geçerli; eşik ve maskeler world başına yeniden tanımlanır; yeniden tanım SERT kuralı kaldıramaz. | — | — | world | hayır | SERT | aynı kural (K1) farklı dünyada farklı maske istedi |
 | YR-7 | Kalıplar (PATTERNS K-xx) ve dersler ilham/uyarıdır; sahneye A/B kanıtıyla ya da `project.md`'de kayıtlı muafiyetle girer (KT-5). Yeni kalıp world'e `K-yeni` olarak yazılır, `/motion:promote` ile önerilir. | rev, rapor | — | proje (muafiyet) | hayır | SERT | kalıp kartları şablon gibi kopyalanınca dünya kuralları ezildi |
 | YR-8 | World/fx parçası proje adı, marka rengi ya da sahne kimliği taşımaz; değer prop/token'dan gelir. | kod inceleme | — | — | hayır | SERT | dünya dosyasına marka kuralı yazılmıştı |
@@ -206,7 +206,7 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 | SN-1 | Son kare zamanı **(n−1)/fps**; çıkış tween'leri `süre − 1/fps`'te biter. | M-QC2 | — | — | hayır | SERT | çıkış `süre`'de bitince son karede %13–28 kalıntı kaldı |
 | SN-2 | Sahne sonu **tam siyah:** ham son kare max ≤ 2; encode'da max 0 (mp4 Y = 16, TV aralığı). Muaf: `slice: true` (araçların tanıdığı tek muafiyet; `cut: "light"` ADR'si `slice` ile işlenir). | M-QC2, fc:black | ≤ 2 / 0 | — | hayır | SERT | — |
 | SN-3 | Siyahtan açılış: encode kare 0 saf siyah **yalnız** ham kare 0 gerçekten siyahsa (`blackStart`). | M-QC2, M-GRADE | — | — | hayır | SERT | kit kare 0'ı siyah değil boşluk rengiydi |
-| SN-4 | **Saf siyah penceresi** = world `grade.params.pureSec` (araç varsayılanı 0,4 s = 24 kare @60, animatikte 12 kare @30; fx-lab örneği 0,2 s); grade'in renk dengesi/siyah noktası bu karelerde kapalı. İnişli sonda `grade.fadeOut [n0, n1]` (tam ↔ saf zincir karışımı); tek kare basamağı yok. | M-GRADE, fc:ramp | 0,2 s | — | hayır | SERT | sabit 12 kare 60 fps'te yarı süreye indi; inişli sonda Y −8 tek kare basamağı |
+| SN-4 | **Saf siyah penceresi** = world `grade.params.pureSec` (araç varsayılanı 0,4 s = 24 kare @60, animatikte 12 kare @30; focusfx-paper 0,2 s); grade'in renk dengesi/siyah noktası bu karelerde kapalı. İnişli sonda `grade.fadeOut [n0, n1]` (tam ↔ saf zincir karışımı); tek kare basamağı yok. | M-GRADE, fc:ramp | 0,2 s | — | hayır | SERT | sabit 12 kare 60 fps'te yarı süreye indi; inişli sonda Y −8 tek kare basamağı |
 | SN-5 | Siyaha iniş kayan noktada + TPDF dither (`expo-post`); iki kez karartma yok. | fc:ramp | son kare 0 | — | hayır | SERT | 8-bit inişte pürüz 0,30 → dither ile 0,08 |
 | SN-6 | Perde (`slice`) sonlarında fade/filtre kapanışı yok; dikiş hareketli kalır (DV-3). | fc:temporal | — | — | hayır | SERT | — |
 | SN-7 | **Kapanış kuyruğu:** konuşma sonu + tutuş + ışık çekilişi + siyah; ışık çekilişi kelime içinde başlamaz; kuyruk sese düz sessizlik olarak eklenir; K3 dışıdır. | rev, fc:loudness (`tail`) | [ÖRNEK] 0,8 s + 1,0 s + ≥ 0,067 s | proje | hayır | VARSAYILAN | ışık konuşma bitmeden çekildi |
@@ -389,7 +389,7 @@ Sessiz kuyruk (SES-14) → SN-7; master sesi (SES-16) → MS-2; olay ↔ kelime 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
 | VR-1 | **3 gerçekten farklı yön:** look-dev'de world başına 3 yön (YR-3), üretimde shot başına 3 varyant still (bütün profillerde, §19); varyantlar kompozisyon/kamera/ışık/hareket kararında ayrışır; aynı yönün açı, renk ya da zaman değişkesi varyant değildir. | rev | 3 | — | hayır | SERT | — |
-| VR-2 | "Örnek world'ün / önceki projenin versiyonu" yön varyant değildir (UCUZ #11). | rev | — | — | hayır | SERT | — |
+| VR-2 | "Seçilmemiş bir world'ün / önceki projenin versiyonu" yön varyant değildir (UCUZ #11). | rev | — | — | hayır | SERT | — |
 | VR-3 | İzdüşüm denetimini (`framing`, `toolPath`, `overlap`, `camera`) geçmeyen varyant elenir; seçime sunulmaz. | fc (tasarım zamanı) | — | — | hayır | SERT | kadrajı tutmayan aday seçildikten sonra elendi |
 | VR-4 | Seçim: yapan önerir, reviewer bağımsız değerlendirir (seçmez), **kullanıcı karar verir** (DUR-1). | rapor | — | — | hayır | SERT | reviewer'ın seçime katılması yalıtımı bozdu |
 | VR-5 | Look-dev karesi = son okunacak öğenin tamamlanma anı + 0,1 s (kelime anı ≠ yazım anı). | künye | +0,1 s | world | hayır | VARSAYILAN | look-dev karesi yazım bitmeden alındı |
@@ -420,7 +420,7 @@ Sessiz kuyruk (SES-14) → SN-7; master sesi (SES-16) → MS-2; olay ↔ kelime 
 | UCUZ-8 | Stok görünümlü üretken klip. | rev | 0 | — | hayır | SERT | — |
 | UCUZ-9 | Yapay zekâ artefaktı (el, yüz, yazı, geometri kırığı). | rev, fc:temporal (`src: asset`) | 0 | — | hayır | SERT | — |
 | UCUZ-10 | Metin üstüne doğrudan efekt. | rev | 0 | — | hayır | SERT | — |
-| UCUZ-11 | **Önceki projeyi / örnek world'ü taklit** (malzeme, palet, alet dili, kamera grameri ya da geçiş kalıbı örnek world'den ya da önceki filmden taşınmış; brief'ten türemiyor). | rev | 0 | — | hayır | SERT | paket bir önceki filmden çıkarıldı; üslubun sızması en büyük risk |
+| UCUZ-11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik** (malzeme, palet, alet dili, kamera grameri ya da geçiş kalıbı seçilmemiş bir kütüphane world'ünden ya da önceki filmden taşınmış; brief'ten ya da seçilen world'den türemiyor). Seçilmiş world'e benzerlik #11 değildir (HK-36). | rev | 0 | — | hayır | SERT | paket bir önceki filmden çıkarıldı; üslubun sızması en büyük risk |
 
 Raporda biçim: `UCUZ: geçer | VAR #n | sınırda #n`.
 
@@ -544,7 +544,7 @@ Kaynak belgelerde birbirini tutmayan değerler ve paketteki karar.
 | 11 | Kare/zaman 30 fps'e sabit ↔ 60 fps üretim, `×(FPS/30)` yalnız proje belgesinde. | Bütün eşikler saniye + fps (§21); core varsayılan 60 fps (D1-03). | 30 fps sabitleri hata kaynağıydı |
 | 12 | Animatik 15 fps ↔ 30 fps. | **960×540 @30** (K7). | 15 fps "kasıyordu" |
 | 13 | Storyboard kapısı "6 boyalı kare" ↔ "3 varyant still/shot + animatik kapısı". | Bütün profillerde shot başına 3 varyant still + K7 animatik kapısı (`live`'da canlı kayıt); `light`'ta varyant seçimi animatik kapısıyla tek turda; storyboard paneli PLAYBOOK'ta destek artefaktı (§19). | kaynak filmin fiilî akışı varyant + animatikti |
-| 14 | "Son 12 kare saf siyah" ↔ inişli sonda basamak; 12 kare fps ile ölçeklenmiyordu. | fps ile ölçekli saf pencere (world `grade.params.pureSec`; araç varsayılanı 0,4 s = 12·KF, fx-lab world'ü 0,2 s) + `grade.fadeOut` (SN-4). | teslim edilen film 60 fps'te 12 kare = 0,2 s ile onaylandı |
+| 14 | "Son 12 kare saf siyah" ↔ inişli sonda basamak; 12 kare fps ile ölçeklenmiyordu. | fps ile ölçekli saf pencere (world `grade.params.pureSec`; araç varsayılanı 0,4 s = 12·KF, focusfx-paper 0,2 s) + `grade.fadeOut` (SN-4). | teslim edilen film 60 fps'te 12 kare = 0,2 s ile onaylandı |
 | 15 | Eski karanlık eşiği (%40 / %0,1) ↔ güncel (%30 / %0,05). | **%8 ort. + %30 üstü < %0,05, > 0,5 s** (KD-8). | arşiv metni güncel değil |
 | 16 | Bir kalıp kartı yanlış ADR'ye atıf yapıyordu. | PATTERNS/DECISIONS anonim yeniden yazımda düzeltilir. | — |
 | 17 | ADR'de ikon boyutu ↔ world'de düzeltilmiş boyut. | Örnek world değeri geçerli; ADR'ye not (DECISIONS). | — |

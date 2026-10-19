@@ -98,7 +98,7 @@ Senin çıktını yapan (motion-director) ve kullanıcı okur. Reviewer yalnız 
 
 - Referanslar yalnız öğrenme içindir; kopyalanmaz, pakete ya da projeye medya olarak girmez.
 - Her referansta lisans ya da kullanım notu bulunur.
-- **UCUZ #11'e dikkat.** Önceki projeyi ya da `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/examples/` altındaki örnek world'leri "referans" diye önermezsin.
+- **UCUZ #11'e dikkat.** Önceki projeyi ya da `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/` altındaki seçilmemiş world'leri "referans" diye önermezsin.
 - Çıktı: `docs/research/REF-<konu>.md`. Her satırda referans · URL · neyi öğretiyor (ışık / kamera / geçiş / malzeme) · lisans notu.
 
 ## Atıf kuralı

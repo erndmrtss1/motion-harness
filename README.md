@@ -2,7 +2,7 @@
 
 Claude Code için motion-grafik üretim hattı (plugin `motion`). Kanıtlanmış bir üretim **sürecini** taşır — kapılar, ölçüm (`qc` + `frame-check`), bağımsız reviewer, 3 yönlü varyant, animatik, tek düzeltme turu, DUR noktaları, rapor — ama hiçbir görsel **üslubu** varsayılan getirmez: her proje kendi dilini look-dev'de sıfırdan kurar.
 
-> **Bilinen boşluk:** look-dev'de "üç gerçekten farklı yön" kuralı tam doğrulanmadı. Üç turluk eval'de reviewer, look-dev düzeyinde her turda 4 benzerlik ihlali saydı; kaynak projeyi taklit (UCUZ #11) her turda geçti. 1.1.0'da `motion-render lookdev-diff` iskelet ve paleti ölçüyor ve `/motion:gate` look-dev adımında koşuyor. Ama iskelet ekseni **uyarı** (eşik 2,2): reviewer'ın gerekçe yazması zorunlu, gerekçesiz kayıt kapıda kabul edilmiyor; eksen kapıyı kendiliğinden kapatmıyor. SERT kapı 1.2'de. Yönleri seçerken iskeleti (kadraj, öğe yerleri, okuma sırası) tam karede kendiniz de denetleyin. Ayrıntı: [CHANGELOG.md](CHANGELOG.md), [docs/H4-EVAL.md](docs/H4-EVAL.md).
+> **Bilinen boşluk:** look-dev'de "üç gerçekten farklı yön" kuralı tam doğrulanmadı. Üç turluk eval'de reviewer, look-dev düzeyinde her turda 4 benzerlik ihlali saydı; kaynak projeyi taklit (UCUZ #11) her turda geçti. 1.1.0'dan beri `motion-render lookdev-diff` iskelet ve paleti ölçüyor ve `/motion:gate` look-dev adımında koşuyor. Ama iskelet ekseni **uyarı** (eşik 2,2): reviewer'ın gerekçe yazması zorunlu, gerekçesiz kayıt kapıda kabul edilmiyor; eksen kapıyı kendiliğinden kapatmıyor. SERT kapı 1.3 ve sonrasında. World kütüphanesinden world seçen projelerde (1.2) look-dev yönleri world içinde kalır; ayrışma yapıda aranır. Yönleri seçerken iskeleti (kadraj, öğe yerleri, okuma sırası) tam karede kendiniz de denetleyin. Ayrıntı: [CHANGELOG.md](CHANGELOG.md), [docs/H4-EVAL.md](docs/H4-EVAL.md).
 
 ## Kurulum (3 satır)
 
@@ -39,8 +39,12 @@ START.md'yi oku, /motion:init
 | `/motion:gate` | kapı: qc + frame-check + taze reviewer |
 | `/motion:master` | master + arşiv zinciri |
 | `/motion:live` | canlı profil (OBS tarayıcı kaynağı) |
-| `/motion:promote` | RETRO dersini core/world'e önerir |
+| `/motion:promote` | RETRO dersini core/world'e önerir; `--library <ad>` world'ü kütüphaneye yazar |
 | `/motion:setup`, `/motion:doctor` | kurulum / ortam denetimi |
+
+**World kütüphanesi (1.2):** paket süreçle birlikte bir world kütüphanesi taşır ([skills/motion-world/library/INDEX.md](skills/motion-world/library/INDEX.md)). İlki `focusfx-paper`: gri teknik çizim paftası, lacivert dar kalın yazı, mavi taralı vurgu, merdiven etiketleri. Seçmek için `/motion:init --world focusfx-paper`; seçmezseniz look-dev yeni world kurar. Proje bitince `/motion:promote --library <ad>` world'ü kütüphaneye geri yazar (müşteri malzemesi ayıklanır).
+
+İlk kez kullanıyorsanız: [docs/BASLANGIC.md](docs/BASLANGIC.md) (kurulum, ilk proje 10 adım, DUR, kapılar, world seçimi, kredi).
 
 Birden çok projeyi yukarıdan yönetecekseniz (faz istemi yazan, raporları denetleyen bir danışman oturumu): [templates/ADVISOR.md](templates/ADVISOR.md). Paketin değerlendirmesi: [evals/](evals/) ve [docs/H4-EVAL.md](docs/H4-EVAL.md).
 
@@ -55,6 +59,7 @@ Birden çok projeyi yukarıdan yönetecekseniz (faz istemi yazan, raporları den
 | Chromium inmiyor (proxy/kurumsal ağ) | `HTTPS_PROXY` ayarlayın, `cd render && npx playwright install chromium` |
 | Chromium önceden çalışıyordu, şimdi "Executable doesn't exist" | Playwright tarayıcı önbelleği kullanıcı çapında paylaşılır; başka bir Playwright kurulumu paketin sabitlediği sürümü silmiş olabilir. `cd render && npx playwright install chromium`, sonra `/motion:doctor` |
 | ffmpeg özelliği eksik (prores_ks, ffv1, loudnorm) | Windows: `winget install Gyan.FFmpeg`; macOS: `brew install ffmpeg`; sonra `MOTION_FFMPEG` ortam değişkenine yolunu yazın |
+| Yeni sürüm çekildi ama `/motion:*` eski davranıyor | `git pull` sonra `install.ps1`'i yeniden çalıştırın: kurulu sürümü karşılaştırır, eskiyse günceller ("güncellendi a → b"), aynıysa "güncel" der. Elle: `claude plugin marketplace update motion-harness` + `claude plugin update motion@motion-harness`; Claude Code'u yeniden başlatın |
 | `marketplace add` başarısız (özel depo) | `gh auth login` ve `gh auth setup-git`; ya da klonlanmış klasörden kurun (varsayılan) |
 | Higgsfield oturumu yok | `npm i -g @higgsfield/cli` → `higgsfield auth login` → `/motion:doctor`. Anahtar `.env`'e yazılmaz; üretken varlık kullanmayan projeler etkilenmez |
 | render "disk < 40 GB" ile duruyor | kare dizinlerini arşivleyin ya da eşiği `MOTION_MIN_DISK_GB` ile değiştirin (60 fps ≈ 2 MB/kare) |

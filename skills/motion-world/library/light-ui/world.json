@@ -1,7 +1,7 @@
 {
   "name": "light-ui",
   "version": "1.0.0",
-  "origin": "example:light-ui",
+  "origin": "library:light-ui",
   "palette": {
     "bg": "#E5E5E5",
     "canvas": "#E5E5E5",
@@ -12,7 +12,7 @@
     "textSecondary": "#979797",
     "subhead": "#444444"
   },
-  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 1 },
+  "accent": { "color": "#D8301A", "class": "signal", "quotaDefault": 1, "note": "yer tutucu — aksan rengi projeden (project.md §4); marka rengi kütüphaneye girmez (HK-37)" },
   "fonts": [
     { "family": "Saira Condensed", "weights": [700], "source": "google" },
     { "family": "Inter", "weights": [400, 500], "source": "google" },

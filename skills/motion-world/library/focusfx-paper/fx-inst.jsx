@@ -1,7 +1,8 @@
-// world/fx-inst.jsx — ÖRNEK world "fx-lab" v4 ENSTRÜMANLAR: "enstrüman gerçektir; kelime + şekil değil". Her biri 3 varyant (v: 'a' | 'b' | 'c').
+// world/fx-inst.jsx — kütüphane world "focusfx-paper" (eski adı fx-lab) v5 ENSTRÜMANLAR: "enstrüman gerçektir; kelime + şekil değil". Her biri 3 varyant (v: 'a' | 'b' | 'c').
 //   FXScope  osiloskop: gövde (eloksal / çelik) + çerçeve + ızgaralı ekran (10×8 bölme) + fosfor iz (çekirdek + ışıma + kalıcılık) + düğmeler + BNC
 //   FXDial   kadran: a 270° basınç göstergesi · b 180° aynalı skala · c açıölçer
 //   FXRule   cetvel: a akrilik · b çelik · c üçgen ölçek   ·   FXCal kalibre: a verniyeli · b saatli · c mikrometre
+//   FXHatch  taralı vurgu (45°, mürekkep mavisi)   ·   FXLadder merdiven (seviye etiketli; üst tarama, alt yıkama, hl vurgusu)
 // Varyant seçimi bileşen varyant tahtasında yapılır (kare k = varyant k); seçim sahnede tek satır.
 // Bağımlılık: world/fx-lab.jsx (FXT, FXF, FXE, fxClamp, FX_PEN), world/fx-rig.jsx (FX4, fxShadowAt), motion-core (MHAssetTexture).
 // Metin: panel etiketleri yalnız doku (data-doku, < 22 px); okunacak metin sahnede. Plakalar (varsa): plate-bezel-1, plate-phosphor-1, plate-metal-2.
@@ -179,4 +180,52 @@ function FXCal(p) {
   ]);
 }
 
-Object.assign(window, { fxKnurl: fxKnurl, FXKnob: FXKnob, fxTrace: fxTrace, FXScreen: FXScreen, FXScope: FXScope, FXDial: FXDial, FXRule: FXRule, FXCal: FXCal });
+// taralı vurgu (FocusFX imzası): 45° vektör tarama, mürekkep mavisi; dolgu değil vurgu. x, y, w, h · p (0..1 tarama soldan açılır) · col · gap (px) · edge (çerçeve)
+function FXHatch(p) {
+  var w = p.w, h = p.h, gap = p.gap || 9, col = p.col || FX4.ink, pr = p.p == null ? 1 : fxClamp(p.p, 0, 1), id = 'fxh-' + (p.id || (Math.round(p.x) + '-' + Math.round(p.y))), L = [];
+  for (var i = -h; i < w; i += gap) { var x1 = i, y1 = h, x2 = i + h, y2 = 0; if ((i + h / 2) / w <= pr) L.push(<line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth={p.sw || 1.2} />); }
+  return (
+    <svg data-c="FXHatch" data-hero={p.hero ? '1' : undefined} width={w} height={h} style={{ position: p.inline ? 'static' : 'absolute', left: p.x, top: p.y, overflow: 'visible' }}>
+      <defs><clipPath id={id}><rect x={0} y={0} width={w} height={h} /></clipPath></defs>
+      <g clipPath={'url(#' + id + ')'}>{L}</g>
+      {p.edge !== false && <rect x={0} y={0} width={w} height={h} fill="none" stroke={col} strokeWidth={p.ew || 1.4} />}
+    </svg>
+  );
+}
+
+// merdiven (FocusFX imzası; seviye etiketli dikey basamaklar): x, y (sol-üst), w, h, n (≥ 8), p (kurulum 0..1), T (yavaş nefes), seed,
+//   labels: dizi | false (varsayılan göreli "p_0 +k / p_0 −k" — rakam/fiyat değil), hl: vurgulanan seviyeler (mavi taralı), hlp: vurgu çizimi 0..1, hero
+//   üst yarı tarama (grafit), alt yarı mürekkep yıkaması; seviye çizgisi + orta çizgi (kesik-nokta); etiketler mono, doku (data-doku)
+function fxLadderData(n, seed, T) {   // deterministik derinlik (+ T ile yavaş nefes: ikincil hareket)
+  var r = MH.rng(seed || 7), d = []; for (var i = 0; i < n; i++) { var c = Math.abs(i - (n - 1) / 2), base = 0.25 + 0.75 * r(), wall = (i === 2 || i === n - 4) ? 1.35 : 1;
+    d.push(Math.min(1, base * (0.55 + 0.45 * Math.min(1, c / (n / 2))) * wall * (1 + 0.06 * Math.sin((T || 0) * 1.3 + i * 1.7)))); }
+  return d;
+}
+function FXLadder(p) {
+  var n = Math.max(8, p.n || 16), w = p.w, h = p.h, step = h / n, pr = p.p == null ? 1 : p.p, D = fxLadderData(n, p.seed, p.T || 0), mid = n / 2, hl = p.hl || [], hlp = p.hlp == null ? 1 : fxClamp(p.hlp, 0, 1), rows = [];
+  var u = function (i) { return FXE.o3(fxClamp(pr * 1.5 - Math.abs(i - mid + 0.5) / n * 0.9, 0, 1)); };
+  var lab = function (i) { if (Array.isArray(p.labels)) return p.labels[i] || ''; var k = i < mid ? mid - i : -(i - mid + 1); return 'p_0 ' + (k > 0 ? '+' + k : '−' + -k); };
+  var cx = w * 0.5, half = w * 0.04, room = cx - half - 12;   // iki yan simetrik; çubuk kutudan taşmaz (etiketler kutunun solunda)
+  for (var j = 0; j < n; j++) {
+    var up = j < mid, yj = j * step, Lj = D[j] * room * u(j), x0 = up ? cx + half : cx - half - Lj, hy = yj + step * 0.14, hh = step * 0.72;
+    rows.push(<line key={'s' + j} x1={0} y1={yj} x2={w} y2={yj} stroke={FX4.gHard} strokeWidth={0.7} opacity={0.6} />);
+    if (Lj > 1) rows.push(up ? <FXHatch key={'h' + j} x={x0} y={hy} w={Lj} h={hh} col={FX4.gHB} gap={9} sw={0.9} ew={1.2} id={'lad' + (p.seed || 7) + '-' + j} />
+      : <div key={'b' + j} style={{ position: 'absolute', left: x0, top: hy, width: Lj, height: hh, background: FX4.inkWash, boxShadow: 'inset 0 0 0 1.3px ' + FX4.ink }} />);
+    if (Lj > 1 && hl.indexOf(j) >= 0 && hlp > 0)   // vurgu: mavi tarama çubuğun üstüne soldan çizilir (hlp 0..1), çerçeve kalın
+      rows.push(<FXHatch key={'v' + j} x={x0 - 4} y={hy - 4} w={Lj + 8} h={hh + 8} col={FX4.ink} gap={6} sw={1.6} ew={2.2} p={hlp} id={'ladv' + (p.seed || 7) + '-' + j} />);
+  }
+  var L0 = 2 * (w + h), q0 = FXE.sio(fxClamp(pr / 0.5, 0, 1));
+  return (
+    <div data-c="FXLadder" data-hero={p.hero ? '1' : undefined} style={{ position: 'absolute', left: p.x, top: p.y, width: w, height: h }}>
+      <svg width={w} height={h} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
+        <rect x={0} y={0} width={w} height={h} fill="none" stroke={FX4.gSoft} strokeWidth={2.4} strokeDasharray={L0} strokeDashoffset={(L0 * (1 - q0)).toFixed(1)} />
+        <line x1={-24} y1={mid * step} x2={w + 24} y2={mid * step} stroke={FX4.ink} strokeWidth={1.6} strokeDasharray="22 6 3 6" />
+      </svg>
+      {rows}
+      {p.labels !== false && Array.from({ length: n }).map(function (_, i) { return <div key={'l' + i} data-doku="1" style={{ position: 'absolute', left: -132, top: i * step + step / 2 - 9, width: 112, textAlign: 'right', font: '500 ' + Math.min(18, step * 0.5).toFixed(0) + 'px/1 ' + FXF.mono, color: i < mid ? FX4.gHB : FX4.ink, clipPath: 'inset(0 ' + (100 - 100 * fxClamp((u(i) - 0.02) / 0.45, 0, 1)).toFixed(1) + '% 0 0)', letterSpacing: '0.02em' }}>{lab(i)}</div>; })}{/* etiket yazılır: soldan açılır (pop yok) */}
+      {p.children}
+    </div>
+  );
+}
+
+Object.assign(window, { fxKnurl: fxKnurl, FXKnob: FXKnob, fxTrace: fxTrace, FXScreen: FXScreen, FXScope: FXScope, FXDial: FXDial, FXRule: FXRule, FXCal: FXCal, FXHatch: FXHatch, fxLadderData: fxLadderData, FXLadder: FXLadder });

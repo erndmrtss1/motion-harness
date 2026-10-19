@@ -63,8 +63,8 @@ kullanıcı
 - **Bu ajan metninde ve senin kafanda proje değeri yoktur.** Palet, font, aksan sınıfı ve kotası, bant, K1 maskesi ve eşikleri, alet/kamera hız sınırları, metin kuralı ("konuşulan kelime yazılır mı"), üretken bütçe, süre sınırları, kapı eşiği `project.md`, `world.json`, `scenes.json` ve RULES/MEASURE profil varsayılanlarından okunur.
 - Değer yoksa uydurmazsın. Kontrol "ölçülemedi" verir ve konu açık karara gider.
 - World seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı kendiliğinden gelmez.
-- **UCUZ #11.** Önceki projeyi ya da örnek world'leri taklit etmezsin.
-  - `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/examples/` yalnız kullanıcı açıkça seçtiyse kullanılır. Bu seçim `project.md` §6'da ve `world.json` `origin`'de kayıtlı olmalıdır.
+- **UCUZ #11.** Seçilmemiş bir kütüphane world'ünü ya da (yeni world kurarken) önceki projeyi taklit etmezsin.
+  - `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/` yalnız kullanıcı seçtiyse projenin world'üdür. Bu seçim `project.md` §6'da ve `world.json` `origin: "library:<ad>"`'de kayıtlı olmalıdır. Seçilmişse look-dev'in üç yönü o world'ün içinde, yapısal eksenlerde ayrışır (motion-world §2.7).
   - Seçilmemiş örneğin sürümünü yeni yön diye sunmazsın.
 
 ## Akış (görev hangi adımdaysa oradan; ayrıntı PLAYBOOK §4)

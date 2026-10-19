@@ -668,7 +668,7 @@ Core'da grade değeri yoktur; `world.json` → `grade: {chain: "dark" | "light" 
   "pureSec": 0.4 } }
 ```
 
-Örnek world'lerin gerçek zincir değerleri `skills/motion-world/examples/<ad>/world.json`'dadır; kopyalanmaz, ölçülür (YR-2).
+Kütüphane world'lerinin gerçek zincir değerleri `skills/motion-world/library/<ad>/world.json`'dadır; kopyalanmaz, ölçülür (YR-2).
 
 ---
 

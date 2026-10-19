@@ -2,6 +2,35 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## 1.2.0 — 2026-10-19
+
+Paket artık süreç **ve bir world kütüphanesi** taşır (HK-36). Kullanım: iki kişinin kendi projelerinde kullandığı araç; depo özel.
+
+- **World kütüphanesi** `skills/motion-world/library/` (liste `INDEX.md`). `examples/` buraya taşındı.
+  - **`focusfx-paper`** (HK-38): FocusFX FX-01'in üretim world'ü. world.json (v5), ilkel jsx (pafta, lab ışığı, kalem/rapido, cetvel, kılavuz,
+    etiket, kamera düzeneği, enstrümanlar), lab grade, `lessons.md` (FocusFX §1–§28 kararları + world'e özgü dersler), `DECISIONS.md`,
+    `SOZLUK-SABLON.md` (yalnız yapı). Yeni ilkel: `FXHatch` (mavi taralı vurgu), `FXLadder` (merdiven etiketleri, göreli `p_0 ±k`).
+    3 s imza demosu (smoke bunu çizer). Eski örnek `fx-lab` bu world'ün damıtılmışıydı: ikileme kaldırıldı, `fx-lab` adı takma ad olarak çalışır.
+  - Kütüphanedeki aksan renkleri **yer tutucu** (`#D8301A`): müşteri marka kırmızıları çıkarıldı (HK-37); aksan rengi projeden gelir.
+- **UCUZ #11 yeni tanım** (HK-36): "seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik". Seçilmiş world'e benzerlik
+  özelliktir. World seçilmiş projede look-dev üç yönü world içinde, yapısal eksenlerde ayrıştırır (motion-world §2.7); `lookdev-diff`
+  "world içi" bayrağıyla palet/çekici uyarılarını bilgi sayar, iskelet uyarısı sürer.
+- **`/motion:init --world <ad>`** kütüphaneden seçer; argümansız init listeyi sorar, headless'ta brief ön bilgisi `world: <ad>` (HK-39).
+  `motion-render init` `origin: "library:<ad>"` yazar.
+- **`/motion:promote --library <ad>`**: proje world'ünü ve derslerini kütüphaneye geri yazar, müşteri malzemesini ayıklar, `INDEX.md`'yi günceller (HK-39).
+- **Kurulum güncellemesi** (HK-40): `install.ps1` / `install.sh` kurulu plugin'i `plugin.json` sürümüyle karşılaştırır; eskiyse
+  `claude plugin marketplace update` + `claude plugin update`, aynıysa "güncel".
+- **Gizlilik** (HK-37): pakete girmeyen = müşteri malzemesi (ad, logo, marka rengi, kare, ses, transkript, sözlük içeriği, seslendirme metni).
+  Sahibinin üslubu, world kodu, dersler ve kararlar girer; "FocusFX" proje adı yazılabilir. Tarama müşteri terimleriyle daraltıldı.
+- **Başlangıç rehberi** `docs/BASLANGIC.md` (HK-41): kurulum, ilk proje 10 adım, DUR, kapılar, world seçimi, kredi.
+- LESSONS L-227 (world kütüphanesi ve yakınsama).
+
+### 1.3 ve sonrası (1.1 yol haritasından taşındı, HK-42)
+1. **İskelet SERT kapı için gösterim.** 1.1 betimleyicisinde (6×4 rol doluluğu, kareler arası ortalama) yön içi POZ en düşük 2,3, NEG en yüksek 2,1: marj 0,2, SERT için yetersiz. Kahramanlar kadraj ortasında toplandığı için ilgisiz düzenler 1,7–2,1 taban alıyor. Önsel (şans düzeltmesi) ve kareler arası maks bu tabanı söndürdü ama uzlaşılı pozitifleri de (sınıf hatası 2; L-226). Kare başına maks/medyan seçeneği ve daha geniş NEG seti değerlendirilecek.
+2. **Canlı (bindirme) profil için silüet örtüşmesi ve en-boy kipi** (HK-23).
+3. **Doku/çizgi dili ekseni:** kaynağa iskelet karşılaştırması (sayfası olmayan kontak) şu an ölçülemiyor.
+4. **Koşucu yazma izni** oturum klasörüyle sınırlanacak; look-dev zaman kutusu.
+
 ## 1.1.0 — 2026-10-19
 
 Look-dev ayrışması ölçüme bağlandı (H4 bulgusu; `evidence/1.1/K-1.1b.md`). İskelet eşiğinin marjı 0,2 (K1a), SERT kapı için yetersiz. Bu yüzden iskelet ekseni SERT değil **UYARI** olarak girdi: uyarı veren her çifte reviewer gerekçesi zorunlu (HK-33). Kapı uçtan uca denemesi (K4, HK-35) üç oturumda geçti: araç beklenen uyarıları verdi, reviewer'lar KARAR'ı `ayrışma:` ve `qc (bilgi):` satırlarıyla yazdı. Bir oturumda kapı denetimi gerekçesi eksik kaydı kabul etmedi, aynı turda taze reviewer açtı. Metrik işi 1.1'de kapandı; SERT kapı 1.2'de.
@@ -19,12 +48,6 @@ Look-dev ayrışması ölçüme bağlandı (H4 bulgusu; `evidence/1.1/K-1.1b.md`
 - **Eval ve geliştirme:**
   - `evals/run-eval.mjs --seed <proje>` (kapı denemesi: hazır projeyle başla).
   - `dev/lookdev-calib.mjs` yalnız eşik kalibrasyonu yapar; ağırlık taraması yok.
-
-### 1.2 yol haritası (1.1'den)
-1. **İskelet SERT kapı için gösterim.** 1.1 betimleyicisinde (6×4 rol doluluğu, kareler arası ortalama) yön içi POZ en düşük 2,3, NEG en yüksek 2,1: marj 0,2, SERT için yetersiz. Kahramanlar kadraj ortasında toplandığı için ilgisiz düzenler 1,7–2,1 taban alıyor. Önsel (şans düzeltmesi) ve kareler arası maks bu tabanı söndürdü ama uzlaşılı pozitifleri de (sınıf hatası 2; L-226). Kare başına maks/medyan seçeneği ve daha geniş NEG seti değerlendirilecek.
-2. **Canlı (bindirme) profil için silüet örtüşmesi ve en-boy kipi** (HK-23).
-3. **Doku/çizgi dili ekseni:** kaynağa iskelet karşılaştırması (sayfası olmayan kontak) şu an ölçülemiyor.
-4. **Koşucu yazma izni** oturum klasörüyle sınırlanacak; look-dev zaman kutusu.
 
 ## 1.0.0 — 2026-10-18
 

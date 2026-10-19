@@ -48,7 +48,7 @@ Kaynaklar:
    - **İstisna, look-dev kapısı (HK-34):** `qc LOOK…` çıkış kodu kapıyı kilitlemez; reviewer yine açılır. Look-dev sayfası teslim değil, yön karşılaştırmasıdır. qc sonucu (yön başına çıkış kodu + hata başlıkları) reviewer istemine verilir ve kayıtta KARAR satırının altına `qc (bilgi):` satırı olarak girer. Hatalar seçilen yön sahneye taşınırken kapanır.
    - Bayat kare varsa da reviewer açılmaz; önce yeniden render gerekir.
    - `animatik` kapısında kareler `out/frames/<id>_animatic`'tedir (`render … --tag animatic`): qc/frame-check `--frames-dir out/frames/<id>_animatic`, contact `--dir out/frames/<id>_animatic --fstep 2`, ours `--dir out/frames/<id>_animatic --step 2`.
-   - **Look-dev kapısında ayrışma ölçümü (1.1):** `motion-render lookdev-diff` → `out/review/lookdev-diff.json` + `.md`. Önceki proje ya da örnek world kontağı varsa `--ref <kontak.png>@<C>x<R>+<şerit>` eklenir. Reviewer'a her yönün kilit karelerinin **tam karesi** verilir, kırpım değil (LESSONS L-225). Komut "iskelet ölçülemedi" diyorsa look-dev sayfasının kahraman öğesine `data-hero` eklenir (`manifest validate` uyarısı).
+   - **Look-dev kapısında ayrışma ölçümü (1.1):** `motion-render lookdev-diff` → `out/review/lookdev-diff.json` + `.md`. Önceki proje ya da seçilmemiş bir kütüphane world'ünün kontağı varsa `--ref <kontak.png>@<C>x<R>+<şerit>` eklenir. World seçilmiş projede araç "world içi" satırı yazar (palet/çekici bilgi). Reviewer'a her yönün kilit karelerinin **tam karesi** verilir, kırpım değil (LESSONS L-225). Komut "iskelet ölçülemedi" diyorsa look-dev sayfasının kahraman öğesine `data-hero` eklenir (`manifest validate` uyarısı).
    - Kapı türüne göre: `varyant` ve `lookdev` için still'ler ve kontak sayfası; `master` için `qc film` ve `frame-check <FILM> --only temporal,identical,loudness,accentColor`; `live` için `motion-render live <sayfa> --qc`.
 3. **Bağımsız ölçüm.** Kapı sayısal bir ön koşula dayanıyorsa `motion:motion-measure` açılır. Örnekler: varlık/logo kabulü, K1, aksan ΔE, devir, senkron, canlı fps/gecikme.
    - İstek: ne · hangi kareler · ölçütün kaynağı.
@@ -68,7 +68,7 @@ Kaynaklar:
 Kapı: <kapı-id> · tür <tür> · birim <id> · profil <p> · eşik ≥<e>/8 · tur r<k>
 Brief ve faz istemi (aynen): "<…>"
 Kurallar: ${CLAUDE_PLUGIN_ROOT}/skills/motion-reviewer/SKILL.md · RULES.md · MEASURE.md · GENAI.md · project.md §1,§3,§4,§5,§6,§9,§10
-World: world/world.json · Örnekler (#11): ${CLAUDE_PLUGIN_ROOT}/skills/motion-world/examples/
+World: world/world.json (origin) · Kütüphane (#11): ${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md
 Manifest: scenes.json (birim <id>)
 Çıktılar: out/frames/<id>[_tag]/ · out/scenes/<…>.mp4 · out/probe/<id>-qc.json · out/probe/<id>-fc.json (+ sheet) · kontak <yol> · A/B <yol> · assets/gen/manifest.json
 [lookdev] Ayrışma: out/review/lookdev-diff.md (iskelet + palet UYARI; gerekçe zorunlu) · yönlerin tam kareleri · qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · …

@@ -1,12 +1,12 @@
 {
   "name": "photo-plate",
   "version": "1.0.0",
-  "origin": "example:photo-plate",
+  "origin": "library:photo-plate",
   "palette": {
     "bg": "#07080A",
     "lightNeutral": "#FFFFFF"
   },
-  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "accent": { "color": "#D8301A", "class": "signal", "quotaDefault": 0, "note": "yer tutucu — aksan rengi projeden (project.md §4); marka rengi kütüphaneye girmez (HK-37)" },
   "fonts": [],
   "band": [12, 28],
   "k1": { "mask": "alpha", "selector": "[data-hero]", "areaMin": 0.30, "heightMin": 0.50 },

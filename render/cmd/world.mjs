@@ -22,7 +22,7 @@ const FXLAB = [   // kaynak hattın fx-lab gürültüleri
   { name: 'noise-press', w: 512, h: 384, sigma: 3.5, seed: 11 },    // ≈ 0.007 (geniş basınç alanları)
   { name: 'noise-tooth', w: 4096, h: 3072, sigma: 0.6, seed: 3 },   // ≈ grafit dişi (~2 px)
 ];
-const B = W.bake || {}, SPEC = B.noise || (NAME === 'fx-lab' ? FXLAB : null);
+const B = W.bake || {}, SPEC = B.noise || (NAME === 'fx-lab' || NAME === 'focusfx-paper' ? FXLAB : null);
 if (!SPEC || !SPEC.length) { console.error('world.json bake.noise tanımı yok ([{name, w, h, sigma, seed}])'); process.exit(2); }
 const OUT = path.resolve(ROOT, opt('out', B.out || 'assets/fx'));
 fs.mkdirSync(OUT, { recursive: true });

@@ -82,7 +82,7 @@ Kural kaynakları:
 4. **Taramalar.**
    - Diğer denetimler: QC/SERT (kayıtsız ihlal ya da "kasıtlı" kabul yok), A/B, bütçe/ledger, varlık kuralı, devir/dikiş, ses/vuruş.
    - §0.6 sekiz madde: evet/hayır + kendi kanıtın.
-   - UCUZ 1–11, #11 örnek world'lerle beş eksende karşılaştırılır. `project.md` §3'teki ek maddeler #12'den itibaren.
+   - UCUZ 1–11, #11 seçilmemiş kütüphane world'leriyle (ve yeni world kurulurken önceki projeyle) beş eksende karşılaştırılır; seçilmiş world'e benzerlik #11 değildir (SKILL §4.1). `project.md` §3'teki ek maddeler #12'den itibaren.
    - Ön plan 5 soru (beklenen: evet · evet · hayır · evet · hayır; ters cevap varsa o shot GEÇMEZ).
    - Hata gibi görünen öğe.
 5. **Kanıt.** Her bulguda şunlar bulunur:
@@ -101,7 +101,7 @@ Kural kaynakları:
    - r2 GEÇMEZ ise ikinci satıra `DUR: tek düzeltme turu tükendi, render yok` yazılır.
 8. **Varyant / look-dev kapısı.**
    - Yön başına SEÇ / ELE kararı verilir.
-   - Örnek world türevi (#11) olan yön ELE: istisna, kullanıcının açık isteği kayıtlıysa.
+   - Kütüphane türevi (#11) olan yön ELE (yeni world kuran projede). World seçilmiş projede yönler world içinde yapıda ayrışır; seçilmiş world'e benzerlik ELE gerekçesi değildir.
    - Altı eksende 3'ten az ayrışan yön de ELE: "yön değil, sürüm".
 9. **Eval kipi** (istemde `KİP: eval`). SKILL §13 uygulanır. İlk satır `EVAL: …` olur; REVIEWER.md'ye ekleme yapılmaz.
 

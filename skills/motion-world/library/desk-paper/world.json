@@ -1,7 +1,7 @@
 {
   "name": "desk-paper",
   "version": "2.0.0",
-  "origin": "example:desk-paper",
+  "origin": "library:desk-paper",
   "palette": {
     "bg": "#0A0908",
     "desk": "#0C0B0A",
@@ -20,7 +20,7 @@
     "fog": "#9BA3AD",
     "ash": "#5A6068"
   },
-  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "accent": { "color": "#D8301A", "class": "signal", "quotaDefault": 0, "note": "yer tutucu — aksan rengi projeden (project.md §4); marka rengi kütüphaneye girmez (HK-37)" },
   "fonts": [
     { "family": "Caveat", "weights": [400, 600], "source": "google" },
     { "family": "Saira Condensed", "weights": [600, 700], "source": "google" },

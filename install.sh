@@ -66,9 +66,21 @@ else
   SRC="$ROOT"; [ -n "$FROM_GH" ] && SRC="$FROM_GH"
   OUT="$(claude plugin marketplace add "$SRC" --scope user 2>&1)"; RC=$?
   if [ $RC -eq 0 ] || echo "$OUT" | grep -qi already; then ok "marketplace: motion-harness ← $SRC"; else bad "marketplace add başarısız (özel depo: gh auth login; gh auth setup-git)"; fi
-  OUT="$(claude plugin install motion@motion-harness --scope user -y 2>&1)"; RC=$?
-  if [ $RC -eq 0 ] || echo "$OUT" | grep -qi already; then ok "plugin: motion@motion-harness"; else bad "plugin install başarısız"; fi
-  if claude plugin list 2>/dev/null | grep -q "motion@motion-harness"; then ok "doğrulama: claude plugin list → motion@motion-harness"; else bad "doğrulama: plugin listede yok"; fi
+  # HK-40: kurulu sürüm plugin.json ile karşılaştırılır; eskiyse marketplace + plugin güncellenir, aynıysa "güncel"
+  EXP="$(node -e 'try{console.log(require(process.argv[1]).version)}catch{}' "$ROOT/.claude-plugin/plugin.json" 2>/dev/null)"
+  pver() { claude plugin list 2>/dev/null | awk '/motion@motion-harness/{f=1;next} f&&/Version:/{print $2; exit}'; }
+  claude plugin marketplace update motion-harness >/dev/null 2>&1
+  V0="$(pver)"
+  if [ -z "$V0" ] && ! claude plugin list 2>/dev/null | grep -q "motion@motion-harness"; then
+    OUT="$(claude plugin install motion@motion-harness --scope user -y 2>&1)"; RC=$?
+    if [ $RC -eq 0 ] || echo "$OUT" | grep -qi already; then ok "plugin: motion@motion-harness kuruldu"; else bad "plugin install başarısız"; fi
+  elif [ -n "$EXP" ] && [ "$V0" != "$EXP" ]; then
+    if claude plugin update motion@motion-harness --scope user >/dev/null 2>&1; then ok "plugin: motion güncellendi $V0 → $EXP (yeni oturumda yüklenir)"; else bad "plugin update başarısız ($V0 → $EXP)"; fi
+  else ok "plugin: motion $V0 (güncel)"; fi
+  V1="$(pver)"
+  if ! claude plugin list 2>/dev/null | grep -q "motion@motion-harness"; then bad "doğrulama: plugin listede yok"
+  elif [ -n "$EXP" ] && [ "$V1" != "$EXP" ]; then bad "doğrulama: kurulu sürüm $V1, depo sürümü $EXP"
+  else ok "doğrulama: claude plugin list → motion@motion-harness $V1"; fi
 fi
 
 say "[4/6] Higgsfield (üretken varlık; isteğe bağlı)"

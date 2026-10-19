@@ -1,6 +1,6 @@
 ---
 description: Yeni motion projesi kurar (F0). Ön bilgili (frontmatter) bir brief dosyası verildiyse ya da klasörde varsa soru sormadan kurar (headless); yoksa kısa bir AskUserQuestion mülakatı yapar. Ardından motion-render init çalıştırır, project.md §1–§10, scenes.json, CLAUDE.md, ledger ve docs/ şablonlarını doldurur ve DUR ile biter.
-argument-hint: "[brief.md] [hedef-dizin] [--profile full|light|live] [--world lookdev|example:<ad>]"
+argument-hint: "[brief.md] [hedef-dizin] [--profile full|light|live] [--world lookdev|<kütüphane-ad>]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -19,7 +19,7 @@ Bu komut yalnız kurar. Look-dev, ses ya da sahne işi yapmaz.
 0. Önce `${CLAUDE_PLUGIN_ROOT}/START.md`'yi oku (kullanıcı "START.md'yi oku" dediyse kastedilen bu dosyadır; yeni klasörde START.md yoktur). Ardından `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/SKILL.md`. Kurulum bitince hedef dizine `START.md`'nin bir kopyasını bırak (sonraki oturumlar için).
 1. `motion-render --version`'ı çalıştır. Komut yoksa ya da hata verirse dur ve kullanıcıyı `/motion:setup`'a yönlendir. Bu durumda kurulum yapma.
 2. Hedef dizini belirle. Argümanda brief dışında bir dizin verildiyse orası, verilmediyse çalışma dizini.
-   Argüman bayrakları mülakatın ilgili sorusunu önceden cevaplar (sorulmaz): `--profile full|light|live` → profil; `--world lookdev|example:<ad>` → world (example yalnız bu açık bayrakla). Örn. canlı bir proje: `/motion:init --profile live`.
+   Argüman bayrakları mülakatın ilgili sorusunu önceden cevaplar (sorulmaz): `--profile full|light|live` → profil; `--world lookdev|<ad>` → world (`<ad>` kütüphaneden: `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md`; eski biçim `example:<ad>` ve eski ad `fx-lab` → `focusfx-paper` kabul edilir). Örn. canlı bir proje: `/motion:init --profile live`.
 3. Hedefte `scenes.json` zaten varsa üzerine yazma. Mevcut projeyi raporla ve **DUR**.
 
 ## 1. Brief kaynağı (headless kurulum)
@@ -39,7 +39,7 @@ sure: 45                 # saniye; canlı için "canli"
 ses: yok | dosya:<göreli yol> | tts | muzik
 dil: tr
 profil: full | light | live
-world: lookdev | example:<ad>     # example: yalnız kullanıcının AÇIK isteğiyle
+world: lookdev | <kütüphane-ad>   # ör. focusfx-paper; liste library/INDEX.md (HK-39)
 genai_butce: 0           # kredi; 0 = yalnız motor
 yasaklar: [ … ]
 ilkeler: [ … ]
@@ -74,7 +74,7 @@ boyut: 1920x1080         # isteğe bağlı; varsayılan 1920×1080
 | soru | seçenekler |
 |---|---|
 | Profil? | full: film, kapı ≥ 7/8 (Önerilen) · light: kısa tek birim, ≥ 6/8 · live: canlı yayın sayfası, ≥ 7/8 |
-| World (görsel dil)? | **Yeni look-dev: 3 farklı yön, sen seçersin (Önerilen)** · Kendi referanslarım var, look-dev'e girdi olsun |
+| World (görsel dil)? | **Yeni look-dev: 3 farklı yön, sen seçersin (Önerilen)** · Kütüphaneden bir world seç (liste bir sonraki soruda) · Kendi referanslarım var, look-dev'e girdi olsun |
 | Üretken yapay zekâ bütçesi? | 0: yalnız motor (Önerilen) · Küçük (≤ 50 kredi) · Orta (≤ 200 kredi) · Proje başına ben belirleyeceğim |
 | Teslim biçimi? | Master: ProRes 422 HQ + H.264 (Önerilen) · Yalnız H.264 · Canlı: OBS tarayıcı kaynağı · PNG kare dizisi |
 
@@ -86,16 +86,17 @@ boyut: 1920x1080         # isteğe bağlı; varsayılan 1920×1080
 | Ekrana ne yazılır (metin kuralı)? | Yalnız vurucu cümleler, kelime zamanlı · Konuşulan kelime yazılmaz; yalnız başlık/veri · Look-dev'de birlikte karar verelim |
 | Brief metni? | "Diğer" ile şimdi yazacağım · Sonra project.md §1'e kendim yazacağım |
 
-**Örnek world kuralı.** Örnek world listesini seçenek olarak **gösterme**.
-- Kullanıcı "Diğer" ile açıkça bir örnek world adı yazarsa `--world <ad>` kullanılır.
-- Bu durumda `project.md` §6'ya "kullanıcının açık isteği: örnek world <ad> (tarih)" yazılır. UCUZ #11 istisnası yalnız bu kayıtla geçerlidir.
+**Kütüphane world'ü (HK-36, HK-39).**
+- Kullanıcı "Kütüphaneden bir world seç" derse `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md`'yi oku ve tek soruluk bir `AskUserQuestion` ile listeyi sun: her seçenek world adı + INDEX'teki tek cümlelik kimlik (en çok 4 seçenek; fazlası "Diğer" ile yazılır). Ad argümanla (`--world <ad>`) ya da brief ön bilgisiyle (`world: <ad>`) geldiyse soru sorulmaz.
+- Seçim `project.md` §6'ya "kütüphane world'ü: <ad> (tarih, kullanıcının seçimi)" diye yazılır; `world.json` `origin: "library:<ad>"` olur (`motion-render init` yazar).
+- World seçilmiş projede look-dev üç yönü **o world'ün içinde** üretir (motion-world §2 madde 7); seçilmiş world'e benzerlik UCUZ #11 değildir.
 
 **Ses dosyası.** "Hazır seslendirme" seçildiyse hedef dizindeki ses dosyalarını (`*.wav`, `*.mp3`, `*.m4a`) tara ve tek soruluk bir `AskUserQuestion` ile hangisi olduğunu sor. Dosya bulunamazsa yol "Diğer" ile alınır.
 
 ## 3. İskelet
 
 ```bash
-motion-render init <dizin> --profile <full|light|live> [--world <örnek>]   # --world YALNIZ açık istekle
+motion-render init <dizin> --profile <full|light|live> [--world <kütüphane-ad>]   # --world YALNIZ kullanıcının seçimiyle
                                                                      # Whisper yalnız ses dosyası varsa ve kullanıcı yerelde transkript istiyorsa: --with-whisper
 motion-render vendor scripts                                         # React/ReactDOM/Babel (fontlar look-dev'de)
 ```
@@ -115,7 +116,7 @@ motion-render vendor scripts                                         # React/Rea
 | §3 | kalite çıtası: profil eşiği (full ≥ 7/8 · light ≥ 6/8 · live ≥ 7/8; proje yükseltebilir); UCUZ 11 + "ek maddeler: yok" |
 | §4 | palet / yazı / aksan: "world seçilince" (aksan hakkı cevaptan) |
 | §5 | yasaklar ve ilkeler (aynen) |
-| §6 | world: `lookdev` (Önerilen yol) ya da `example:<ad>` + açık istek kaydı |
+| §6 | world: `lookdev` (Önerilen yol) ya da kütüphaneden `<ad>` + seçim kaydı (tarih, kullanıcı cümlesi) |
 | §7 | malzeme ve lisans tablosu |
 | §8 | ses ve metin: kaynak, dil, TTS/kayıt, kelime dosyaları yeri |
 | §9 | üretken varlık: bütçe (kredi; 0 ise "üretim yok"), politika dosyası yolu (GENAI.md) |
@@ -127,7 +128,7 @@ motion-render vendor scripts                                         # React/Rea
 
 `scenes` dizisi boş kalır; birimler `/motion:faz P<n>`'de eklenir.
 
-World `lookdev` ise `motion-render init` yalnız bir `world/world.json` İSKELETİ yazar: `band` ve `k1.mask` "TANIMLANMADI" işaretlidir (yanında `world/README.md`); bu alanlar look-dev fazında ölçülerek doldurulur, dolmadan `qc` çalışmaz ("world.band tanımlı değil"). Sahne kodu ancak look-dev'den sonra yazılır.
+World kütüphaneden seçildiyse `world/` o world'ün dosyalarıyla dolar (`origin: "library:<ad>"`); look-dev fazında `band`, `edgeDark`, `k1`, aksan ve hareket sayıları projenin karelerinde yeniden ölçülür (aksan rengi projeden; kütüphanedeki değer yer tutucudur). World `lookdev` ise `motion-render init` yalnız bir `world/world.json` İSKELETİ yazar: `band` ve `k1.mask` "TANIMLANMADI" işaretlidir (yanında `world/README.md`); bu alanlar look-dev fazında ölçülerek doldurulur, dolmadan `qc` çalışmaz ("world.band tanımlı değil"). Sahne kodu ancak look-dev'den sonra yazılır.
 
 ## 5. Doğrula
 

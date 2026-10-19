@@ -1,4 +1,4 @@
-// world/fx-rig.jsx — ÖRNEK world "fx-lab" v4: kamera düzeneği, derinlik katmanları, lamba havuzu, kâğıt, aydınger, taşıma, çizici.
+// world/fx-rig.jsx — kütüphane world "focusfx-paper" (eski adı fx-lab) v4: kamera düzeneği, derinlik katmanları, lamba havuzu, kâğıt, aydınger, taşıma, çizici.
 // Bağımlılık: React + shared/motion-core.jsx (MH, MHCam, MHLayer, MHAssetTexture) + world/fx-lab.jsx (FXT, FXF, FXE, fxP, FXGrid, FX_PEN).
 // Yükleme: fx-lab.jsx'ten SONRA. Kurallar: amber yok (ışık soğuk) · fade yok (ışık / hareket / bulanıklık) · doğrusal easing yok ·
 //   oturma > 2 px · gölge rengi soğuk lacivert-gri (siyah değil) · kamera monoton kübik (varır ve tutar, aşma yok) · basamak 0 (vurgu nesnede).

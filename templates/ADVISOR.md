@@ -29,7 +29,7 @@
 - **İşler**: numaralı, her biri ölçülebilir kabul ölçütüyle (sayı + birim + ölçen araç: `qc`, `frame-check <tip>`, `ours`, `k1`, reviewer §0.6).
 - **AKIŞ**: varyant (3 gerçekten farklı yön) → seçim → animatik → taze reviewer → tek düzeltme turu → render → QC → reviewer → DUR.
 - **YAP / YAPMA**, **REVIEWER** (hangi kapıda, hangi kip), **Rapor:** (faza özgü zorunlu bloklar), **DUR** (nerede durulacak).
-- Yaratıcılık kuralı her look-dev isteminde açık yazılır: süreç taşınır, üslup taşınmaz; örnek world'ün versiyonu yön sayılmaz (UCUZ #11).
+- Yaratıcılık kuralı her look-dev isteminde açık yazılır: süreç taşınır, üslup taşınmaz; yeni world kurulurken kütüphane world'ünün versiyonu yön sayılmaz; world seçilmişse yönler world içinde yapıda ayrışır (UCUZ #11, HK-36).
 
 ## 4. Rapor denetim listesi (her faz raporu)
 
@@ -56,7 +56,7 @@
 
 - Ölçüm yerine anlatım ("akıcı", "temiz") · reviewer kararı yok ya da yapanla aynı oturumda verilmiş.
 - Kare eşikleri 30 fps varsayımıyla (eşikler saniye + fps olmalı) · `world.band` / `k1.mask` boş.
-- Kaynak/örnek world'den kopyalanmış primitif, palet ya da font (yaratıcılık kuralı).
+- Seçilmemiş bir kütüphane world'ünden ya da önceki projeden kopyalanmış primitif, palet ya da font (yaratıcılık kuralı).
 - Bekleme döngüsü üst sınırsız · kare dizini yedeksiz silinmiş · master perde mp4'lerinin uç uca eklenmesi.
 
 ## 7. Oturum açılışı (danışmana verilecek ilk mesaj)

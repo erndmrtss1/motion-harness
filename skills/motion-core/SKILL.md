@@ -15,9 +15,9 @@ Bu skill **genel katmandır**: kuralların ve ölçümlerin özeti ile hangi bel
 
 > **Paket kaynak projenin SÜRECİNİ taşır (kapılar, ölçüm, reviewer, varyantlar, DUR, rapor), ÜSLUBUNU değil.**
 >
-> - Kâğıt / pafta / cetvel / rapido dili **fx-lab** world'üne aittir. **Bir world seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.**
+> - Kâğıt / pafta / cetvel / rapido dili **focusfx-paper** world'üne (kütüphane) aittir. **Bir world seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.** Kütüphane: `skills/motion-world/library/INDEX.md`; seçim `/motion:init --world <ad>`.
 > - `/motion:init`'te **"yeni world"** seçilirse look-dev fazı brief'ten **sıfırdan** bir dil kurar: **3 gerçekten farklı yön** (malzeme, ışık, hareket grameri, tipografi, kamera dili). Her yön **ölçülebilirdir**: bant, kontrast ve **K1 maske tanımı** `world.json`'a yazılır.
-> - **"fx-lab'in bir versiyonu"** sayılan yön varyant olarak kabul edilmez. Reviewer'ın UCUZ listesinde **#11 "önceki projeyi taklit"** vardır.
+> - Yeni world kurulurken **"bir kütüphane world'ünün versiyonu"** sayılan yön varyant olarak kabul edilmez. Reviewer'ın UCUZ listesinde **#11 "seçilmemiş world'e ya da önceki projeye benzerlik"** vardır; seçilmiş world'e benzerlik özelliktir (HK-36).
 > - Kurallar (K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi, §0.6) üslup değil **DİSİPLİNDİR**: her world'de geçerlidir; ama **eşikleri ve ölçüm maskeleri world başına yeniden tanımlanır**.
 > - Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, **kopyalanmaz**. Bulunan yeni kalıp world'e **K-yeni** olarak yazılır ve **`/motion:promote`** ile core'a önerilir.
 
@@ -64,7 +64,7 @@ Proje kökünde ayrıca `CLAUDE.md` vardır: bağlayıcı sıra + daimi çalış
 ## 3. Faz haritası (akış [PLAYBOOK.md](references/PLAYBOOK.md))
 
 ```
-F0 /motion:init ── brief → proje iskeleti → world seçimi (örnek world | YENİ WORLD)        DUR-1
+F0 /motion:init ── brief → proje iskeleti → world seçimi (kütüphane world'ü | YENİ WORLD)        DUR-1
    │
    ├─ ses hattı (varsa) ── transkript, BEATS, shot sınırları, amap            [AUDIO.md]
    ├─ look-dev (yeni world) ── 3 GERÇEKTEN farklı yön → ölçüm → reviewer → yön seçimi  DUR-1
@@ -115,7 +115,7 @@ Tam liste, eşik, override ve ölçüm yöntemi: [RULES.md](references/RULES.md)
 | **2× / S×** | k < `k2x` → 2×; k ≥ `sxK` → kahraman S×, kenar ≤ `edgeMaxPx` (eşikler world) | `ss2`, `fc:sharpness` |
 | **ses kilidi** | kayma \|Δ\| ≤ 33 ms → yeniden render yok | `fc:sync` |
 | **master** | ProRes 422 HQ + H.264 CRF 16; −16 LUFS / ≤ −1 dBTP; tek sürekli encode; bit-eşlik | `master`, `fc:loudness` |
-| **UCUZ 0** | 11 işaret; **#11 önceki projeyi / örnek world'ü taklit** | reviewer |
+| **UCUZ 0** | 11 işaret; **#11 seçilmemiş world'e / önceki projeye benzerlik** | reviewer |
 
 **Sınıflar:** SERT = ölçülen her şey; istisna yalnız manifest kaydıyla. VARSAYILAN = gerekçe + kaynak + geri alma yoluyla aşılır. Her raporda `## Katkı` (1–3; A/B'siz katkı "deneme").
 
@@ -153,7 +153,7 @@ Tam liste, eşik, override ve ölçüm yöntemi: [RULES.md](references/RULES.md)
 | [PATTERNS.md](references/PATTERNS.md) | bootcamp kalıp kartları — **ilham/uyarı**, kopyalanmaz | repertuvar, geçiş seçimi |
 | [DECISIONS.md](references/DECISIONS.md) | core ADR'ler (neden böyle) | bir kuralın gerekçesi |
 
-Diğer skill'ler: `motion-world` (WORLD-SPEC + `examples/`: fx-lab, desk-paper, screen-dark tam; light-ui, photo-plate yalnız world.json + lessons) · `motion-reviewer` (§0.6, UCUZ 11, ön plan 5 soru, karar biçimi) · `motion-live` (canlı profil). Sözleşme: `render/CONTRACT.md`.
+Diğer skill'ler: `motion-world` (WORLD-SPEC + `library/`: focusfx-paper, desk-paper, screen-dark tam; light-ui, photo-plate yalnız world.json + lessons) · `motion-reviewer` (§0.6, UCUZ 11, ön plan 5 soru, karar biçimi) · `motion-live` (canlı profil). Sözleşme: `render/CONTRACT.md`.
 
 ---
 
@@ -236,7 +236,7 @@ Ajan türü bulunamazsa genel amaçlı ajan açılır ve isteme "Önce `agents/<
 - [ ] `world.json`: `band`, `k1.mask` (+ `selector`), `accent` + `classes` tanımlı; `manifest validate` temiz.
 - [ ] Profil ve `gate.taste` doğru; eşikler saniye + fps.
 - [ ] Tasarım zamanı izdüşüm (`framing`, `toolPath`, `overlap`, `camera`) temiz; basamak 0, örtme 0.
-- [ ] 3 varyant gerçekten farklı; hiçbiri örnek world'ün/önceki projenin versiyonu değil (UCUZ #11).
+- [ ] 3 varyant gerçekten farklı (world seçilmişse yapıda); hiçbiri seçilmemiş bir world'ün / önceki projenin versiyonu değil (UCUZ #11).
 - [ ] Son yamadan sonra tek kare probe temiz (`PAGEERROR` / `x-import: FAILED` yok).
 - [ ] Kontrast probe'u anahtar karelerde tuttu (tam çözünürlük).
 - [ ] Künye, `project.md` faz kararı, `scenes.json`, RENDER_REPORT güncel (reviewer'dan ÖNCE).

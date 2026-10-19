@@ -21,7 +21,7 @@
 | `profileBands.typographic` | [6, 14] | kural | tipografik sahne: bant %6–14 + okunacak display ≥ 72 px (sahne kaydı `profile: "typographic"`) |
 | `edgeDark.maxFalloff` | 0.55 | türetildi | vinyet 0.35 × düşüm 0.3 → 1 − 0.65 · 0.7 ≈ 0.55; gri kartla doğrulanır |
 | `k1` | dom · 0.30 / 0.50 | kural | koyu kahraman: DOM kutusu; sahne kaydında `hero: "dom"` (kadraj ölçüsü parlak bölge yerine DOM'dan) |
-| `accent` | #E0202F · signal · 0 | kural | aksan sayılır; kayıp rengi (`bordo` sınıfı) ayrı ölçülür, oranla ayrılır, kenar karışımı düşülür |
+| `accent` | yer tutucu #D8301A · signal · 0 | kural (renk projeden; marka rengi kütüphaneye girmez, HK-37) | aksan sayılır; kayıp rengi (`bordo` sınıfı) ayrı ölçülür, oranla ayrılır, kenar karışımı düşülür |
 | `camera.maxPxPerFrame` | 10 | varsayım | okuma mesafesi; bakış x ±40 px / 0.8 s — projede ölçülür |
 | `motion.writeGlyphsPerSec` | 20 | kural | terminal yazımı ≈ 50 ms / harf |
 | `motion.crtRate` | 30 | kural | CRT adımları 30 Hz ızgarasında (60 fps'te adım = 2 kare) |

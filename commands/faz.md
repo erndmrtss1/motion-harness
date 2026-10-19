@@ -67,14 +67,14 @@ Her ajan isteği **tek görev, tek çıktı, en küçük bağlam** ilkesine uyar
 
 ## 2. `lookdev`: world kurulumu
 
-1. İsteğe bağlı: `motion:motion-research` (`referans`) → `docs/research/REF-<konu>.md`. Yalnız öğrenme içindir; örnek world'ler referans değildir.
+1. İsteğe bağlı: `motion:motion-research` (`referans`) → `docs/research/REF-<konu>.md`. Yalnız öğrenme içindir; seçilmemiş kütüphane world'leri referans değildir.
 2. `motion:motion-director` görevi: **3 gerçekten farklı yön**.
    - Her yön `world/lookdev/<yön>/` altında geçici `world.json` + jsx olarak tutulur.
    - Her yön aynı üç kilit anda still verir.
    - Ölçüm tablosu: ayrışan eksenler · bant · metin kontrastı · en küçük metin · K1 · kenar düşümü · aksan ΔE2000 · yapanın §0.6 puanı · risk.
    - Kontak sayfası.
-   - Örnek world'ler, kullanıcının §6'da kayıtlı açık isteği yoksa kullanılmaz.
-3. **Kapı:** `/motion:gate LOOK lookdev` ile aynı adımlar. Taze reviewer şunlara bakar: yön başına SEÇ/ELE, #11 örnek world türevi, altı eksende ayrışma.
+   - Kütüphane world'ü yalnız §6'da kayıtlı seçimle kullanılır. Seçilmişse üç yön o world'ün üç uygulamasıdır; ayrışma yapısal eksenlerde (motion-world §2.7).
+3. **Kapı:** `/motion:gate LOOK lookdev` ile aynı adımlar. Taze reviewer şunlara bakar: yön başına SEÇ/ELE, #11 seçilmemiş world türevi, altı eksende ayrışma (world seçilmişse yapısal eksenlerde).
 4. **DUR — yön seçimi.** Üç yön, ölçümler ve reviewer kararı kullanıcıya gider. Seçimi kullanıcı yapar.
 5. Seçim geldiğinde (sonraki mesaj ya da `/motion:faz lookdev seç <yön>`):
    - `world/world.json` kesinleşir. `band` ve `k1.mask` zorunludur; değerler seçilen yönden **ölçülür**.

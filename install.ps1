@@ -80,10 +80,22 @@ else {
   if ($FromGitHub) { $src = $FromGitHub }
   $r = Run 'claude' @('plugin','marketplace','add',$src,'--scope','user')
   if ($r.code -eq 0 -or $r.out -match 'already') { Ok "marketplace: motion-harness ← $src" } else { Bad 'marketplace add başarısız (özel depo için: gh auth login; gh auth setup-git)' }
-  $r = Run 'claude' @('plugin','install','motion@motion-harness','--scope','user','-y')
-  if ($r.code -eq 0 -or $r.out -match 'already') { Ok 'plugin: motion@motion-harness' } else { Bad 'plugin install başarısız' }
-  $r = Run 'claude' @('plugin','list')
-  if ($r.out -match 'motion@motion-harness') { Ok 'doğrulama: claude plugin list → motion@motion-harness (komutlar /motion:*; yeni oturumda yüklenir)' } else { Bad 'doğrulama: plugin listede yok' }
+  # HK-40: kurulu sürüm plugin.json ile karşılaştırılır; eskiyse marketplace + plugin güncellenir, aynıysa "güncel"
+  $exp = $null; try { $exp = (Get-Content (Join-Path $Root '.claude-plugin\plugin.json') -Raw | ConvertFrom-Json).version } catch { $exp = $null }
+  $ver = { $l = Run 'claude' @('plugin','list'); $m = [regex]::Match($l.out, '(?s)motion@motion-harness.*?Version:\s*([0-9][0-9A-Za-z.\-]*)'); if ($m.Success) { $m.Groups[1].Value } elseif ($l.out -match 'motion@motion-harness') { '?' } else { $null } }
+  Run 'claude' @('plugin','marketplace','update','motion-harness') | Out-Null
+  $v0 = & $ver
+  if (-not $v0) {
+    $r = Run 'claude' @('plugin','install','motion@motion-harness','--scope','user','-y')
+    if ($r.code -eq 0 -or $r.out -match 'already') { Ok 'plugin: motion@motion-harness kuruldu' } else { Bad 'plugin install başarısız' }
+  } elseif ($exp -and $v0 -ne $exp) {
+    $r = Run 'claude' @('plugin','update','motion@motion-harness','--scope','user')
+    if ($r.code -eq 0) { Ok "plugin: motion güncellendi $v0 → $exp (yeni oturumda yüklenir)" } else { Bad "plugin update başarısız ($v0 → $exp)" }
+  } else { Ok "plugin: motion $v0 (güncel)" }
+  $v1 = & $ver
+  if (-not $v1) { Bad 'doğrulama: plugin listede yok' }
+  elseif ($exp -and $v1 -ne $exp) { Bad "doğrulama: kurulu sürüm $v1, depo sürümü $exp" }
+  else { Ok "doğrulama: claude plugin list → motion@motion-harness $v1 (komutlar /motion:*; yeni oturumda yüklenir)" }
 }
 
 # ── 4 Higgsfield (isteğe bağlı) ─────────────────────────────────────────────

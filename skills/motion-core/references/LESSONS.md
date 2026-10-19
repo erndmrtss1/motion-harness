@@ -19,7 +19,7 @@
 > - kimliksiz prosedür maddeleri `GENAI §n` / `AUDIO §n`;
 > - `—` = kural yok, yalnız teknik bilgi.
 >
-> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval ve 1.1 dersleri L-220…L-226 = 226) + §9'da world sınıfı liste. Ham kaynaklar:
+> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval, 1.1 ve 1.2 dersleri L-220…L-227 = 227) + §9'da world sınıfı liste. Ham kaynaklar:
 > - tuzak arşivi 71 (63 core);
 > - skill / world / ADR / değişiklik kaydı / bellek dersleri 144 (105 core);
 > - kaynak proje retrosu 72;
@@ -381,33 +381,34 @@
 - **L-224 · Piksel iskeleti dokuya batar** — Pikselden çıkarılan iskelet (öğe maskesi, ızgara, blob eşleme) zemin dokusu, gradyan ve vinyetten etkilendi; reviewer'ın "aynı iskelet" ile "farklı" dediği çiftler aynı aralıkta kaldı ve ağırlık taraması aşırı uydu (birini-dışarıda-bırak 4/8). Harness sayfasında iskelet DOM'dan okunur: `__boxes(T)` ya da bileşen kutuları, `[data-hero]`; doku/ışık katmanları dışarıda. Kahramanlar kadraj ortasında toplandığı için ham örtüşme bir taban üretir (ilgisiz düzenler 1,7–2,1); eşik bu tabanın üstüne konur (L-226). · *1.1* · *—*
 - **L-225 · Look-dev kapısına tam kare, kırpım değil** — Tur 2 SaaS look-dev'i reviewer'a ≤ 300 px kırpımlarla gitti ve "GEÇER 3/5" aldı. Aynı yönler tam karede üç çiftte de aynı iskeleti taşıyordu: tam kare gören reviewer 6–8 verdi, `lookdev-diff` 6,4–8,1 ölçtü. Kırpım ayrıntı kanıtıdır, iskelet kanıtı değildir. Look-dev kapısında her yönün kilit karelerinin tamamı verilir. · *eval* · *—*
 - **L-226 · Ortada kahraman önseli gerçek iskelet ortaklığını söndürür** — İlgisiz look-dev düzenlerinin iskelet tabanını düşürmek için rol doluluğu, bütün yönlerin ortalama haritasıyla (önsel) şans düzeltmesine sokuldu ve kareler arası maks alındı. İlgisiz çiftler 0'a indi, ama uzlaşılı "aynı iskelet" çiftleri de indi (E3 A↔C 3,1 → 0,2; S2 B↔C 6,4 → 0,8): önsel, ortadaki kahramanı paylaşan gerçek ortaklığı da şans sayıyor. Sınıf hatası 0 → 2; geri alındı (ortalama, önsel yok, eşik tabanın üstünde 2,2). Az örnekli kalibrasyonda düzeltme katmanı eklemeden önce pozitiflerin nereye kaydığına da bakılır. · *1.1* · *—*
+- **L-227 · World kütüphanesi ve yakınsama** — Benzerlik kuralı (UCUZ #11) iki farklı riski karıştırıyordu: yeni world kurarken önceki projeye ya da hazır bir görünüme kaymak (yakınsama, kusur) ile kullanıcının bilerek seçtiği world'ü sürdürmek (süreklilik, özellik). Kural kütüphaneyle ayrıldı: seçilmiş world'e benzerlik ölçülmez; seçilmemiş world'e ve yeni world kurulurken önceki projeye benzerlik #11'dir. World seçilmiş projede look-dev'in üç yönü palet/malzemede değil yapıda (iskelet, kamera, hareket grameri, ritim) ayrışır. Kütüphaneye giren world'den müşteri malzemesi ayıklanır; aksan rengi gibi markadan ölçülmüş değerler yer tutucu olur. · *1.2* · *—*
 
 ---
 
 ## 9. World sınıfı dersler (burada değil)
 
-Görsel dile bağlı dersler (malzeme, alet, palet, font, world bandı, dünya içi yerleşim) core'a girmez. İlgili world örneğinin `lessons.md` dosyasına gider (`skills/motion-world/examples/<ad>/`). Dilden bağımsız bir çekirdeği olanlar yukarıda core ders olarak ayrıca durur; "core çekirdeği" sütunu onu gösterir.
+Görsel dile bağlı dersler (malzeme, alet, palet, font, world bandı, dünya içi yerleşim) core'a girmez. İlgili kütüphane world'ünün `lessons.md` dosyasına gider (`skills/motion-world/library/<ad>/`). Dilden bağımsız bir çekirdeği olanlar yukarıda core ders olarak ayrıca durur; "core çekirdeği" sütunu onu gösterir.
 
 | kaynak | ders (kısa) | world | neden world | core çekirdeği |
 |---|---|---|---|---|
-| world-1 | ışık düşümünde kenar etiketi 3.7:1 → koyu grafit 700; ışık tozu notun altından | fx-lab | palet/ağırlık değeri | okunacak metin koyu ve kalın |
-| world-2 | antet başlığı hücreye sığmaz (display 160 px ≈ 1350 px) | fx-lab | yerleşim ölçüsü | — |
-| world-3 | plaka ızgarası maske deliği bırakır → izler silinip doldurulur | fx-lab | plaka malzemesi | yalıtılmış grup ve maske |
-| world-4 | "fazla iz" ölçüsü ızgaraya kanar (eksene paralel ≥ 20 px koşular) | fx-lab | plaka malzemesi | karar ölçüsü tek ve tanımlı |
-| world-5 | plaka yoksa C yüzeyi daha açık (bant %62–64) | fx-lab | world bant değeri | — |
-| world-6 | koyu son kart da world içinde (nefes + gren); siyah kart yok | fx-lab | dil kararı | — |
-| world-7 | C ↔ B yüzey tonu eşit | fx-lab | palet | — |
-| world-8 | yüzey kenarı ölçümü ≥ 12 dünya px içeriden; kahraman–yüzey kenarı ≥ 50 | fx-lab | geometri değeri | kadraj payı |
-| world-9 | kaydedici kafa kirişi metni örtmez (kiriş hücre çizgileri içinde) | fx-lab | alet | alet yolu ∩ etiket = 0 |
-| world-10 | alet görünürlüğü yön + zamanla kalıcı kilit | fx-lab | alet | — |
-| world-11 | 3B alet parçaları (≈ 46 px) örtme hesabına girer | fx-lab | alet | — |
-| world-12 | halka çizen kalemde gövde açısı dinamik programlamayla | fx-lab | alet | — |
-| world-13 | gerçek formül dizgisi (matematik italik alt küme) | fx-lab / proje | içerik | glif kapsamı ölçülür |
-| world-14 | donmuş yüzeyde `data-hero` yalnız ölçüm modunda görünür | fx-lab | sahne yapısı | K1 maskesi kahramanın bütünü |
-| world-15 | masa malzemesi genel bakışta yüzeyle yarışır (−%40 kontrast + 2 px blur) | fx-lab | malzeme | — |
-| world-16 | ışık çekilişi lamba kısılmasıdır, iris değil (havuz en son ve az) | fx-lab | ışık dili | — |
-| world-17 | alet K8 denetimi gölge ucunu da kapsar | fx-lab | alet | (PATTERNS K-39 uyarısı) |
-| world-18 | tutuş anında kadrajda alet yok | fx-lab | alet kuralı (RULES KM-11'e genellendi) | — |
+| world-1 | ışık düşümünde kenar etiketi 3.7:1 → koyu grafit 700; ışık tozu notun altından | focusfx-paper | palet/ağırlık değeri | okunacak metin koyu ve kalın |
+| world-2 | antet başlığı hücreye sığmaz (display 160 px ≈ 1350 px) | focusfx-paper | yerleşim ölçüsü | — |
+| world-3 | plaka ızgarası maske deliği bırakır → izler silinip doldurulur | focusfx-paper | plaka malzemesi | yalıtılmış grup ve maske |
+| world-4 | "fazla iz" ölçüsü ızgaraya kanar (eksene paralel ≥ 20 px koşular) | focusfx-paper | plaka malzemesi | karar ölçüsü tek ve tanımlı |
+| world-5 | plaka yoksa C yüzeyi daha açık (bant %62–64) | focusfx-paper | world bant değeri | — |
+| world-6 | koyu son kart da world içinde (nefes + gren); siyah kart yok | focusfx-paper | dil kararı | — |
+| world-7 | C ↔ B yüzey tonu eşit | focusfx-paper | palet | — |
+| world-8 | yüzey kenarı ölçümü ≥ 12 dünya px içeriden; kahraman–yüzey kenarı ≥ 50 | focusfx-paper | geometri değeri | kadraj payı |
+| world-9 | kaydedici kafa kirişi metni örtmez (kiriş hücre çizgileri içinde) | focusfx-paper | alet | alet yolu ∩ etiket = 0 |
+| world-10 | alet görünürlüğü yön + zamanla kalıcı kilit | focusfx-paper | alet | — |
+| world-11 | 3B alet parçaları (≈ 46 px) örtme hesabına girer | focusfx-paper | alet | — |
+| world-12 | halka çizen kalemde gövde açısı dinamik programlamayla | focusfx-paper | alet | — |
+| world-13 | gerçek formül dizgisi (matematik italik alt küme) | focusfx-paper / proje | içerik | glif kapsamı ölçülür |
+| world-14 | donmuş yüzeyde `data-hero` yalnız ölçüm modunda görünür | focusfx-paper | sahne yapısı | K1 maskesi kahramanın bütünü |
+| world-15 | masa malzemesi genel bakışta yüzeyle yarışır (−%40 kontrast + 2 px blur) | focusfx-paper | malzeme | — |
+| world-16 | ışık çekilişi lamba kısılmasıdır, iris değil (havuz en son ve az) | focusfx-paper | ışık dili | — |
+| world-17 | alet K8 denetimi gölge ucunu da kapsar | focusfx-paper | alet | (PATTERNS K-39 uyarısı) |
+| world-18 | tutuş anında kadrajda alet yok | focusfx-paper | alet kuralı (RULES KM-11'e genellendi) | — |
 | world-19 | kart yağmurunda derinlik bulanıklığı yalnız ≥ %60 örtülü karoya | screen-dark | kompozisyon değeri | — |
 | world-20 | tüp ekran çizgisi scaleY ile ezilir → ışıma ayrı katman | screen-dark | efekt | — |
 | world-21 | sayaç yüzü ekran çöküşünde ölçülürse font küçük çıkar → `review.metin` | screen-dark | efekt | elle incelenen aralık kaydı |
@@ -437,14 +438,14 @@ Görsel dile bağlı dersler (malzeme, alet, palet, font, world bandı, dünya i
 | tuzak d-09 | geniş lens, WebGL masa, dik 3B eşya denendi, terk | desk-paper | dil | — |
 | tuzak d-14 | çıplak masa karanlık eşiğinin altına düşer (%7) → havuzu güçlendir | desk-paper | ışık değeri | — |
 | tuzak d-15 | örtüşen sayfa ızgarasında çentik → tek adım, sınırlı düzensizlik | desk-paper | yerleşim | — |
-| retro | bant yalnız güçlü spot havuzuyla tuttu → "sayı görünüme uyar" | fx-lab | world bandı | bant world'de tanımlanır (KD-6) |
-| retro | kenar etiketleri ışık havuzu dışında okunmadı → metin havuza | fx-lab | ışık yerleşimi | — |
-| retro | pencere kalkınca bant sıçradı → pozlama telafisi | fx-lab | ışık | pozlama kamera ölçeğine bağlı |
-| retro | fiziksel nesne girişleri (alet dili) | fx-lab | alet | — |
-| retro | alet görünürlüğü yön + kutu + kilit; 3B alet parçaları örtmede | fx-lab | alet | — |
-| retro | ışık çekilişi önce pozlama, havuz en son; tutuş aletsiz | fx-lab | ışık/alet | siyaha iniş 16-bit (core) |
-| retro | yazıcı kafa kirişi komşu metne taşar → kiriş ∩ metin = 0 | fx-lab | alet | alet yolu ∩ etiket = 0 |
-| kullanıcı | ön plan kuralı: yerde, temas gölgesi, ≤ 2 px, örtme ≤ %5, metin 0; "katman olsun diye alet yasak" | fx-lab (kural) | dünya kuralı; RULES ÖNP/K2'ye genellendi | hata gibi görünen öğe (reviewer) |
+| retro | bant yalnız güçlü spot havuzuyla tuttu → "sayı görünüme uyar" | focusfx-paper | world bandı | bant world'de tanımlanır (KD-6) |
+| retro | kenar etiketleri ışık havuzu dışında okunmadı → metin havuza | focusfx-paper | ışık yerleşimi | — |
+| retro | pencere kalkınca bant sıçradı → pozlama telafisi | focusfx-paper | ışık | pozlama kamera ölçeğine bağlı |
+| retro | fiziksel nesne girişleri (alet dili) | focusfx-paper | alet | — |
+| retro | alet görünürlüğü yön + kutu + kilit; 3B alet parçaları örtmede | focusfx-paper | alet | — |
+| retro | ışık çekilişi önce pozlama, havuz en son; tutuş aletsiz | focusfx-paper | ışık/alet | siyaha iniş 16-bit (core) |
+| retro | yazıcı kafa kirişi komşu metne taşar → kiriş ∩ metin = 0 | focusfx-paper | alet | alet yolu ∩ etiket = 0 |
+| kullanıcı | ön plan kuralı: yerde, temas gölgesi, ≤ 2 px, örtme ≤ %5, metin 0; "katman olsun diye alet yasak" | focusfx-paper (kural) | dünya kuralı; RULES ÖNP/K2'ye genellendi | hata gibi görünen öğe (reviewer) |
 | kullanıcı | konu/vaat ilkesi; anlatımla ilgisiz metafor yasak | proje | içerik | — |
 | kullanıcı | kaynaklı içerikte belirli aday ailesinin elenmesi | proje | içerik | uydurma yok, kaynaktan aynen |
 | kullanıcı | logo rengi/ton değerleri | proje | marka değeri | marka rengi teslim edilmiş dosyadan |

@@ -1,6 +1,6 @@
 # screen-dark — world kararları (ÖRNEK)
 
-Biçim: kimlik · karar · gerekçe · sonuç. Bu kararlar örnek world'ün kendi tarihidir; yeni projeyi bağlamaz.
+Biçim: kimlik · karar · gerekçe · sonuç. Bu kararlar world'ün kendi tarihidir; world'ü seçen proje bunları başlangıç olarak alır ve kendi DECISIONS'ına yazar, seçmeyen projeyi bağlamaz.
 
 ## SDW-01 · Soğuk ekran kimliksiz → ekran dünyası masa dünyasının karanlığında
 - **Bağlam:** ilk ekran dili (soğuk fosfor yüzey, arduvaz, yeşil ızgara) her ekran grafiğine benzedi; inceleme "kimliksiz" dedi.

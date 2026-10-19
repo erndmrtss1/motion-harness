@@ -2,7 +2,9 @@
 
 **Bu paket bir motion grafik üretim *sürecidir*.** Kapsadığı adımlar şunlar: kapılar, ölçüm, bağımsız inceleme, raporlar ve onay için durma noktaları (DUR).
 
-**Görsel üslup taşımaz.** Her proje kendi görsel dünyasını (world) look-dev ile kurar. Örnek world'ler yalnız sen açıkça istersen kullanılır.
+**Görsel üslubu sen seçersin.** Paket bir world kütüphanesi taşır (`skills/motion-world/library/INDEX.md`): bir world seçebilir (`/motion:init --world <ad>`) ya da look-dev ile yenisini kurarsın. Seçmezsen hiçbir üslup varsayılan gelmez.
+
+**İlk kez mi?** İnsan için başlangıç rehberi: `docs/BASLANGIC.md` (kurulum, ilk proje 10 adım, DUR, kapılar, world seçimi, kredi).
 
 **Claude Code plugin'i olarak çalışır.** Komutlar `/motion:*` adını taşır; render işini `motion-render` komut satırı aracı yapar.
 
@@ -45,7 +47,7 @@ Komutu plugin klasöründe çalıştır, sonra `/motion:doctor`'u tekrarla.
 /motion:init brief.md     # brief dosyasının başında ön bilgi (frontmatter) varsa soru sormaz
 ```
 
-World sorusunda önerilen seçenek **yeni look-dev**'dir.
+World sorusunda önerilen seçenek **yeni look-dev**'dir. Kütüphaneden seçmek için: `/motion:init --world focusfx-paper` (liste `skills/motion-world/library/INDEX.md`).
 
 Ön bilgi alanları `commands/init.md` dosyasında listelidir. Başlıcaları: `konu`, `sure`, `ses`, `dil`, `profil`, `world`, `genai_butce`, `yasaklar`, `teslim`.
 
@@ -67,7 +69,7 @@ Her faz bir rapor ve **DUR** satırıyla biter. DUR'da senden ne beklendiği rap
 |---|---|---|---|
 | 1 | `/motion:init` | Proje iskeleti; `project.md` §1–§10, `scenes.json`, `CLAUDE.md`, ledger, `docs/` | Açık kararları cevapla (varsayılanla doldurulan alanlar) |
 | 2 | `/motion:faz audio` | Transkript, vuruş haritası (BEATS), shot listesi önerisi, kayma tablosu | Shot sınırlarını onayla |
-| 3 | `/motion:faz lookdev` | Gerçekten farklı **3 yön**; ölçümler; bağımsız reviewer (örnek world türevleri elenir) | **Bir yön seç** (ya da birleşim) |
+| 3 | `/motion:faz lookdev` | Gerçekten farklı **3 yön**; ölçümler; bağımsız reviewer (yeni world kurarken kütüphane türevleri elenir; world seçildiyse yönler world içinde yapıda ayrışır) | **Bir yön seç** (ya da birleşim) |
 | 4 | `/motion:faz lexicon` | Shot başına nesne sözlüğü; kaynaklı içerik adayları (kaynaktan aynen) | Sözlüğü onayla; aday seç |
 | 5 | `/motion:faz P1` (P2, …) | Varyantlar → animatik → reviewer kapısı → tam render → QC → teslim kapısı | İlk perdede animatiği onayla; her perdenin teslimine bak |
 | 6 | `/motion:master` | Tek sürekli encode, loudness, dikişler, arşiv, `docs/TESLIM.md`, master kapısı | Teslim dosyalarını onayla |

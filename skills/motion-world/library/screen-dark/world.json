@@ -1,7 +1,7 @@
 {
   "name": "screen-dark",
   "version": "2.0.0",
-  "origin": "example:screen-dark",
+  "origin": "library:screen-dark",
   "palette": {
     "bg": "#0A0908",
     "glass": "#0F0E0C",
@@ -23,7 +23,7 @@
     "labelText": "#C9CED4",
     "faceLabel": "#4A504D"
   },
-  "accent": { "color": "#E0202F", "class": "signal", "quotaDefault": 0 },
+  "accent": { "color": "#D8301A", "class": "signal", "quotaDefault": 0, "note": "yer tutucu — aksan rengi projeden (project.md §4); marka rengi kütüphaneye girmez (HK-37)" },
   "fonts": [
     { "family": "Saira Condensed", "weights": [600, 700], "source": "google" },
     { "family": "Inter", "weights": [400, 500], "source": "google" },

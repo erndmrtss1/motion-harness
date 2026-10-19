@@ -11,7 +11,7 @@ var DESK = {
   base: '#0A0908', desk: '#0C0B0A', lamp: '217,174,82', warmPool: '#FFD9A3',
   ink: '#0E0C0A', ballpoint: '#1C2340', inkLow: '#2E3966', inkHigh: '#10162E', wetInk: '#7385CC',
   graphite: '#3A3B3D', pencilText: '#26272B', paperWhite: '#EEEBE4', paperAged: '#E6DCC3', offPaper: '#F2F4F7',
-  fog: '#9BA3AD', ash: '#5A6068', signal: '#E0202F', dust: '255,226,180', beam: '255,226,180', printLight: '255,250,236',
+  fog: '#9BA3AD', ash: '#5A6068', signal: '#D8301A', dust: '255,226,180', beam: '255,226,180', printLight: '255,250,236',
   persp: 2200, vignette: 0.35, grain: 0.04, grainRate: 30, fall: 0.45, fallR: 1.05,
   plane: { w: 3400, h: 2200 },   // masa düzlemi (tasarım px); merkezi tuval merkezinde
 };

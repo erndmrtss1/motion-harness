@@ -86,7 +86,7 @@ Değerler `world/world.json`'dandır. Burada yalnız projeye özgü sapma ve aks
 
 ## 6. World
 
-- Seçim: <look-dev F<n>, yön <A/B/C> \| örnek world `<ad>` (kullanıcı seçti)>.
+- Seçim: <look-dev F<n>, yön <A/B/C> \| kütüphane world'ü `<ad>` (kullanıcı seçti, tarih)>.
 - `world/world.json` sürümü: <0.1.0>. Zorunlu alanlar: `band`, `k1.mask`.
 - Bant: <[lo, hi]> — onaylı görünümden ölçüldü. Sayı görünüme uyar.
 - Dersler `world/lessons.md`; seçim gerekçesi `world/DECISIONS.md`.

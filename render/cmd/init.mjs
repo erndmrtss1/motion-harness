@@ -1,11 +1,11 @@
 // motion-render init — proje iskeleti (CONTRACT §1). Kaynak proje kopyalanmaz; node_modules ve junction yok (paket bağımlılıkları pakette kalır).
-//   motion-render init <dizin> [--world <örnek-ad> | --new] [--profile full|light|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]
+//   motion-render init <dizin> [--world <kütüphane-ad> | --new] [--profile full|light|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]
 // Yazılanlar (var olan dosyaya --force olmadan dokunulmaz; tekrar çalıştırmak güvenli):
 //   scenes.json (templates/scenes.json; fps/profil/world/kapı ayarlı, scenes boş) · project.md · CLAUDE.md · docs/<şablonlar>.md
 //   assets/gen/manifest.json (templates/ledger.json) · motion-runtime.js + shared/motion-stage.jsx + shared/motion-core.jsx (render/runtime/)
-//   world/: --world <ad> → skills/motion-world/examples/<ad>/ (demo.* hariç); yoksa world.json iskeleti (band / k1.mask "TANIMLANMADI") + README (look-dev doldurur)
+//   world/: --world <ad> → skills/motion-world/library/<ad>/ (demo.* hariç; origin "library:<ad>"; eski ad fx-lab → focusfx-paper); yoksa world.json iskeleti (band / k1.mask "TANIMLANMADI") + README (look-dev doldurur)
 //   dizinler: checks/ hooks/ script/ assets/gen/{inbox,requests,runs,plates,elements,transitions,storyboard,logos} docs/ fonts/ vendor/ out/{frames,scenes,probe,logs,master,archive,review}
-//   --demo: örnek world'ün demo.dc.html + demo.jsx'i köke, scenes.json'a DEMO sahnesi (smoke bunu kullanır)
+//   --demo: kütüphane world'ünün demo.dc.html + demo.jsx'i köke, scenes.json'a DEMO sahnesi (smoke bunu kullanır)
 //   sonra vendor: scripts (React/ReactDOM/Babel, SRI) + world fonts varsa Google Fonts (+ LICENSES.md); --no-vendor ile atlanır.
 //   --with-whisper: <dizin>/.venv + pip install -r render/requirements.txt (faster-whisper; model ilk transcribe'da iner).
 import fs from 'node:fs';
@@ -14,18 +14,19 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url)), PKG = path.resolve(HERE, '..');
-const TPL = path.resolve(PKG, '..', 'templates'), EXAMPLES = path.resolve(PKG, '..', 'skills', 'motion-world', 'examples'), RUNTIME = path.join(PKG, 'runtime');
+const TPL = path.resolve(PKG, '..', 'templates'), EXAMPLES = path.resolve(PKG, '..', 'skills', 'motion-world', 'library'), RUNTIME = path.join(PKG, 'runtime');
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; }, has = (k) => args.includes('--' + k);
 const VALUED = new Set(['--world', '--profile', '--fps']);
 const pos = args.filter((a, i) => !a.startsWith('--') && !VALUED.has(args[i - 1]));
-if (!pos[0]) { console.error('kullanım: motion-render init <dizin> [--world <örnek> | --new] [--profile full|light|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]'); process.exit(2); }
-const DIR = path.resolve(pos[0]), FORCE = has('force'), DRY = has('dry'), WORLD = opt('world', null), PROFILE = opt('profile', 'full'), FPS = +opt('fps', 60);
+if (!pos[0]) { console.error('kullanım: motion-render init <dizin> [--world <kütüphane-ad> | --new] [--profile full|light|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]'); process.exit(2); }
+const ALIAS = { 'fx-lab': 'focusfx-paper' };   // HK-38: fx-lab örneği FocusFX world'ünün damıtılmışıydı → focusfx-paper
+const DIR = path.resolve(pos[0]), FORCE = has('force'), DRY = has('dry'), WORLD = ((w) => (w ? ALIAS[w] || w : null))(opt('world', null) && opt('world', null).replace(/^(?:example|library):/, '')), PROFILE = opt('profile', 'full'), FPS = +opt('fps', 60);
 if (!['full', 'light', 'live'].includes(PROFILE)) { console.error('--profile full | light | live'); process.exit(2); }
 if (!(FPS > 0)) { console.error('--fps sayı olmalı'); process.exit(2); }
 if (WORLD && has('new')) { console.error('--world ile --new birlikte olmaz'); process.exit(2); }
 const EX = WORLD ? path.join(EXAMPLES, WORLD) : null;
-if (EX && !fs.existsSync(path.join(EX, 'world.json'))) { const av = fs.existsSync(EXAMPLES) ? fs.readdirSync(EXAMPLES).filter((d) => fs.existsSync(path.join(EXAMPLES, d, 'world.json'))) : []; console.error('örnek world yok: ' + WORLD + ' (var: ' + (av.join(', ') || '—') + ')'); process.exit(2); }
-if (has('demo') && !EX) { console.error('--demo yalnız --world <örnek> ile'); process.exit(2); }
+if (EX && !fs.existsSync(path.join(EX, 'world.json'))) { const av = fs.existsSync(EXAMPLES) ? fs.readdirSync(EXAMPLES).filter((d) => fs.existsSync(path.join(EXAMPLES, d, 'world.json'))) : []; console.error('kütüphanede world yok: ' + WORLD + ' (var: ' + (av.join(', ') || '—') + ')'); process.exit(2); }
+if (has('demo') && !EX) { console.error('--demo yalnız --world <kütüphane-ad> ile'); process.exit(2); }
 
 const log = { yazildi: [], atlandi: [], dizin: [] };
 const rel = (f) => path.relative(DIR, f).split(path.sep).join('/') || '.';
@@ -57,7 +58,8 @@ if (!fs.existsSync(TPL)) log.atlandi.push('templates/ (paket şablon dizini yok)
   man.scenes = [];   // birimler /motion:faz ile eklenir
   if (has('demo')) {
     const src = fs.readFileSync(path.join(EX, 'demo.dc.html'), 'utf8'), m = /window\.OM_SCENES\s*=\s*'([^']*)'/.exec(src), dur = m ? JSON.parse(m[1]).reduce((a, s) => a + s.dur, 0) : 4;
-    man.scenes.push({ id: 'DEMO', file: 'demo.dc.html', tc: '00:00.00', frames: Math.round(dur * FPS), bg: '#000', keys: [Math.round(dur * FPS * 0.5), Math.round(dur * FPS * 0.8)], blackStart: false, slice: true, checks: [], hooks: [], note: 'örnek world demosu (smoke); film sırasına girmez' });
+    man.scenes.push({ id: 'DEMO', file: 'demo.dc.html', tc: '00:00.00', frames: Math.round(dur * FPS), bg: '#000', keys: [Math.round(dur * FPS * 0.5), Math.round(dur * FPS * 0.8)], blackStart: false, slice: true, checks: [], hooks: [], note: 'kütüphane world demosu (smoke); film sırasına girmez' });
+    { const ep = /window\.OM_EXPO_POST\s*=\s*'([^']*)'/.exec(src); if (ep) man.scenes[man.scenes.length - 1].expoPost = JSON.parse(ep[1]); }   // demo iniş penceresi (expo-post, L-005)
   }
   put('scenes.json', JSON.stringify(man, null, 2) + '\n', 'fps ' + FPS + ' · profil ' + PROFILE + ' · kapı ≥ ' + man.gate.taste + '/8');
 }
@@ -74,9 +76,10 @@ if (fs.existsSync(TPL)) for (const f of fs.readdirSync(TPL)) {
 }
 // 4 · world
 if (EX) {
-  const walk = (d, r = '') => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f), q = r ? r + '/' + f : f; if (fs.statSync(p).isDirectory()) walk(p, q); else if (!/^demo\./.test(q)) cp(p, 'world/' + q, 'örnek world ' + WORLD); } };
+  const walk = (d, r = '') => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f), q = r ? r + '/' + f : f; if (fs.statSync(p).isDirectory()) walk(p, q); else if (!/^demo\./.test(q)) cp(p, 'world/' + q, 'kütüphane world ' + WORLD); } };
   walk(EX);
-  if (has('demo')) { cp(path.join(EX, 'demo.dc.html'), 'demo.dc.html', 'örnek demo sayfası'); cp(path.join(EX, 'demo.jsx'), 'demo.jsx', 'örnek demo sahnesi'); }
+  { const wf = path.join(DIR, 'world', 'world.json'); if (!DRY && fs.existsSync(wf)) { try { const w = JSON.parse(fs.readFileSync(wf, 'utf8')); if (w.origin !== 'library:' + WORLD) { w.origin = 'library:' + WORLD; fs.writeFileSync(wf, JSON.stringify(w, null, 2) + '\n'); } } catch (e) { log.atlandi.push('world/world.json origin yazılamadı: ' + e.message); } } }
+  if (has('demo')) { cp(path.join(EX, 'demo.dc.html'), 'demo.dc.html', 'kütüphane demo sayfası'); cp(path.join(EX, 'demo.jsx'), 'demo.jsx', 'kütüphane demo sahnesi'); }
 } else {
   const name = path.basename(DIR).toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'world';
   put('world/world.json', JSON.stringify({
@@ -88,14 +91,14 @@ if (EX) {
   put('world/README.md', '# world/ — görsel dil\n\nBu proje yeni bir world ile başladı. `world.json` iskelettir: **look-dev** fazı (3 yön → seçim) paleti, fontları, aksan sınıfını,\n' +
     'parlaklık bandını (`band`, ZORUNLU) ve K1 kahraman maskesini (`k1.mask`, ZORUNLU) doldurur; primitifler `*.jsx` dosyalarına, dersler `lessons.md`\'ye yazılır.\n' +
     'Alanlar: render/CONTRACT.md §3. `band` ve `k1.mask` "TANIMLANMADI" kaldıkça `motion-render manifest validate` geçmez ve sahne render edilmez.\n' +
-    'World seçilmedikçe hiçbir primitif/renk/font/kalıp varsayılan gelmez; örnek world yalnız kullanıcının açık isteğiyle (`motion-render init --world <ad>`).\n', 'look-dev notu');
+    'World seçilmedikçe hiçbir primitif/renk/font/kalıp varsayılan gelmez; kütüphaneden world yalnız kullanıcı seçerse (`/motion:init --world <ad>`; liste skills/motion-world/library/INDEX.md).\n', 'look-dev notu');
   put('world/lessons.md', '# Dersler — ' + name + '\n\n(look-dev ve fazlar boyunca: sorun → ölçü → kural.)\n', 'boş');
 }
 put('.gitignore', 'out/\nvendor/\nfonts/gf/\n.venv/\nnode_modules/\n*.part\n', 'üretilen dosyalar');
 
 // 5 · rapor
 const say = (t, a) => { if (a.length) console.log(t + ' (' + a.length + '):\n  ' + a.join('\n  ')); };
-console.log((DRY ? '(dry) ' : '') + 'init ' + DIR + ' · world ' + (WORLD ? 'örnek ' + WORLD : 'yeni (look-dev)') + ' · profil ' + PROFILE + ' · ' + FPS + ' fps');
+console.log((DRY ? '(dry) ' : '') + 'init ' + DIR + ' · world ' + (WORLD ? 'kütüphane ' + WORLD : 'yeni (look-dev)') + ' · profil ' + PROFILE + ' · ' + FPS + ' fps');
 say('yazıldı', log.yazildi); say('atlandı', log.atlandi); if (log.dizin.length) console.log('dizin: ' + log.dizin.length + ' yeni');
 if (DRY) process.exit(0);
 

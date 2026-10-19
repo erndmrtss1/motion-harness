@@ -52,7 +52,7 @@ Bu dosya ise yalnız inceleme yöntemini, karar sözlüğünü ve dönüş biçi
 | inceleme kuralı | bu dosya · `RULES.md` · `MEASURE.md` · `GENAI.md` | ölçüt ve yöntem |
 | proje kuralı | `project.md`: §1 brief (aynen) · §3 kalite çıtası (+ UCUZ ek maddeleri) · §4 palet/yazı/aksan hakkı · §5 yasaklar · §6 world seçimi kaydı · §9 üretken varlık · §10 ölçü hedefleri · §11+ faz kararlarının yalnız "kullanıcı" satırları | ölçüt |
 | world | `world/world.json` | bant, K1 maskesi, aksan sınıfları, kamera/hareket sınırları, `origin` |
-| örnek world'ler | `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/examples/*/world.json` ve `lessons.md` | yalnız UCUZ #11 karşılaştırması |
+| world kütüphanesi | `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md`, `*/world.json`, `*/lessons.md` | yalnız UCUZ #11 karşılaştırması (seçilmemiş world'ler; §4.1) |
 | manifest | `scenes.json` | fps, kareler, anahtar kareler, `checks`, `exceptions` / `review` kayıtları, `gate` |
 | harness çıktısı | `out/probe/<id>-qc.json` · `out/probe/<id>-fc.json` (+ `--sheet` sayfası) · `motion-render contact` kontakları | **yönlendirici**: nereye bakılacağını gösterir, kanıt değildir (§2) |
 | kareler | `out/frames/<id>[_tag]/NNNNN.png` · `out/scenes/*.mp4` · varyant/look-dev still'leri · storyboard kareleri | asıl kanıt kaynağı |
@@ -170,15 +170,20 @@ Bir işaret **VAR** ise birim **GEÇMEZ** olur. **Sınırda** olan bir işaret y
 | 8 | Stok görünümlü üretken klip | Konuyla bağı zayıf, parlak-jenerik, stok çekim hissi. Klip cümleyi anlatıyor ya da tek başına kare oluyor. | Klip karesi, ledger kaydı |
 | 9 | Yapay zekâ artefaktı | El, yüz, yazı, geometri kırığı, eriyen kenar, titreyen doku. | 1:1 ya da 2× kırpım, komşu kareler |
 | 10 | Metin üstüne doğrudan efekt | Glow, blur, bozulma ya da gradyan doğrudan metne uygulanmış; okunurluk düşüyor. | Metin kırpımı ve kontrast oranı |
-| 11 | **Önceki projeyi / örnek world'ü taklit** | Bkz. §4.1. | Eksen tablosu |
+| 11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik** | Bkz. §4.1. | Eksen tablosu |
 
-### 4.1 UCUZ #11: önceki projeyi ya da örnek world'ü taklit
+### 4.1 UCUZ #11: seçilmemiş bir world'e ya da önceki projeye benzerlik (HK-36)
 
-Paket görsel üslup taşımaz. Kaynak projenin görünüm ailesi yalnız `examples/` altında örnek olarak durur. Taklit şu beş eksende karşılaştırılır:
+Paket süreci ve bir **world kütüphanesi** taşır (`skills/motion-world/library/`, liste `INDEX.md`). Seçilmiş bir world'e benzerlik özelliktir, taklit değildir. #11 iki durumda aranır:
+
+- **Proje yeni world kuruyor** (`world.json` `origin: "lookdev"`): yön, kütüphanedeki herhangi bir world'e ya da önceki projeye benziyorsa.
+- **Proje kütüphaneden world seçmiş** (`origin: "library:<ad>"` ve `project.md` §6'da seçim kaydı): yön, seçilmiş world **dışındaki** bir kütüphane world'üne benziyorsa. Seçilmiş world'e benzerlik #11 değildir; "<seçilmiş world>'e benzer" bir ELE gerekçesi olmaz.
+
+Benzerlik şu beş eksende karşılaştırılır:
 
 | eksen | eşleşme sayılır |
 |---|---|
-| palet | `world.json` paleti ve kontaktan ölçülen baskın renkler. Renklerin yarısından fazlası örnek world paletindeki bir renge ΔE2000 ≤ 10 yakın. |
+| palet | `world.json` paleti ve kontaktan ölçülen baskın renkler. Renklerin yarısından fazlası karşılaştırılan world'ün paletindeki bir renge ΔE2000 ≤ 10 yakın. |
 | tipografi | Display rolünde aynı aile ya da aynı kesim ailesi. |
 | malzeme / primitif | `primitives` adlarında Jaccard ≥ 0,3 ya da aynı malzeme metaforu (yüzey, alet, ışık düzeni). |
 | kompozisyon | Anahtar karelerde kahraman yerleşimi ve ölçeği örneğin tarif ettiği düzene oturuyor. |
@@ -186,8 +191,8 @@ Paket görsel üslup taşımaz. Kaynak projenin görünüm ailesi yalnız `examp
 
 - **≥ 3 eksende eşleşme: #11 VAR.**
 - 2 eksende eşleşme: **sınırda**.
-- İstisna: `world.json` `origin: "example:<ad>"` **ve** `project.md` §6'da "kullanıcının açık isteği" kaydı birlikte varsa, o örneğin primitif/palet/font kullanımı #11 sayılmaz.
-  - Bu istisnada bile kaynak projenin shot tasarımlarını, sıralarını ya da imza anlarını birebir yeniden kurmak #11'dir.
+- Seçilmiş world'de bile önceki projenin **içeriğini** (shot tasarımları, sıraları, imza anları, ekrandaki metin) birebir yeniden kurmak #11'dir.
+- Eski kayıt: `origin: "example:<ad>"` ve §6'da açık istek kaydı, `library:<ad>` seçimi gibi okunur.
 - Eşleşme eşikleri eval kipinde (§13) ayarlanır. Değiştiyse kayıtta belirtilir.
 
 ---
@@ -401,9 +406,10 @@ Birim başına üç yön gelir. Her yön için şunlar yapılır:
 
 1. Durağan §0.6 değerlendirmesi (`n = 5`).
 2. Durağan UCUZ maddelerinin taranması: #1, #3, #4, #6, #10, #11.
-3. **Örnek world türevi taraması.**
-   - Yön, bir örnek world'ün sürümü ise (§4.1'de ≥ 3 eksen) **ELE** kararı verilir. Gerekçe "örnek world türevi (#11)" olur.
-   - İstisna: kullanıcının açık isteği kayıtlıysa.
+3. **Kütüphane türevi taraması (#11, HK-36).**
+   - Yeni world kuran projede yön bir kütüphane world'ünün sürümüyse (§4.1'de ≥ 3 eksen) **ELE** kararı verilir. Gerekçe "kütüphane türevi (#11): <ad>" olur.
+   - World seçilmiş projede seçilmiş world'e benzerlik ELE gerekçesi değildir; yalnız seçilmemiş bir world'e benzerlik aranır.
+   - **World içi look-dev:** world seçilmiş projede üç yön aynı world'ün üç uygulamasıdır. Ayrışma palet/malzeme/tipografide değil yapıda aranır: kompozisyon iskeleti, kamera dili, hareket grameri, ritim (en az üç yapısal eksen; ya da iki yapısal + bir world içi değişke, gerekçeli). `lookdev-diff` "world içi" satırında palet ve çekici uyarıları bilgi sayılır; iskelet uyarısı sürer ve gerekçe ister.
 4. **Yönler arası ayrışma.**
    - Üç yön birbirinin renk/ışık takası olmamalıdır.
    - Eksenler PLAYBOOK §1'deki altı eksendir: ışık modeli · malzeme/zemin · ton (luma bandı) · tipografi · kamera dili · geçiş dili.
@@ -442,7 +448,7 @@ Seçim önerin yapanın seçimiyle uyuşmazsa ana oturum bunu açık karar olara
 
 **2. Projeler arası benzerlik.** Her proje çifti için §4.1'in beş ekseni ölçülür. **≥ 3 eksende eşleşme = benzer çift.**
 
-**3. Kaynak görünüme benzerlik.** Her proje, örnek world'lerin her biriyle aynı beş eksende karşılaştırılır. Örnek world'ler kaynak projenin görünüm ailesidir.
+**3. Kaynak görünüme benzerlik.** Her proje, seçmediği kütüphane world'lerinin her biriyle aynı beş eksende karşılaştırılır. Kütüphane world'leri kaynak projenin görünüm ailesidir.
 
 **Çıktının ilk satırı:**
 
@@ -452,7 +458,7 @@ EVAL: proje <N> · benzer çift <k>/<N·(N−1)/2> · örnek-world benzeri <m>/<
 
 Ardından iki tablo gelir:
 - benzerlik matrisi: proje × proje, eşleşen eksen sayısı
-- örnek world karşılaştırması: proje × örnek, eşleşen eksenler
+- kütüphane karşılaştırması: proje × seçilmemiş world, eşleşen eksenler
 
 Eşik değişikliği (ΔE, Jaccard) yapıldıysa ilk tablonun altına yazılır.
 

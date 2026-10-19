@@ -13,11 +13,13 @@
 //   palet (UYARI)   — ekran görüntüsünden zemin ΔE2000 + baskın renkler → 0–10. ≥ 3,5 → reviewer'ın gerekçeli incelemesi zorunlu.
 //   çekici (UYARI)  — terminal · defter · SaaS · sentez; iki yön aynı çekicide → reviewer gerekçesi zorunlu.
 // --ref: önceki proje / örnek kontağı (PNG; @CxR+şerit ile hücrelere bölünür). Yalnız palet uyarısı; iskelet "ölçülemedi" (1.1.0).
+// World içi (HK-36): world/world.json origin "library:<ad>" (ya da eski "example:<ad>") → üç yön aynı world'ün uygulamasıdır; palet ve çekici
+//   uyarıları bilgi olur (sayılmaz), iskelet uyarısı sürer. Satır "world içi (<ad>) · …" ile başlar.
 // --threshold yalnız sıkılaştırır (paket eşiğinden düşük); scenes.json "gate.lookdevSkel" de aynı.
 // Çıktı: <out>.json + .md; KARAR satırı parçası "iskelet: A↔B a, … (eşik t) · palet: … · ihlal n". Çıkış: 0 ihlal yok · 3 ihlal · 2 kullanım/sayfa yok.
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, FPS, MAN } from '../lib/project.mjs';
+import { ROOT, FPS, MAN, loadWorld } from '../lib/project.mjs';
 import { withPage, STAGE } from '../lib/page.mjs';
 import { loadImage, features, paletSets, pageBoxes, topBoxes, skelSets, attractorLevel, refCells, ISKELET_ESIK, ISKELET_MOD, PALET, VERSION } from '../lib/lookdev-diff.mjs';
 
@@ -39,6 +41,7 @@ const missing = dirs.filter((Y) => !findPage(Y));
 if (missing.length) { console.error('lookdev-diff: sayfa yok: ' + missing.join(', ')); process.exit(2); }
 const projT = (() => { const g = (MAN && MAN.gate) || {}; return typeof g.lookdevSkel === 'number' ? g.lookdevSkel : Infinity; })();
 const T = Math.min(ISKELET_ESIK, projT, +opt('--threshold', Infinity));
+const WORLD_ICI = (() => { try { const o = String((loadWorld() || {}).origin || ''); const m = /^(?:library|example):(.+)$/.exec(o); return m ? m[1] : null; } catch { return null; } })();
 const fArg = opt('--frames', null)?.split(',').map((x) => +x.replace(/^K/i, '') - (/^K/i.test(x) ? 1 : 0));
 
 // ── yönleri oku ──
@@ -66,7 +69,7 @@ for (let i = 0; i < dirs.length; i++) for (let j = i + 1; j < dirs.length; j++) 
   const sk = skelSets(a.per.map((p) => p.boxes), b.per.map((p) => p.boxes)), pl = paletSets(a.per.map((p) => p.pal), b.per.map((p) => p.pal));
   const ust = sk.score != null && sk.score >= T;
   pairs.push({ a: dirs[i], b: dirs[j], iskelet: sk.score, iskeletKare: sk.frames, iskeletRol: sk.parts, tekRol: sk.tekRol, palet: pl.score, zeminDE: pl.dEbg, paletDE: pl.palDE, gren: pl.grain,
-    ihlal: ISKELET_MOD === 'SERT' && ust, iskeletUyari: ISKELET_MOD === 'UYARI' && ust, uyari: pl.score >= PALET.uyari });
+    ihlal: ISKELET_MOD === 'SERT' && ust, iskeletUyari: ISKELET_MOD === 'UYARI' && ust, uyari: !WORLD_ICI && pl.score >= PALET.uyari, paletBilgi: !!WORLD_ICI && pl.score >= PALET.uyari });
 }
 // ── çekiciler ──
 const att = {};
@@ -87,12 +90,12 @@ if (refArg) {
 }
 
 const ihlal = pairs.filter((p) => p.ihlal).length;
-const uyari = pairs.filter((p) => p.uyari || p.iskeletUyari).length + ref.filter((r) => r.uyari).length + cekici.length;
+const uyari = pairs.filter((p) => p.uyari || p.iskeletUyari).length + ref.filter((r) => r.uyari).length + (WORLD_ICI ? 0 : cekici.length);
 const f1 = (v) => String(v).replace('.', ',');
-const line = `iskelet (${ISKELET_MOD}): ` + pairs.map((p) => `${p.a}↔${p.b} ${p.iskelet == null ? 'ölçülemedi' : f1(p.iskelet)}${p.tekRol ? ' (tek rol)' : ''}`).join(', ') + ` (eşik ${f1(T)}) · palet: ` + pairs.map((p) => `${p.a}↔${p.b} ${f1(p.palet)}`).join(', ')
+const line = (WORLD_ICI ? `world içi (${WORLD_ICI}; palet/çekici bilgi) · ` : '') + `iskelet (${ISKELET_MOD}): ` + pairs.map((p) => `${p.a}↔${p.b} ${p.iskelet == null ? 'ölçülemedi' : f1(p.iskelet)}${p.tekRol ? ' (tek rol)' : ''}`).join(', ') + ` (eşik ${f1(T)}) · palet: ` + pairs.map((p) => `${p.a}↔${p.b} ${f1(p.palet)}`).join(', ')
   + (ref.length ? ' · kaynağa palet: ' + ref.map((r) => `${r.yon} ${f1(r.palet)}`).join(', ') : '') + ` · ihlal ${ihlal} · uyarı ${uyari}`;
 const out = {
-  tool: 'motion-render lookdev-diff', version: VERSION, date: new Date().toISOString(), root: ROOT, esik: T, iskeletMod: ISKELET_MOD, paletUyari: PALET.uyari,
+  tool: 'motion-render lookdev-diff', version: VERSION, worldIci: WORLD_ICI, date: new Date().toISOString(), root: ROOT, esik: T, iskeletMod: ISKELET_MOD, paletUyari: PALET.uyari,
   yonler: Object.fromEntries(dirs.map((Y) => [Y, { file: D[Y].file, frames: D[Y].frames, kaynak: [...new Set(D[Y].per.map((p) => p.src))], kutu: D[Y].per.map((p) => p.boxes.length),
     cekici: Object.fromEntries(Object.entries(att[Y]).map(([k, v]) => [k, attractorLevel(v)])), hatalar: D[Y].log,
     ...(args.includes('--dump') ? { kare: D[Y].per.map((p) => ({ frame: p.frame, boxes: p.boxes, pal: { bg: p.pal.bg, bgCov: p.pal.bgCov, palette: p.pal.palette, grain: p.pal.grain } })) } : {}) }])),
@@ -103,10 +106,10 @@ fs.mkdirSync(path.dirname(outF), { recursive: true });
 fs.writeFileSync(outF, JSON.stringify(out, null, 1));
 const md = ['# lookdev-diff', '', '`' + line + '`', '',
   `| çift | iskelet (${ISKELET_MOD}) | kare başına | palet (UYARI) | zemin ΔE | palet ΔE | sonuç |`, '|---|---:|---|---:|---:|---:|---|',
-  ...pairs.map((p) => `| ${p.a}↔${p.b} | ${p.iskelet == null ? 'ölçülemedi' : f1(p.iskelet)}${p.tekRol ? ' (tek rol)' : ''} | ${p.iskeletKare.map(f1).join(' / ')} | ${f1(p.palet)} | ${p.zeminDE == null ? '—' : f1(p.zeminDE)} | ${f1(p.paletDE)} | ${[p.ihlal ? '**İHLAL** (aynı iskelet)' : '', p.iskeletUyari ? 'uyarı (iskelet)' : '', p.uyari ? 'uyarı (palet)' : ''].filter(Boolean).join(' · ') || '—'} |`),
+  ...pairs.map((p) => `| ${p.a}↔${p.b} | ${p.iskelet == null ? 'ölçülemedi' : f1(p.iskelet)}${p.tekRol ? ' (tek rol)' : ''} | ${p.iskeletKare.map(f1).join(' / ')} | ${f1(p.palet)} | ${p.zeminDE == null ? '—' : f1(p.zeminDE)} | ${f1(p.paletDE)} | ${[p.ihlal ? '**İHLAL** (aynı iskelet)' : '', p.iskeletUyari ? 'uyarı (iskelet)' : '', p.uyari ? 'uyarı (palet)' : '', p.paletBilgi ? 'bilgi (palet, world içi)' : ''].filter(Boolean).join(' · ') || '—'} |`),
   ...(ref.length ? ['', '| yön → kaynak | palet | hücre | iskelet | sonuç |', '|---|---:|---:|---|---|', ...ref.map((r) => `| ${r.yon} | ${f1(r.palet)} | ${r.hucre} | ölçülemedi | ${r.uyari ? 'uyarı' : '—'} |`)] : []),
   '', 'çekici: ' + dirs.map((Y) => Y + ' ' + Object.entries(out.yonler[Y].cekici).filter(([, v]) => v !== 'yok').map(([k, v]) => k + ' ' + v).join('/') || Y + ' —').join(' · ')
-    + (cekici.length ? ' · **iki yön aynı çekicide:** ' + cekici.map((c) => c.cekici + ' (' + c.yonler.join(', ') + ')').join('; ') : ''),
+    + (cekici.length ? (WORLD_ICI ? ' · aynı çekici (bilgi, world içi): ' : ' · **iki yön aynı çekicide:** ') + cekici.map((c) => c.cekici + ' (' + c.yonler.join(', ') + ')').join('; ') : ''),
   ...(empty.length ? ['', '**iskelet ölçülemedi:** ' + empty.join(', ') + ' (sayfada anlamlı kutu yok; __boxes ya da [data-hero] ekle)'] : []),
   '', `kutu kaynağı: ${dirs.map((Y) => Y + ' ' + out.yonler[Y].kaynak.join('/')).join(' · ')} · süre ${(out.sureMs / 1000).toFixed(1)} s`].join('\n');
 fs.writeFileSync(outF.replace(/\.json$/, '') + '.md', md + '\n');

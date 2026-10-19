@@ -1,7 +1,7 @@
 // motion-render smoke — kurulum öz-sınaması (ağ yalnız ilk vendor'da; sonra önbellek).
-//   motion-render smoke [--keep] [--world fx-lab] [--frames 12]
+//   motion-render smoke [--keep] [--world focusfx-paper] [--frames 12]
 // 1. ffmpeg özellikleri (libx264 zorunlu; prores_ks, ffv1, aac, loudnorm, ebur128, drawtext uyarı) · 2. Chromium açılışı (Playwright)
-// 3. geçici proje (OS geçici dizini): motion-render init --world fx-lab --demo (örnek demo sahnesi; yoksa satır içi en küçük demo, motion-stage ile)
+// 3. geçici proje (OS geçici dizini): motion-render init --world focusfx-paper --demo (kütüphane demo sahnesi; yoksa satır içi en küçük demo, motion-stage ile)
 // 4. render DEMO --scale 0.5 --range 0-11 --tag smoke → 12 kare 960×540 (boyut ve sayı doğrulanır) · 5. qc (çalıştı = çıkış 0 ya da 3 + qc.json)
 // 6. contact (kontak sayfası) · süre ✓ · geçici proje silinir (--keep hariç). Herhangi bir adım ✗ → çıkış 1.
 import fs from 'node:fs';
@@ -11,9 +11,9 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { capabilities } from '../lib/ffmpeg.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url)), BIN = path.resolve(HERE, '..', 'bin', 'motion-render.mjs'), EXAMPLES = path.resolve(HERE, '..', '..', 'skills', 'motion-world', 'examples');
+const HERE = path.dirname(fileURLToPath(import.meta.url)), BIN = path.resolve(HERE, '..', 'bin', 'motion-render.mjs'), EXAMPLES = path.resolve(HERE, '..', '..', 'skills', 'motion-world', 'library');
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; }, has = (k) => args.includes('--' + k);
-const WORLD = opt('world', 'fx-lab'), NF = Math.max(1, +opt('frames', 12));
+const WORLD = ({ 'fx-lab': 'focusfx-paper' })[opt('world', 'focusfx-paper')] || opt('world', 'focusfx-paper'), NF = Math.max(1, +opt('frames', 12));
 const T0 = Date.now(), res = [];
 const step = (name, ok, msg, t) => { res.push({ name, ok, msg }); console.log((ok === true ? '✓ ' : ok === 'warn' ? '! ' : '✗ ') + name.padEnd(10) + ' ' + msg + (t ? ' · ' + ((Date.now() - t) / 1000).toFixed(1) + ' s' : '')); return ok; };
 const mr = (a, opts = {}) => spawnSync(process.execPath, [BIN, ...a], { encoding: 'utf8', maxBuffer: 1 << 26, ...opts });
@@ -42,7 +42,7 @@ const hasDemo = fs.existsSync(path.join(EXAMPLES, WORLD, 'demo.dc.html')) && fs.
 { const t = Date.now();
   const r = mr(['init', TMP, ...(hasDemo ? ['--world', WORLD, '--demo'] : ['--new'])]);
   if (r.status !== 0) { step('init', false, 'çıkış ' + r.status + ' · ' + tail(r), t); done(); }
-  if (!hasDemo) {   // satır içi en küçük demo (örnek world demosu yoksa): motion-stage + tek kahraman kutusu, 1 s
+  if (!hasDemo) {   // satır içi en küçük demo (kütüphane demosu yoksa): motion-stage + tek kahraman kutusu, 1 s
     fs.writeFileSync(path.join(TMP, 'world', 'world.json'), JSON.stringify({ name: 'smoke', version: '0.0.1', origin: 'smoke', palette: { bg: '#000' }, fonts: [], band: [0, 100], k1: { mask: 'dom', selector: '[data-hero]', areaMin: 0, heightMin: 0 } }, null, 1));
     fs.writeFileSync(path.join(TMP, 'demo.jsx'), '// smoke: satır içi en küçük demo\nfunction SmokePiece() { var c = useComposition(), T = c.T;\n  return <div style={{ position: "absolute", inset: 0, background: "#6b6b6b" }}><div data-hero="" style={{ position: "absolute", left: 300 + 600 * T, top: 260, width: 640, height: 560, background: "#1d1f22" }} /></div>; }\n' +
       'function SmokeDemo() { return <CompositionStage width={1920} height={1080} bg="#000" scenes={window.OM_SCENES} playback={window.OM_PLAYBACK}><SmokePiece /></CompositionStage>; }\nObject.assign(window, { SmokeDemo: SmokeDemo });\n');
@@ -54,7 +54,7 @@ const hasDemo = fs.existsSync(path.join(EXAMPLES, WORLD, 'demo.dc.html')) && fs.
     fs.writeFileSync(mf, JSON.stringify(man, null, 2));
   }
   const vend = fs.existsSync(path.join(TMP, 'vendor', 'react@18.3.1', 'umd', 'react.production.min.js'));
-  step('init', vend ? true : false, (hasDemo ? 'örnek world ' + WORLD + ' + demo' : 'satır içi demo (örnek demo yok)') + ' · vendor ' + (vend ? '✓' : '✗ (ağ/önbellek yok: ' + tail(r) + ')') + ' · ' + TMP, t);
+  step('init', vend ? true : false, (hasDemo ? 'kütüphane world ' + WORLD + ' + demo' : 'satır içi demo (kütüphane demosu yok)') + ' · vendor ' + (vend ? '✓' : '✗ (ağ/önbellek yok: ' + tail(r) + ')') + ' · ' + TMP, t);
   if (!vend) done();
 }
 // 4 · render

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Gizlilik taraması — git'e girecek her dosyada marka, kişi, parite, dosya yolu, e-posta, oturum kimliği arar.
-// Terim listesi git dışıdır: dev/privacy-terms.local.txt (satır başına bir düzenli ifade, # yorum).
+// Terim listeleri git dışıdır (HK-37: yasak olan MÜŞTERİ malzemesidir; sahibinin üslubu ve FocusFX proje adı serbest):
+//   evidence/aliases.local.md "## Müşteri terimleri" bölümü (satır: - <tür>: `<regex>`) · dev/privacy-terms.local.txt (kişi, yol; <tür>TAB<regex>).
 // Kullanım: node dev/privacy-scan.mjs [--json=rapor.json] [--history] [--evidence=<dizin>]
 //   varsayılan: `git ls-files` + izlenmeyen ama yok sayılmayan dosyalar (yani commit'e girebilecek her şey).
 //   --history: ayrıca bütün commit'lerdeki her blob (geçmiş; silinmiş dosyalar dahil) aynı desenlerle taranır.
@@ -31,6 +32,9 @@ const terms = fs.existsSync(termFile)
   ? fs.readFileSync(termFile, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'))
       .map(l => { const [kind, re] = l.includes('\t') ? l.split('\t') : ['terim', l]; return [kind, new RegExp(re, 'gi')]; })
   : [];
+{ const alias = path.join(root, 'evidence', 'aliases.local.md');   // müşteri terimleri (HK-37)
+  if (fs.existsSync(alias)) { const t = fs.readFileSync(alias, 'utf8'), i = t.search(/^## Müşteri terimleri/m);
+    if (i >= 0) for (const l of t.slice(i).split('\n').slice(1)) { if (/^## /.test(l)) break; const m = /^-\s*([^:`]+):\s*`([^`]+)`/.exec(l.trim()); if (m) terms.push([m[1].trim(), new RegExp(m[2], 'gi')]); } } }
 // İzinli istisnalar: dosya yolu deseni → kalıp (ör. README'deki depo sahibi).
 const allowFile = path.join(root, 'dev', 'privacy-allow.local.txt');
 const allow = fs.existsSync(allowFile)

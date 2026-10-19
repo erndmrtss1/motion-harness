@@ -36,7 +36,7 @@
 8. stok görünümlü üretken klip
 9. yapay zekâ artefaktı (el, yüz, yazı, geometri kırığı)
 10. metin üstüne doğrudan efekt
-11. önceki projeyi ya da örnek world'ü taklit (beş eksen: palet · tipografi · malzeme/primitif · kompozisyon · hareket imzası; ≥ 3 eşleşme VAR)
+11. seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik; seçilmiş world'e benzerlik sayılmaz (beş eksen: palet · tipografi · malzeme/primitif · kompozisyon · hareket imzası; ≥ 3 eşleşme VAR)
 
 **Ön plan (5 soru; beklenen evet · evet · hayır · evet · hayır; ters cevap → o shot GEÇMEZ):** bağlı mı · temas gölgesi var mı · kahramanı/metni örtüyor mu (metin örtmesi 0) · bulanıklık eşik içinde mi · hata gibi görünüyor mu.
 

@@ -1,6 +1,6 @@
 # desk-paper — world kararları (ÖRNEK)
 
-Biçim: kimlik · karar · gerekçe · sonuç. Bu kararlar örnek world'ün kendi tarihidir; yeni projeyi bağlamaz.
+Biçim: kimlik · karar · gerekçe · sonuç. Bu kararlar world'ün kendi tarihidir; world'ü seçen proje bunları başlangıç olarak alır ve kendi DECISIONS'ına yazar, seçmeyen projeyi bağlamaz.
 
 ## DPW-01 · 2.5D "ima et"; 3B katı cisim ve WebGL masa terk
 - **Karar:** derinlik örtüşen düz katman, yumuşak gölge, odak farkı ve doku + ışıktan gelir; nesneler gradyanlı geometriyle modellenmez.

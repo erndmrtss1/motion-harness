@@ -1,6 +1,6 @@
 ---
 name: motion-world
-description: WORLD-SPEC — bir motion projesinin görsel dünyasını (malzeme, ışık, hareket grameri, tipografi, kamera dili, palet, ölçülebilir sınırlar, ilkel bileşenler) look-dev fazında brief'ten SIFIRDAN kurma ve world.json'u ölçerek doldurma süreci. Yeni proje world'ü kurarken ya da değiştirirken, look-dev'de 3 gerçekten farklı yön üretirken, look / varyant / karşılaştırma / gri kart / anahtar kare / galeri / storyboard tahtası hazırlarken, world.json alanlarını (band, k1.mask zorunlu) ölçerken, world ilkeli (world/*.jsx) yazarken, world dersleri ve kararları kaydederken, K-yeni kalıbı /motion:promote'a hazırlarken ve örnek world'ler (fx-lab, desk-paper, screen-dark, light-ui, photo-plate) sorulduğunda kullan. Örnek world'ler varsayılan değildir; yalnız kullanıcı açıkça isterse ve uyarlanarak kullanılır.
+description: WORLD-SPEC — bir motion projesinin görsel dünyasını (malzeme, ışık, hareket grameri, tipografi, kamera dili, palet, ölçülebilir sınırlar, ilkel bileşenler) look-dev fazında brief'ten SIFIRDAN kurma ve world.json'u ölçerek doldurma süreci. Yeni proje world'ü kurarken ya da değiştirirken, look-dev'de 3 gerçekten farklı yön üretirken, look / varyant / karşılaştırma / gri kart / anahtar kare / galeri / storyboard tahtası hazırlarken, world.json alanlarını (band, k1.mask zorunlu) ölçerken, world ilkeli (world/*.jsx) yazarken, world dersleri ve kararları kaydederken, K-yeni kalıbı /motion:promote'a hazırlarken ve world kütüphanesi (focusfx-paper, desk-paper, screen-dark, light-ui, photo-plate; library/INDEX.md) sorulduğunda ya da seçildiğinde kullan. Kütüphane world'leri varsayılan değildir; yalnız kullanıcı seçerse (/motion:init --world <ad>) kullanılır ve projenin kareleriyle yeniden ölçülür.
 ---
 
 # motion-world — WORLD-SPEC
@@ -45,8 +45,9 @@ world/
 
 ## 2. Yaratıcılık kuralı (SERT)
 
-> **Paket SÜRECİ taşır, ÜSLUBU değil.** World seçilmedikçe hiçbir ilkel, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.
-> Yeni world look-dev'de brief'ten **sıfırdan** kurulur. Örnek world'ler okunabilir; kopyalanmaz (RULES YR-1, YR-2).
+> **Paket SÜRECİ ve bir WORLD KÜTÜPHANESİ taşır (HK-36).** Proje ya kütüphaneden bir world seçer (`/motion:init --world <ad>`, §8) ya da yeni world kurar.
+> World seçilmedikçe hiçbir ilkel, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez. Yeni world look-dev'de brief'ten **sıfırdan** kurulur;
+> kütüphane world'leri okunabilir, kopyalanmaz (RULES YR-1, YR-2). Seçilmiş world'e benzerlik özelliktir (madde 7).
 
 1. **Üç gerçekten farklı yön.** Look-dev her zaman üç yön sunar. İki yön aşağıdaki eksenlerin **en az üçünde** ayrışır (RULES YR-3, PLAYBOOK §1.2):
 
@@ -64,22 +65,26 @@ world/
    - **Yapısal eksen şartı.** Ayrışan üç eksenden en az biri yapısaldır: kamera dili, hareket grameri ya da kompozisyon iskeleti (öğelerin kadrajdaki yeri, okuma sırası). Yalnız ışık / malzeme / ton değişen üç yön aynı iskeleti paylaşır → "renk/ışık takası", sürüm sayılır (eval bulgusu: üç yön aynı etiket konumu ve aynı nokta koordinatıyla çıktı).
    - **Varsayılan çekiciler.** Bağımsız projeler en çok şu hazır görünümlere yakınsar: *koyu soğuk zemin + monospace + ince açık çizgi* ("terminal"), *krem/bej ızgara kâğıt + koyu bantlar* ("defter"), *mor-mavi gradyan + cam kart* ("SaaS"), *neon kontur + koyu ızgara* ("sentez"). Bir yön bunlardan birine düşüyorsa yön kartı bunu adıyla yazar ve kimlik zincirinden (madde 4) gerekçesini verir; gerekçesizse ELE. Üç yönden en çok biri çekici bölgede olabilir.
 2. **Her yön ölçülebilir.** Ölçülemeyen yön seçime sunulmaz: bant, kontrast, `k1.mask` (+ `selector`), aksan + sınıf, düşüm, hareket sayıları.
-3. **"Örnek world'ün bir versiyonu" geçerli yön değildir — UCUZ #11.** Test: yön, bir örnek world ya da önceki proje cinsinden
+3. **Yeni world kurarken "kütüphane world'ünün bir versiyonu" geçerli yön değildir — UCUZ #11.** Test: yön, bir kütüphane world'ü ya da önceki proje cinsinden
    "**X ama Y**" diye tarif edilebiliyorsa (ör. "teknik çizim ama koyu", "masa ama mavi") yön değildir, sürümdür → ELE.
-   Reviewer beş eksende (malzeme, palet, alet dili, kamera grameri, geçiş kalıbı) örneklerle karşılaştırır.
+   Reviewer beş eksende (malzeme, palet, alet dili, kamera grameri, geçiş kalıbı) kütüphane world'leriyle karşılaştırır.
 4. **Yön brief'ten türetilir.** Zincir: projenin kimlik cümlesi → ışığın kaynağı ve anlamı ("ışık = dikkat" gibi bir ilke) → malzeme → hareket
    grameri (malzemenin fiziği) → tipografi (malzemenin yazısı) → kamera dili (izleyicinin konumu). Her halkanın gerekçesi yön kartına yazılır.
-5. **Geçersiz yön örnekleri:** aynı yönün üç renk varyantı; bir örnek world'ün ilkel setini palet değiştirip kullanmak; önceki filmin kamera
+5. **Geçersiz yön örnekleri:** aynı yönün üç renk varyantı; (yeni world kurarken) bir kütüphane world'ünün ilkel setini palet değiştirip kullanmak; önceki filmin kamera
    grameri + yeni font; "trend" görünüm listesi (stok görünüm UCUZ #8); yalnız font değişen üç still.
 6. **Kurallar disiplindir:** K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi her world'de geçerlidir; **eşikleri ve maskeleri world
    başına yeniden tanımlanır** (YR-6). Yeniden tanım SERT bir kuralı kaldıramaz.
+7. **World seçilmiş projede look-dev (HK-36).** Üç yön aynı world'ün üç uygulamasıdır: malzeme, palet ve tipografi world'den gelir. Ayrışma
+   yapısal eksenlerde aranır: kompozisyon iskeleti, kamera dili, hareket grameri, ritim. Madde 1'in üç-eksen kuralı bu yapısal eksenler
+   arasında uygulanır; varsayılan çekici kuralı uygulanmaz (çekici world'ün kendisidir). `motion-render lookdev-diff` "world içi" bayrağıyla koşar:
+   iskelet uyarısı sürer ve gerekçe ister; palet ve çekici uyarıları bilgi olur. Seçilmemiş bir kütüphane world'üne benzerlik yine #11'dir.
 
 ---
 
 ## 3. Look-dev fazı
 
 **Ne zaman:** `world/world.json` yoksa (sahne kodu yazılmaz), kullanıcı yeni world istediğinde, ya da world'ün kimliği değişecekse.
-**Girdi:** brief, `project.md` kimlik bölümü, ses / BEATS (varsa), içerik sözlüğü taslağı, kısıtlar (süre, profil, bütçe). Örnek world'ler girdi DEĞİLDİR.
+**Girdi:** brief, `project.md` kimlik bölümü, ses / BEATS (varsa), içerik sözlüğü taslağı, kısıtlar (süre, profil, bütçe). Yeni world kurarken kütüphane world'leri girdi DEĞİLDİR (world seçilmişse girdi seçilen world'dür).
 
 1. **Yön kartları (3).** `world/lookdev/<A|B|C>/YON.md`:
 
@@ -174,7 +179,7 @@ function Piece() {
 
 | alan | zorunlu | anlam | nasıl doldurulur |
 |---|---|---|---|
-| `name`, `version`, `origin` | — | ad, semver, `lookdev` ya da `example:<ad>` | world değişince `version` artar |
+| `name`, `version`, `origin` | — | ad, semver, `lookdev` ya da `library:<ad>` (eski `example:<ad>`) | world değişince `version` artar |
 | `palette` | — | ad → `#rrggbb` (yalnız hex) | world jsx sabitleriyle aynı; ışık telafili kaynak renk ayrı ad (`accentSrc`) |
 | `accent` | — | `{color, class, quotaDefault}` | `color` grade'li çıktıdan ölçülen hedef (`fc:accentColor` `target`); `class` `classes`'tan (yoksa araç `signal` kullanır); kota sahne kaydında (`redQuota`) — `quotaDefault`'u yalnız `manifest validate` denetler, qc/fc okumaz |
 | `fonts` | — | `[{family, weights, italic?, source}]` | `motion-render vendor fonts` (ve `init`) `source: "google"` (ya da `source`'suz) aileleri indirir (lisans metniyle); Türkçe glif kontrolü qc#13 + `fc:glyph` (`family`, `chars` bildirilir) |
@@ -238,24 +243,28 @@ Ne gösteriyor: … · Sayılar: {dur, …} (kart satırı) · Mekanik ↔ gör�
 
 ---
 
-## 8. Örnek world'ler
+## 8. World kütüphanesi
 
-`examples/` altında beş örnek vardır (tablo: `examples/README.md`): **fx-lab**, **desk-paper**, **screen-dark** (world.json + jsx + lessons +
-DECISIONS + demo) ve **light-ui**, **photo-plate** (world.json + lessons). Hepsi **ÖRNEK, varsayılan değil**.
+`library/` altındaki world'ler ve durumları `library/INDEX.md`'de listelenir. Bugün: **focusfx-paper** (üretim world'ü: FocusFX FX-01; world.json +
+jsx + lessons + DECISIONS + sözlük şablonu + demo), **desk-paper**, **screen-dark** (world.json + jsx + lessons + DECISIONS + demo), **light-ui**,
+**photo-plate** (world.json + lessons). Hiçbiri varsayılan değildir.
 
 - **Okumak serbesttir:** süreç örneği olarak (bir world.json'un nasıl ölçüldüğü, bir lessons dosyasının nasıl tutulduğu, bir ilkelin T'nin saf
-  fonksiyonu olarak nasıl yazıldığı). Yön kartına, palete, ilkele **kopyalanmaz**; sessizce önerilmez.
-- **Kullanım yalnız açık istekle:** kullanıcı "örnek world'ü kullan: <ad>" der (ya da `/motion:init` sorusunda seçer) → `motion-render init <dir> --world <ad>`.
-  Kayıt: `world.json` `origin: "example:<ad>"`, `DECISIONS.md`'ye ilk satır "örnek world kullanıcı isteğiyle seçildi (tarih, istek cümlesi)".
-- **Seçilse de uyarlanır:**
-  1. Kimlik cümlesi projenin brief'inden yeniden yazılır (örneğin cümlesi kalmaz).
-  2. Look board + gri kart projenin kendi içeriğiyle çizilir; `band`, `edgeDark`, `k1` eşikleri, `accent` + `classes`, kamera ve hareket sayıları
-     **projenin karelerinde yeniden ölçülür** ve yazılır.
+  fonksiyonu olarak nasıl yazıldığı). Yeni world kurarken yön kartına, palete, ilkele **kopyalanmaz**; sessizce önerilmez.
+- **Seçim:** `/motion:init --world <ad>` (argümansız init kütüphane listesini sorar; headless'ta brief ön bilgisi `world: <ad>`) →
+  `motion-render init <dir> --world <ad>`. Kayıt: `world.json` `origin: "library:<ad>"`, `project.md` §6 seçim satırı (tarih, kullanıcı cümlesi),
+  `DECISIONS.md`'ye ilk satır "kütüphane world'ü seçildi". Eski ad `fx-lab` → `focusfx-paper`.
+- **Seçilince uyarlanır:**
+  1. Kimlik cümlesi projenin brief'inden yeniden yazılır.
+  2. Look board + gri kart projenin kendi içeriğiyle çizilir; `band`, `edgeDark`, `k1` eşikleri, `accent` (renk projeden; kütüphanedeki
+     aksan yer tutucudur) + `classes`, kamera ve hareket sayıları **projenin karelerinde yeniden ölçülür** ve yazılır.
   3. Proje kimliğiyle çelişen ilkel / renk / font değiştirilir (değişiklik `DECISIONS.md`'ye).
-  4. Örneğin dersleri (`lessons.md`) geçerlidir; projeye uymayan satır "bu projede geçersiz" notuyla kalır.
-  5. Reviewer yine UCUZ #11'e bakar: kullanıcı örneği seçtiyse "taklit" değil "seçim" sayılır, ama önceki projenin **içeriği / kamera
-     grameri / geçiş sırası** taşınamaz.
-- **Demo sahneleri** (`demo.dc.html`) yalnız world'ün ilkellerini çalışır halde gösterir; kurulum smoke testi `fx-lab` demosundan 12 kare çizer.
+  4. World'ün dersleri (`lessons.md`) geçerlidir; projeye uymayan satır "bu projede geçersiz" notuyla kalır.
+  5. Look-dev world içinde kalır (§2 madde 7). Reviewer seçilmiş world'e benzerliği #11 saymaz; seçilmemiş world'e benzerliği ve önceki
+     projenin **içeriğini / shot sırasını / imza anlarını** birebir taşımayı #11 sayar.
+- **Geri yazma (HK-39):** proje bitince `/motion:promote --library <ad>` world'ü ve world derslerini kütüphaneye yazar; müşteri malzemesi
+  (ad, logo, marka rengi, kare, ses, transkript, sözlük içeriği, seslendirme metni) ayıklanır; `INDEX.md` güncellenir.
+- **Demo sahneleri** (`demo.dc.html`) world'ün ilkellerini çalışır halde gösterir; kurulum smoke testi `focusfx-paper` demosundan 12 kare çizer.
 
 ---
 
@@ -278,7 +287,7 @@ Tam liste ve imzalar: `render/runtime/motion-core.jsx` başlık yorumu.
 
 ## 10. World kilit kontrol listesi
 
-- [ ] Üç yön kartı; her çift ≥ 3 eksende ayrışıyor; hiçbiri örnek world / önceki proje "X ama Y"si değil (UCUZ #11).
+- [ ] Üç yön kartı; her çift ≥ 3 eksende ayrışıyor (world seçilmişse yapısal eksenlerde); hiçbiri seçilmemiş bir kütüphane world'ü / önceki proje "X ama Y"si değil (UCUZ #11).
 - [ ] Her çiftte ayrışan eksenlerden en az biri yapısal (kamera / hareket / kompozisyon iskeleti); varsayılan çekici bölgedeki yön ≤ 1 ve gerekçeli.
 - [ ] `motion-render lookdev-diff` koşuldu; UYARI veren çiftlerin gerekçesi yön kartında; kahraman öğe `data-hero` taşıyor.
 - [ ] Her yön ölçüldü (bant, kontrast, K1, düşüm, aksan, s/kare); rapor tablosu + kontak var.

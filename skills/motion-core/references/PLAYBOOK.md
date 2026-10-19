@@ -54,7 +54,7 @@ Proje belgelerinin şablonları paketin `templates/` klasöründedir.
 
 1. **World seçilmedikçe varsayılan yok.** Hiçbir primitif, renk, font, alet ya da geçiş kalıbı kendiliğinden gelmez. `world.json` yoksa sahne kodu yazılmaz; önce look-dev yapılır (§4.3).
 2. **Look-dev üç GERÇEKTEN farklı yön sunar.** İki yön, aşağıdaki altı eksenin en az üçünde ayrışmalıdır: ışık modeli · malzeme/zemin · ton (luma bandı) · tipografi · kamera dili · geçiş dili. Her yön ölçülür (§4.3). Aynı yönün üç renk varyantı, üç yön sayılmaz.
-3. **UCUZ #11: önceki projeyi ya da örnek world'ü taklit etmek.** Reviewer her kapıda tarar. Örnek world'ler (`skills/motion-world/examples/`) yalnız kullanıcı açıkça seçerse (`motion-render init --world <örnek>`) yüklenir; seçilmeyen örnek okunabilir ama kopyalanmaz.
+3. **UCUZ #11: seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik.** Reviewer her kapıda tarar. Kütüphane world'leri (`skills/motion-world/library/`) yalnız kullanıcı seçerse (`motion-render init --world <örnek>`) yüklenir; seçilmeyen örnek okunabilir ama kopyalanmaz.
 4. **Kalıp kanıtla girer.** Bir kalıp sahneye ancak A/B kanıtıyla girer; A/B'si olmayan katkı raporda "deneme" diye etiketlenir.
 5. Kaynak projeden gelen kural ve dersler **disiplindir**: kapı, ölçüm, belge. Değer gerektiren kurallar (bant, aksan sınıfı, K1 maskesi) değerini world'den alır. World bu değerleri vermiyorsa ilgili kontrol "ölçülemedi" uyarısı verir; değer uydurulmaz.
 
@@ -284,7 +284,7 @@ Perdeler sırayla tasarlanır. Bir perdenin tam render'ı arka planda koşarken 
 | süre, format | 60 fps · 1920×1080 | `scenes.json` |
 | profil | `full` | `scenes.json` `profile` |
 | ses: kayıt / TTS / yok | — | §8, `scenes.json` `audio` |
-| world: yeni look-dev / örnek world | yeni look-dev | §6 |
+| world: yeni look-dev / kütüphane world'ü | yeni look-dev | §6 |
 | ekrana ne yazılır (metin kuralı) | — | §2 |
 | aksan hakkı | — | §4 |
 | yasaklar | — | §5 |
@@ -369,7 +369,7 @@ motion-render amap build --anchors amap.config.json                       # tasa
 4. **Reviewer (kapı `lookdev`, kapı-id `LOOK-lookdev-r1`).** Taze reviewer'a still'ler ve yön başına `world.json` taslakları verilir; yukarıdaki ölçüm tablosu verilmez (yapan sayısıdır, rapora ve kullanıcıya gider). Reviewer kendi ölçümüyle bakar:
    - üç yön gerçekten farklı mı: altı eksenin 3'ünden azında ayrışan yön "yön değil, sürüm" → ELE;
    - her yönde durağan §0.6 (`n = 5`) ve durağan UCUZ maddeleri;
-   - **UCUZ #11** (önceki projeyi ya da örnek world'ü taklit; beş eksen karşılaştırması);
+   - **UCUZ #11** (seçilmemiş world'e ya da önceki projeye benzerlik; beş eksen karşılaştırması);
    - yön başına **SEÇ / ELE** ve tek cümle kanıt. Seçimi yapanınkiyle uyuşmazsa açık karar olur.
 5. **DUR — yön seçimi.** Kullanıcı birini ya da bir birleşimi seçer.
 6. **World kaydı:**

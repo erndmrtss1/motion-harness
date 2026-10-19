@@ -1,7 +1,7 @@
 # @motion/harness — sözleşme (CLI · manifest · world · sayfa kancaları)
 
 Bu belge paketin bütün parçalarının (skill'ler, ajanlar, komutlar, `render/`) uyduğu tek sözleşmedir.
-Değişiklik önce burada yapılır. Sürüm: 1.1.0.
+Değişiklik önce burada yapılır. Sürüm: 1.2.0.
 
 ## 1. Proje düzeni (her proje kökü)
 
@@ -83,7 +83,7 @@ Araçların okuduğu diğer alanlar:
 
 ```jsonc
 {
-  "name": "…", "version": "0.1.0", "origin": "lookdev|example:<ad>",
+  "name": "…", "version": "0.1.0", "origin": "lookdev|library:<ad>",
   "palette": { "bg": "#…", "ink": "#…", "…": "#…" },
   "accent": { "color": "#…", "class": "signal", "quotaDefault": 1 },
   "fonts": [ { "family": "…", "weights": [400, 700], "source": "google" } ],
@@ -104,7 +104,7 @@ Araçların okuduğu diğer alanlar:
 }
 ```
 
-World seçilmedikçe hiçbir primitif/renk/font/kalıp varsayılan gelmez. Örnek world'ler `skills/motion-world/examples/<ad>/`.
+World seçilmedikçe hiçbir primitif/renk/font/kalıp varsayılan gelmez. Kütüphane world'leri `skills/motion-world/library/<ad>/` (liste `INDEX.md`); `init --world <ad>` kopyalar, `origin: "library:<ad>"`.
 
 Hangi araç hangi alanı okur (px/kare değerleri proje fps'inde uygulanır; araç ölçeklemez):
 
@@ -124,7 +124,7 @@ Hangi araç hangi alanı okur (px/kare değerleri proje fps'inde uygulanır; ara
 | `motion.toolMaxPx` | frame-check `toolPath` | 57 |
 | `ours` · `k3` | ours | `{shot: 1.67, holdMax: 0.6, movingMin: 0.4}` · `{camMin: 0.02}` |
 | `fonts` (`family`, `weights`, `italic`, `source: "google"`) | vendor fonts, init (vendor) | — |
-| `bake.noise` · `bake.out` | `world <ad> bake-noise` | fx-lab için yerleşik üç gürültü · `assets/fx` |
+| `bake.noise` · `bake.out` | `world <ad> bake-noise` | focusfx-paper (eski fx-lab) için yerleşik üç gürültü · `assets/fx` |
 | `motion.writeGlyphsPerSec` · `settlePx` · `supersample.*` · `palette` · `primitives` · `origin` | araç okumaz (look-dev/sahne kodu ve belge değeri; `ss2` eşikleri `--k/--pad/--blend` bayraklarıyla verilir) | — |
 | `name` · `version` · `lessons` | validate (uyarı) | — |
 
@@ -198,7 +198,7 @@ Dağıtıcı: `motion-render <komut> [--project <dizin>] …` · `motion-render 
 | `manifest sync \| validate [--json]` | manifest → sayfa manifesti · şema doğrulama (hata → çıkış 3) |
 | `report` | otomatik render özeti → `out/RENDER_SUMMARY.md` (her koşuda yeniden yazılır; elle tutulan `out/RENDER_REPORT.md`'ye dokunmaz) |
 | `init <dir> [--world <örnek> \| --new] [--profile full\|light\|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]` | proje iskeleti (templates/) |
-| `smoke [--keep] [--world fx-lab] [--frames 12]` | kurulum denetimi: ffmpeg, Chromium, vendor, geçici proje → 12 kare 960×540 → qc → contact |
+| `smoke [--keep] [--world focusfx-paper] [--frames 12]` | kurulum denetimi: ffmpeg, Chromium, vendor, geçici proje → 12 kare 960×540 → qc → contact |
 | `live [<sayfa.html>] [--port 4317]` · `live [<sayfa>] --qc [--seconds 20] [--wav t.wav] [--fps 60]` · `live [<sayfa>] --capture [det\|rt]` · ortak `[--avatar world/avatar-<yön>.js] [--settings J] [--out D]` | canlı profil: yerel sunum (OBS/panel URL) · ölçüm (fps ortalama + p5, gecikme p95, düşen kare, tetik p95) → `out/probe/live-qc.json` + `.md` · deterministik yakalama `out/live/capture.mp4` · `--out D` ikisini de D'ye yazar (look-dev yönleri); sayfa şablonsa proje dosyaları `/__project/` altından sunulur |
 | `lookdev-diff [--dirs A,B,C \| --pages a.dc.html,…] [--frames 0,1,2] [--ref <png>[@CxR+şerit]] [--threshold t] [--out out/review/lookdev-diff.json] [--dump]` | look-dev ayrışması: iskelet (DOM: `__boxes(T)` ya da DOM yürüyüşü → kahraman/bant/metin/kenar 6×4 doluluk, kareler arası ortalama; 1.1 UYARI, eşik 2,2) + palet (zemin ΔE2000 + baskın renkler, UYARI ≥ 3,5) + varsayılan çekici; `--ref` yalnız palet. Çıktı `.json` + `.md`, KARAR `ayrışma:` parçası. Çıkış 0 · 3 (SERT kipte ihlal) · 2 kullanım/sayfa yok |
 | `doctor [--json]` | ortam + Higgsfield oturumu + bakiye |

@@ -212,12 +212,12 @@
 
 | ADR | konu | sınıf | nereye |
 |---|---|---|---|
-| ADR-004 | 2.5D "modelleme, ima et"; 3B katı cisim ve WebGL masa terk | world (desk-paper) — ilkesi core-ilham | `skills/motion-world/examples/desk-paper/` (DECISIONS). İlke ("derinlik örtüşme, gölge, odak, doku + ışıktan") RULES zevk listesinde |
+| ADR-004 | 2.5D "modelleme, ima et"; 3B katı cisim ve WebGL masa terk | world (desk-paper) — ilkesi core-ilham | `skills/motion-world/library/desk-paper/` (DECISIONS). İlke ("derinlik örtüşme, gölge, odak, doku + ışıktan") RULES zevk listesinde |
 | ADR-009 | Buruşturma efekti kaynak videodan (key + tint + maske) | world (desk-paper) / proje | desk-paper örneği |
 | ADR-012 | Eski sahne kodunun evrensel katman sarmalayıcısıyla dönüşümü (kompozisyona dokunmadan) | proje geçmişi (core-ilham) | taşınmadı; ilkesi ADR-011 ve LESSONS ("dünya katmanı sarmalayıcıyla") |
 | ADR-013 | Bir sahnede ikinci aksan rengi bilinçli istisna | proje | taşınmadı; mekanizması (`exceptions.<sınıf>` aralığı) RULES AK-3'de |
 | ADR-014 | Aynı nesnenin üç sahnede tek bileşen olması | world / proje | screen-dark örneği; ilkesi ("tekrar eden nesne tek bileşen") LESSONS'ta |
-| ADR-016 | Ekran dünyası veri paleti | world (screen-dark) | `examples/screen-dark/` |
+| ADR-016 | Ekran dünyası veri paleti | world (screen-dark) | `library/screen-dark/` |
 | ADR-017 | Masa sahnesi kendi world katmanını çizer (sarmalayıcı değil) | world (desk-paper) — ilkesi core | desk-paper örneği; ilke ("evrensel katman tek kaynaktan; çift vinyet/gren/drift yok") world sözleşmesinde |
 | ADR-020 | Jenerik ekran dili kimliksiz çıktı verdi; dünya kimliği markanın ışığından | world (screen-dark) / proje — dersi core-ilham | screen-dark örneği; ders LESSONS'ta |
 | ADR-025 | Platformun "sınırsız pencere"si uygulamada; CLI tek varlık ya da acil iş | platform / proje | GENAI.md §3 platform notu ve §13 YOL B (`policy.unlimWindow`, `rule8Suspended`) |

@@ -22,7 +22,7 @@
 | `band` | [15, 30] | ölçüldü | masa sahneleri; havuz içinde masa luması ~23–33, uzak köşe ~7 |
 | `edgeDark.maxFalloff` | 0.65 | türetildi | vinyet 0.35 × düşüm 0.45 → 1 − 0.65 · 0.55 ≈ 0.64; projede gri kartla (`MH_CARD=1`) ölçülerek düzeltilir |
 | `k1` | dom · 0.30 / 0.50 | kural (çekirdek tabanı) | kahraman kâğıt / nesne DOM kutusu (`data-hero`) |
-| `accent` | #E0202F · signal · 0 | kural | her kullanım sayılır ve raporlanır; kaynak görseldeki kırmızı da sayılır; kota sahne manifestinden |
+| `accent` | yer tutucu #D8301A · signal · 0 | kural (renk projeden; marka rengi kütüphaneye girmez, HK-37) | her kullanım sayılır ve raporlanır; kaynak görseldeki kırmızı da sayılır; kota sahne manifestinden |
 | `camera.maxPxPerFrame` | 7 | ölçüldü | sakin kayışta tepe hız tavanı 420 masa px/s (≈ 7 px/kare @60) |
 | `camera.tiltRead` / `pushZ` / `glancePx` | 11–13° · 80 · 40 | kural | okuma açısı · push/pull tek vurgu Z ±80 · bakış x ±40 px (0.8 s git, 1.2 s tut) |
 | `camera.craneScaleMin` | 0.10 | ölçüldü | vinç hareketinde ölçek değişimi < %10 okunmuyor |
