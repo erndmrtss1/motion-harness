@@ -1,6 +1,6 @@
 {
   "name": "@motion/harness",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "motion-harness render/ölçüm araçları: HTML/CSS 3B sahneleri Playwright/Chromium ile kare kare render, QC, frame-check, master, arşiv.",
   "type": "module",
   "private": true,

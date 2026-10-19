@@ -2,7 +2,7 @@
 
 Claude Code için motion-grafik üretim hattı (plugin `motion`). Kanıtlanmış bir üretim **sürecini** taşır — kapılar, ölçüm (`qc` + `frame-check`), bağımsız reviewer, 3 yönlü varyant, animatik, tek düzeltme turu, DUR noktaları, rapor — ama hiçbir görsel **üslubu** varsayılan getirmez: her proje kendi dilini look-dev'de sıfırdan kurar.
 
-> **Bilinen boşluk:** look-dev'de "üç gerçekten farklı yön" kuralı tam doğrulanmadı. Üç turluk eval'de reviewer, look-dev düzeyinde her turda 4 benzerlik ihlali saydı; kaynak projeyi taklit (UCUZ #11) her turda geçti. 1.1 geliştirmesinde (`main`, etiketsiz) `motion-render lookdev-diff` iskelet ve paleti ölçüyor ve `/motion:gate` look-dev adımında koşuyor. Ama iskelet ekseni henüz **uyarı**: reviewer'ın gerekçe yazması zorunlu, kapıyı kendiliğinden kapatmıyor. SERT kapı 1.2'de. Yönleri seçerken iskeleti (kadraj, öğe yerleri, okuma sırası) tam karede kendiniz de denetleyin. Ayrıntı: [CHANGELOG.md](CHANGELOG.md), [docs/H4-EVAL.md](docs/H4-EVAL.md).
+> **Bilinen boşluk:** look-dev'de "üç gerçekten farklı yön" kuralı tam doğrulanmadı. Üç turluk eval'de reviewer, look-dev düzeyinde her turda 4 benzerlik ihlali saydı; kaynak projeyi taklit (UCUZ #11) her turda geçti. 1.1.0'da `motion-render lookdev-diff` iskelet ve paleti ölçüyor ve `/motion:gate` look-dev adımında koşuyor. Ama iskelet ekseni **uyarı** (eşik 2,2): reviewer'ın gerekçe yazması zorunlu, gerekçesiz kayıt kapıda kabul edilmiyor; eksen kapıyı kendiliğinden kapatmıyor. SERT kapı 1.2'de. Yönleri seçerken iskeleti (kadraj, öğe yerleri, okuma sırası) tam karede kendiniz de denetleyin. Ayrıntı: [CHANGELOG.md](CHANGELOG.md), [docs/H4-EVAL.md](docs/H4-EVAL.md).
 
 ## Kurulum (3 satır)
 

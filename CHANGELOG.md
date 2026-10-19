@@ -2,26 +2,26 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
-## Yayımlanmamış — 1.1 (açık, etiketsiz)
+## 1.1.0 — 2026-10-19
 
-Look-dev ayrışması ölçüme bağlandı (H4 bulgusu; `evidence/1.1/K-1.1b.md`). Kabul ölçütü K1a (iskelet eşiği marjı) karşılanmadı. Bu yüzden iskelet ekseni SERT kapı olarak değil, **UYARI** olarak girdi ve 1.1.0 etiketi verilmedi.
+Look-dev ayrışması ölçüme bağlandı (H4 bulgusu; `evidence/1.1/K-1.1b.md`). İskelet eşiğinin marjı 0,2 (K1a), SERT kapı için yetersiz. Bu yüzden iskelet ekseni SERT değil **UYARI** olarak girdi: uyarı veren her çifte reviewer gerekçesi zorunlu (HK-33). Kapı uçtan uca denemesi (K4, HK-35) üç oturumda geçti: araç beklenen uyarıları verdi, reviewer'lar KARAR'ı `ayrışma:` ve `qc (bilgi):` satırlarıyla yazdı. Bir oturumda kapı denetimi gerekçesi eksik kaydı kabul etmedi, aynı turda taze reviewer açtı. Metrik işi 1.1'de kapandı; SERT kapı 1.2'de.
 
 - **`motion-render lookdev-diff`**: look-dev yönlerinin sayfalarını render yoluyla açar.
-  - **İskelet:** DOM'dan bileşen kutuları okunur (`__boxes(T)` ya da DOM yürüyüşü; `[data-hero]`, `[data-doku]`; ışık/vinyet katmanları ve tam kare katmanlar hariç). Kutular kahraman/bant/metin/kenar rolleriyle 6×4 doluluk haritasına dönüşür. Şans düzeltmesi önsel dosyadan gelir (`render/lib/lookdev-prior.json`); kareler arası maks alınır; skor tek rolden geliyorsa bayrak konur.
+  - **İskelet:** DOM'dan bileşen kutuları okunur (`__boxes(T)` ya da DOM yürüyüşü; `[data-hero]`, `[data-doku]`; ışık/vinyet katmanları ve tam kare katmanlar hariç). Kutular kahraman/bant/metin/kenar rolleriyle 6×4 doluluk haritasına dönüşür. Kareler arası ortalama alınır, kare başına değerler raporda; skor her karede tek rolden geliyorsa "(tek rol)" bayrağı konur. Önsel (şans düzeltmesi) ve kareler arası maks denendi, geri alındı (HK-33, L-226).
   - **Palet:** ekran görüntüsünden zemin ΔE2000 ve baskın renkler. Varsayılan çekici sözlüğü (terminal · defter · SaaS · sentez).
   - **Seçenekler:** `--ref` önceki proje ya da örnek kontağına karşı yalnız palet ölçer; `--pages` rastgele sayfalar. Çıktı `.json` + `.md` ve KARAR satırına `ayrışma:` parçası.
 - **Kapı:** `/motion:gate` look-dev adımında aracı reviewer'dan önce koşar.
-  - Reviewer SKILL §12 madde 6: iskelet UYARI (eşik 0,3) ve palet UYARI (≥ 3,5) veren her çifte gerekçe zorunlu. KARAR satırı `ayrışma:` parçasını taşır (`templates/REVIEWER.md`).
+  - Reviewer SKILL §12 madde 6: iskelet UYARI (eşik 2,2; NEG n=4, eşik aralığı [2,1, 2,3]) ve palet UYARI (≥ 3,5) veren her çifte gerekçe zorunlu. KARAR satırı `ayrışma:` parçasını taşır (`templates/REVIEWER.md`).
+  - Look-dev kapısında `qc` çıkış kodu kapıyı kilitlemez; sonuç kayıtta KARAR satırının altına `qc (bilgi):` satırı olarak girer (HK-34).
   - RULES YR-3 ve world SKILL'e look-dev sayfası sözleşmesi eklendi: kahraman `data-hero`, doku `data-doku`.
 - **`manifest validate`:** LOOK sayfasında ve yüklediği `.jsx`'lerde `data-hero` ya da `__boxes` yoksa "iskelet ölçülemez" uyarısı.
-- **LESSONS:** L-224 (piksel iskeleti dokuya batar; DOM'dan oku, şans düzelt), L-225 (look-dev kapısına tam kare, kırpım değil).
+- **LESSONS:** L-224 (piksel iskeleti dokuya batar; DOM'dan oku), L-225 (look-dev kapısına tam kare, kırpım değil), L-226 (ortada kahraman önseli gerçek iskelet ortaklığını söndürür).
 - **Eval ve geliştirme:**
   - `evals/run-eval.mjs --seed <proje>` (kapı denemesi: hazır projeyle başla).
   - `dev/lookdev-calib.mjs` yalnız eşik kalibrasyonu yapar; ağırlık taraması yok.
-  - `dev/lookdev-prior.mjs` önsel haritayı üretir.
 
 ### 1.2 yol haritası (1.1'den)
-1. **İskelet SERT kapı için gösterim.** 1.1 betimleyicisinde uzlaşılı "aynı iskelet" çiftlerinin bir kısmı (E3 A↔C 0,2, E2 B↔C 1,6) ilgisiz çiftlerle (0,4) aynı bandda kaldı. Kareler arası maks ve şans düzeltmesi yetmedi; kare başına medyan seçeneği de değerlendirilecek.
+1. **İskelet SERT kapı için gösterim.** 1.1 betimleyicisinde (6×4 rol doluluğu, kareler arası ortalama) yön içi POZ en düşük 2,3, NEG en yüksek 2,1: marj 0,2, SERT için yetersiz. Kahramanlar kadraj ortasında toplandığı için ilgisiz düzenler 1,7–2,1 taban alıyor. Önsel (şans düzeltmesi) ve kareler arası maks bu tabanı söndürdü ama uzlaşılı pozitifleri de (sınıf hatası 2; L-226). Kare başına maks/medyan seçeneği ve daha geniş NEG seti değerlendirilecek.
 2. **Canlı (bindirme) profil için silüet örtüşmesi ve en-boy kipi** (HK-23).
 3. **Doku/çizgi dili ekseni:** kaynağa iskelet karşılaştırması (sayfası olmayan kontak) şu an ölçülemiyor.
 4. **Koşucu yazma izni** oturum klasörüyle sınırlanacak; look-dev zaman kutusu.

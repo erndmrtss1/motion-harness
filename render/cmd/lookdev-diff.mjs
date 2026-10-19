@@ -8,7 +8,7 @@
 // karelerde (öncelik: --frames · manifestteki LOOK-<Y> "keys" · sayfa ≤ 5 kare ise hepsi · değilse %15/%50/%85 kareleri):
 //   iskelet (UYARI; 1.1.0) — DOM kutuları: önce __boxes(T), yoksa DOM yürüyüşü (boyalı kutular + metin blokları + [data-hero]; [data-doku] ve
 //                     tam kare katmanlar hariç) → rol başına 6×4 kaba bölge doluluğu (kahraman · bant · metin · kenar) → 0–10.
-//                     Şans düzeltmeli (önsel lib/lookdev-prior.json), kareler arası maks. Yön içi çift ≥ eşik → UYARI (reviewer gerekçesi
+//                     Kareler arası ortalama, kare başına değerler raporda. Yön içi çift ≥ eşik → UYARI (reviewer gerekçesi
 //                     zorunlu); ISKELET_MOD 'SERT' olursa İHLAL (kapı GEÇMEZ). Skor tek rolden geliyorsa "(tek rol)".
 //   palet (UYARI)   — ekran görüntüsünden zemin ΔE2000 + baskın renkler → 0–10. ≥ 3,5 → reviewer'ın gerekçeli incelemesi zorunlu.
 //   çekici (UYARI)  — terminal · defter · SaaS · sentez; iki yön aynı çekicide → reviewer gerekçesi zorunlu.

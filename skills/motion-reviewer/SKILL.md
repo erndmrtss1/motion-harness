@@ -316,6 +316,7 @@ r2 GEÇMEZ ─► DUR: kontak + nedenler, render YOK (tam render / teslim başla
 
 ```
 KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>[ · ayrışma: iskelet A↔B a, A↔C b, B↔C c (eşik t, UYARI) · palet A↔B x, A↔C y, B↔C z · uyarı n]   (ayrışma parçası yalnız lookdev kapısında, §12 madde 6)
+qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · …   (yalnız lookdev kapısında, ikinci satır; HK-34)
 ```
 
 Örnek: `KARAR: GEÇMEZ · §0.6 5/8 · UCUZ VAR #2,#7 · kapı animatik full ≥7/8 · tur r1 · birim P2`
@@ -412,12 +413,13 @@ Birim başına üç yön gelir. Her yön için şunlar yapılır:
    - Ayrışmayı kendi ölçümünle sayarsın: bant için luma %, ton ve palet için ΔE2000, tipografi için aile.
 5. Yön başına **SEÇ / ELE** kararı ve tek cümle kanıt yazılır.
 6. **Ayrışma ölçümü (`lookdev-diff`, 1.1).** Ana oturumun ürettiği `out/review/lookdev-diff.md` okunur; yoksa kendin koşarsın: `motion-render lookdev-diff --out out/review/<kapı-id>/lookdev-diff.json` (yalnız okuma + bu komut).
-   - İskelet ekseni (DOM kutuları → 6×4 rol doluluğu, şans düzeltmeli, kareler arası maks): 1.1'de **UYARI**, eşik 0,3. Palet ekseni (zemin ΔE2000 + baskın renkler): **UYARI**, ≥ 3,5. Varsayılan çekici: iki yön aynı çekicideyse UYARI.
+   - İskelet ekseni (DOM kutuları → 6×4 rol doluluğu, kareler arası ortalama): 1.1'de **UYARI**, eşik 2,2. Palet ekseni (zemin ΔE2000 + baskın renkler): **UYARI**, ≥ 3,5. Varsayılan çekici: iki yön aynı çekicideyse UYARI.
    - UYARI veren her çift için kayda **gerekçe zorunludur**: görsel adı + öğe + "neden ayrı yön" ya da ELE. Gerekçesiz uyarı = kayıt eksik.
    - "(tek rol)" işaretli skor yalnız bir rolden gelir; gerekçede belirtilir.
    - KARAR satırına ayrışma parçası eklenir: `· ayrışma: iskelet A↔B a, A↔C b, B↔C c (eşik t, UYARI) · palet A↔B x, A↔C y, B↔C z · uyarı n`.
    - İskelet ekseni SERT olduğunda (1.2) eşik üstü yön içi çift kapıyı GEÇMEZ yapar; metin gerekçesiyle geçilemez.
    - Yönlerin kilit karelerine **tam kare** bakılır; kırpım iskelet kanıtı değildir (LESSONS L-225).
+   - Look-dev kapısında `qc` çıkış kodu kapıyı kilitlemez (HK-34). Ana oturumun verdiği qc sonucu kayıtta KARAR satırının hemen altına bilgi satırı olarak yazılır: `qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · LOOK-C <çıkış>`. qc hatası tek başına ELE ya da GEÇMEZ gerekçesi değildir; görselde karşılığı varsa ilgili maddede değerlendirilir.
 
 Tablo biçimi: `yön | §0.6 x/5 | UCUZ | #11 eksen | ayrışma | SEÇ/ELE | kanıt`.
 

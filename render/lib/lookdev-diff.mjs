@@ -1,7 +1,7 @@
 // lib/lookdev-diff.mjs — look-dev yönleri arası ayrışma ölçümü (RULES YR-3, reviewer §12; HK-24, evidence/1.1/DUR-K1.md).
 // İki eksen; ağırlıklar tasarımla sabit (tarama yok; yalnız iskelet eşiği kalibre edilir):
-//   iskelet (SERT) — DOM'dan okunan üst düzey öğe kutuları (kahraman, metin blokları, bant, kenar öğeleri) → rol başına 6×4 kaba bölge
-//                    doluluk haritası, IoU, sabit rol ağırlıkları (HK-28; öğe sayısı girmez). Doku/ışık/gren
+//   iskelet (UYARI) — DOM'dan okunan üst düzey öğe kutuları (kahraman, metin blokları, bant, kenar öğeleri) → rol başına 6×4 kaba bölge
+//                    doluluk haritası, IoU, sabit rol ağırlıkları, kareler arası ortalama (HK-28, HK-33; öğe sayısı girmez). Doku/ışık/gren
 //                    katmanları ([data-doku], tam kare ≥ %75 katmanlar) iskelete girmez.
 //   palet (UYARI)  — pikselden: zemin ΔE2000 ve ağırlıklı baskın renkler (yarı yarıya); gren yalnız bilgi olarak raporlanır.
 // Skor 0–10 (10 = aynı). Bindirme kipi (canlı) 1.1.0 kapsamı dışında (HK-23); yükleyicide korunur, kapıda kullanılmaz.
@@ -267,40 +267,32 @@ function occupancy(boxes, role, W, H) {
   }
   return g;
 }
-// Şans düzeltmesi (HK-31): ortadaki kahraman tabanı ortaklık değil önseldir. Önsel = kalibrasyon setindeki bütün yönlerin rol başına
-// ortalama doluluk haritası (etiket kullanılmaz), pakette sabit dosya: lib/lookdev-prior.json. Rol IoU'su
-// IoU_düz = max(0, (IoU − IoU_önsel) / (1 − IoU_önsel)); IoU_önsel = iki yönün önselle IoU'larının ortalaması (simetrik).
-const PRIOR_FILE = new URL('./lookdev-prior.json', import.meta.url);
-export const PRIOR = fs.existsSync(PRIOR_FILE) ? JSON.parse(fs.readFileSync(PRIOR_FILE, 'utf8')) : null;
 const iou = (a, b) => { let mn = 0, mx = 0; for (let i = 0; i < a.length; i++) { mn += Math.min(a[i], b[i]); mx += Math.max(a[i], b[i]); } return mx > 0 ? mn / mx : 0; };
-export function occupancyMap(boxes, role, W = 1920, H = 1080) { return [...occupancy(boxes, role, W, H)]; }
-export function regionFrame(A, B, W = 1920, H = 1080, prior = PRIOR) {
-  let s = 0, ws = 0; const parts = {}, raw = {};
+export function regionFrame(A, B, W = 1920, H = 1080) {
+  let s = 0, ws = 0; const parts = {};
   for (const [role, wt] of Object.entries(BOLGE.w)) {
     const a = occupancy(A, role, W, H), b = occupancy(B, role, W, H);
-    const ha = a.some((v) => v > 0), hb = b.some((v) => v > 0);
-    if (!ha && !hb) continue;
-    let v = iou(a, b); raw[role] = v;
-    const pm = prior && prior.roles && prior.roles[role];
-    if (pm && pm.some((x) => x > 0)) { const p0 = (iou(a, pm) + iou(b, pm)) / 2; v = p0 < 1 ? Math.max(0, (v - p0) / (1 - p0)) : 0; }
-    parts[role] = v; s += wt * v; ws += wt;
+    if (!a.some((v) => v > 0) && !b.some((v) => v > 0)) continue;
+    const v = iou(a, b); parts[role] = v; s += wt * v; ws += wt;
   }
-  return { sim: ws ? s / ws : null, parts, raw, roles: Object.keys(parts).length };
+  return { sim: ws ? s / ws : null, parts, roles: Object.keys(parts).length };
 }
-// Kare birleştirme (HK-32): kare sayıları eşitse sıra eşlemesi (aynı kilit an), değilse bütün çiftler; MAKS ("herhangi bir kilit karede
-// aynı iskelet"), kare başına değerler de döner. Boş küme → ölçülemedi (null). tekRol: en yüksek karede skor tek rolden geliyorsa.
+// Kare birleştirme (HK-28, HK-33): kare sayıları eşitse sıra eşlemesi (aynı kilit an), değilse bütün çiftler; ORTALAMA, 0–10; kare başına
+// değerler raporda. Boş küme → ölçülemedi (null). tekRol (bilgi): ölçülen her karede skor tek rolden geliyorsa.
+// Önsel (şans düzeltmesi, HK-31) ve kareler arası maks (HK-32) denendi, geri alındı: ortadaki kahraman önseli gerçek iskelet ortaklığını da
+// söndürdü (LESSONS L-226).
 export function skelSets(FA, FB) {
   const pairs = (FA.length === FB.length ? FA.map((a, i) => [a, FB[i]]) : FA.flatMap((a) => FB.map((b) => [a, b]))).filter(([a, b]) => a.length && b.length);
   const rs = pairs.map(([a, b]) => regionFrame(a, b)).filter((r) => r.sim != null);
   if (!rs.length) return { score: null, frames: [], parts: {}, tekRol: false };
-  const best = rs.reduce((m, r) => (r.sim > m.sim ? r : m));
-  return { score: +(10 * best.sim).toFixed(1), frames: rs.map((r) => +(10 * r.sim).toFixed(1)),
-    parts: Object.fromEntries(Object.entries(best.parts).map(([k, v]) => [k, +v.toFixed(2)])), tekRol: best.roles === 1 };
+  const parts = {}; for (const r of rs) for (const [k, v] of Object.entries(r.parts)) (parts[k] = parts[k] || []).push(v);
+  return { score: +(10 * rs.reduce((t, r) => t + r.sim, 0) / rs.length).toFixed(1), frames: rs.map((r) => +(10 * r.sim).toFixed(1)),
+    parts: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, +(v.reduce((t, x) => t + x, 0) / v.length).toFixed(2)])), tekRol: rs.every((r) => r.roles === 1) };
 }
 // İskelet eşiği ve kapı türü: kalibre edilen tek sayı (evidence/1.1/K-1.1b.md). Proje eşiği yalnız düşürebilir (sıkılaştırır).
-// K1a (evidence/1.1/K-1.1b.md): şans düzeltmesi + maks sonrası sınıf hatası 2 → kullanıcı kararı gereği iskelet UYARI ekseni; eşik = en yüksek
-// NEG (0,4) ile en düşük yön içi POZ'un (0,2) ortası. SERT için gösterim 1.2'de.
-export const ISKELET_ESIK = 0.3;
+// K1a (HK-33): yön içi POZ en düşük 2,3 · NEG (n=4) en yüksek 2,1 → eşik aralığı [2,1, 2,3], orta 2,2; marj 0,2 SERT için yetersiz →
+// iskelet UYARI ekseni (reviewer gerekçesi zorunlu). SERT için gösterim 1.2'de.
+export const ISKELET_ESIK = 2.2;
 export const ISKELET_MOD = 'UYARI';   // 'SERT' (eşik üstü yön içi çift → GEÇMEZ) | 'UYARI' (KARAR'a skor, reviewer gerekçesi zorunlu)
 
 export async function refCells(file, grid = [1, 1], strip = 0) {

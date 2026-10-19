@@ -49,6 +49,7 @@ Her kapı aşağıdaki bloğun bir kopyasıdır. Reviewer doldurur ve sona ekler
 ````markdown
 ## <YYYY-AA-GG> · <birim> · <kapı> · r<k>: <KARAR>
 KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>[ · ayrışma: iskelet A↔B a, A↔C b, B↔C c (eşik t, UYARI) · palet A↔B x, A↔C y, B↔C z · uyarı n]
+<yalnız lookdev kapısında:> qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · LOOK-C <çıkış>
 <yalnız lookdev kapısında:> Ayrışma gerekçeleri: <UYARI veren her çift için görsel adı + öğe + neden ayrı yön / ELE; "(tek rol)" skorları belirtilir>
 <yalnız r2 GEÇMEZ ise:> DUR: tek düzeltme turu tükendi, render yok
 
