@@ -30,6 +30,9 @@ Paket artık süreç **ve bir world kütüphanesi** taşır (HK-36). Kullanım: 
 2. **Canlı (bindirme) profil için silüet örtüşmesi ve en-boy kipi** (HK-23).
 3. **Doku/çizgi dili ekseni:** kaynağa iskelet karşılaştırması (sayfası olmayan kontak) şu an ölçülemiyor.
 4. **Koşucu yazma izni** oturum klasörüyle sınırlanacak; look-dev zaman kutusu.
+5. **World içi look-dev'de kütüphane demosunun kopyası** (1.2 K3 bulgusu): seçilmiş world'ün demo sahnesini/kütüphane içeriğini birebir yeniden kuran yön UCUZ #11 tanımında yok (reviewer "seçilmiş world'ün malzemesi" sayıp açık karar yazdı). Kural ve `lookdev-diff`'e "kütüphane demosuna iskelet" karşılaştırması.
+6. **`lookdev-diff` iskeleti tek kahraman zarfında:** sayfada kahraman tek [data-hero] kapsayıcıya düşünce iskelet skoru öğe dağılımını değil zarfı ölçüyor (1.2 K3 reviewer notu).
+7. **`temporal` tüm diziye uygulanınca** 30 Hz gren (focusfx-paper) 60 fps'te zikzak üretir ve sıçrama sayılır; kontrol pencereli kullanılır (`at: first|last|actBoundaries`). MEASURE'a not.
 
 ## 1.1.0 — 2026-10-19
 
