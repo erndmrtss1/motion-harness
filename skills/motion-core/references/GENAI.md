@@ -288,6 +288,10 @@ Klip proje fps'inden düşükse (ör. 24/30 → 60) önce motorla ara kare üret
 
 ### 9.4 Kabul ölçütleri
 
+**Plaka = malzeme (1.3):** üretken plaka yalnız malzeme olarak kabul edilir — `motion-render ingest-kapi <id> --accept <istek.json>` (öğenin `accept`
+alanı makine-okur: bölgeler, hedef palet adı, `stdMin`, `dEMax`, `map: none|gain`): doku std, ton eşlemesi sonrası palet ΔE2000, kimlik artığı ve
+göz notu (yazı/el/logo 0). Gölge, ışık yönü, renk payı ve kompozisyon plaka ölçütü değildir; motor katmanında ve render karesinde ölçülür.
+
 | varlık | ölçüt |
 |---|---|
 | **A klibi** (pilot/final) | kare kare: 1 s aralık, tam çözünürlük + hareketli bölge haritası; §9.3 listesi temiz; temiz süre ≥ shot penceresi; bağımsız reviewer kararı. **Kontaktan kabul yok.** |

@@ -396,6 +396,10 @@ motion-render amap build --anchors amap.config.json                       # tasa
 - Kaynaklı içerik (formül, veri, alıntı) **kaynaktan aynen** alınır; uydurulmaz. Aday gerekiyorsa `motion-research` aday tablosu çıkarır: A/B/C · kaynak + sayfa · ölçütler. **DUR 1** (aday seçimi).
 - **Bilinen bir eleme kuralını önceden sor:** aday sunmadan önce kullanıcıdan gelebilecek eleme ölçütü sorulur.
 - **DUR — sözlük onayı.** Onaylı sözlük bağlayıcıdır; sapma kullanıcı kararıdır. Düzeltmeler `project.md` §11'e tablo olarak işlenir.
+- **Plan denetimi (1.3, storyboard'dan önce):** sözlükten olay planı (`script/events-<perde>.json`, şema `render/lib/plan-check.mjs`) →
+  `motion-render plan-check`: kusur (senkron ≤ 1 kare, tek alet, giriş/çıkış ≥ 0,4 s, alet ekran hızı, sahne kancasındaki olay kimlikleri) çıkış 3;
+  kota (boş pencere, olay yoğunluğu, cümle kapsamı, sınır vuruşu) UYARI. Kilitli geometrili veri (pivotlu seri) `motion-render seri-uret` ile tek
+  kaynaktan üretilir; çözülemeyen kilit, onaydan önce raporlanır.
 
 ### 4.4a İlkel kütüphanesi (hareket mekanikleri) onayı → film
 

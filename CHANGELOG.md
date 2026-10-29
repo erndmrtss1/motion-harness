@@ -27,6 +27,21 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   (değişen piksellerde SAD kaydırma vektörü; piramit + alt piksel) ölçülür, kesme kareleri ayrılır. Ağır iş kilidine dahil. Test
   `render/test/motion-test.test.mjs` (anahtar kare ara değeri, 6 px/kare kayma ölçümü, grafik/kontak). Kanıt KANIT.md madde 2.
   Kapanan PN: — (kaynak proje kararı: zanaat referans kliple; ilkel kütüphanesi kapısının aracı, madde 5).
+- **Çekirdek araçlar (proje araçlarından genelleştirildi; projeye özgü grafik/marka kuralları çıkarıldı)** — CONTRACT §6, PLAYBOOK §4.4, GENAI §9.4,
+  MEASURE M-PARITE; testler `render/test/core-tools.test.mjs` (4):
+  - **`plan-check <events.json>`** (`lib/plan-check.mjs`): storyboard'dan önce olay planı. Kusur (çıkış 3): şema, senkron (0 ≤ t − a0 ≤ 1 kare),
+    tek alet + ardışık alet boşluğu, giriş/çıkış ≥ 0,4 s, alet ekran hızı (yol / evre karesi ≤ `toolMaxPx`; gereken süre yazılır), sahne kancasındaki
+    olay kimlikleri (`--refs`). Kota (UYARI): boş pencere, olay yoğunluğu, cümle kapsamı, sınır vuruşu. Kurallar world `plan` bloğu ‖ `--rules`.
+  - **`seri-uret <girdi.json>`** (`lib/seri.mjs`): pivot kilitli süreklilik serisi (o_i = c_(i−1), kilitli pivot uçları yerel uç, tohumlu yürüyüş +
+    ileri bakış); üretimden önce çözülebilirlik (zıt uçlu bitişik pivotlar arasında ≥ 2 öğe, adım bütçesi); projeye özgü geometri `--rule`; `--check`
+    determinizm; `--js` sayfa aynası.
+  - **`parite --ours … --ref …`** (`lib/parite.mjs`): kalite paritesi — grup, yüzey dışı ink (`inkContent`; tam en/boy yüzey grubu kahraman olamaz), içerik,
+    negatif alan, kahraman oranı, luma (+ aksan) medyanları ± tol, tek yönlü sınır; bilgi (`--gate` ile kapı). Referans kalite içindir, kimlik değildir.
+  - **`ingest-kapi <id|görüntü> --accept …`** (`lib/malzeme.mjs`): plaka = malzeme — doku std, ton eşlemesi (none/gain) sonrası palet ΔE2000, kimlik
+    artığı, göz notu; GEÇTİ / GÖZ BEKLİYOR / KALDI. Kabul kümesi istek öğesinin `accept` alanından.
+  - Kapanan PN: **PN-44** (ingest kapı paket komutu, kurallar dosyadan) · **PN-48** (`accept` makine-okur ölçü kümesi; kabul plaka = malzeme) ·
+    **PN-67** (kalite paritesi aracı) · **PN-69** (seri: pivotlar arası ≥ 2 öğe, ileri bakış, çözümsüzlük onaydan önce) · **PN-80** (`plan-check`) ·
+    **PN-81** (alet planlaması: giriş/çıkış süresi, ekran hızı → gereken süre, iki alet arası boşluk) · **PN-84** (kanca ↔ olay kimliği denetimi).
 - **Reviewer kalibrasyonu ve animatik oynatımı** (motion-reviewer SKILL §3.0, §7.1; ajan tanımı, `/motion:gate` adım 5, şablonlar):
   - §0.6 puanı **referans kliplere görelidir**: kalibrasyon adımı zorunlu (referansı kendi yöntemiyle ölç → madde başı çıta → göreli puan).
     `project.md` §3 "Kalite referansı" tablosu boşsa reviewer durur (`DUR: kalibrasyon referansı yok`; kapı DUR-1, tur sayılmaz).

@@ -68,3 +68,15 @@ Kütüphane world `focusfx-paper` ile kurulan geçici projede (`motion-render in
 
 Düzeltilen ölçüm hataları (e2e ile bulundu): alt piksel parabolü yalnız gerçek yerel en azda ve ±0,5 içinde (öncesi: düz SAD vadisinde 8957 px/kare);
 arama yarıçapı 160 px @1080 (kadraj dışından hızlı giriş).
+
+## Madde 6 — çekirdek araçlar
+
+Birim testleri `render/test/core-tools.test.mjs` (4; tam takım `node --test render/test/` 35/35). Gerçek veride (salt okunur, çıktılar proje dışında):
+
+| araç | koşu | sonuç |
+|---|---|---|
+| `parite` | v3 animatiğinden 6 anahtar kare ↔ sahibin önceki projesinden 3 referans klipten 6 kare, `--ust groups,inkContent` | **bilgi: tutmuyor** — grup 4 ↔ 3 (+%33) · yüzey dışı ink %1,44 ↔ %0,70 · içerik %38,6 ↔ %19,2 · negatif alan %62,2 ↔ %81,5 · kahraman oranı 14,8 ↔ 4,2 · luma %67,1 ↔ %64,0 (tutuyor). v3 kareleri referansın yaklaşık iki katı dolu; kullanıcının "sadelik yok" bulgusuyla aynı yön |
+| `parite` (ilk koşu) | aynı | tam en koyu zemin bandı ink ve kahraman sayıldı (ink %15,5, kahraman oranı 0,46) → yüzey grubu kuralı eklendi (kaynak aracın tanımı), test eklendi |
+| `plan-check` | sentetik plan (CLI) | kusur 1 (alet girişi 0,3 s < 0,4) · kota 2 (olay yoğunluğu 0,83 / 2,5 s, boş pencere) · çıkış 3. Projenin olay listesi başka şemada olduğundan gerçek veride koşulmadı (dönüştürme projenin işi) |
+| `seri-uret` | sentetik iki seri (CLI) | A: 10 öğe, seed 4 (2 deneme) · B: **üretimden önce çözülemez** — zıt uçlu bitişik pivotlar arasında 1 öğe (en az 2) · çıkış 3 |
+| `ingest-kapi` | düz gri zeminli kare (CLI) | doku std 0 < eşik → KALDI · çıkış 3; kazanç eşlemesi, kimlik artığı ve göz notu yolu birim testinde |

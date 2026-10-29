@@ -624,6 +624,12 @@ Hamle = shot içinde kamera hızı ≥ `floor` koşusu (aradaki < `mergeSec` bo�
 - Animatikte: kanca render fps'inden bağımsızdır; piksel tabanlı ölçümde yer değiştirme `÷ (scale · step)` ile tam çözünürlük ve tek kare aralığına çevrilir.
 - Sınırdaki shot (pay ≈ 0,4): varışı ~0,1 s geciktirmek çoğu kez yeter (tasarım zamanında `--cand` ile sınanır).
 
+### M-PARITE · kalite paritesi (1.3)
+`motion-render parite --ours <kareler> --ref <kareler>`: grup sayısı (E kenar/ink elemanları, 24 px @1080 genişletmeyle birleşen bileşenler), ink payı
+(L* < 35; `inkContent` yalnız yüzey dışı grupların ink'i — dış kutusu kare eninin/boyunun ≥ %90'ı olan yüzey grubu kahraman olamaz), içerik ve negatif alan payı (≥ %2 tek yüzey bölgeleri), kahraman/ikincil kutu oranı, luma, isteğe bağlı aksan payı; medyanlar ± tol (varsayılan
+%20), tek yönlü sınır `--ust/--alt` (ör. sadelik serbest: grup ve ink yalnız üstten). Referans kalite içindir, kimlik değildir; reviewer kalibrasyonunda
+(motion-reviewer §3.0) ve ilkel/style frame kapısında bilgi olarak kullanılır (`--gate` ile kapı).
+
 ### M-OURS · referansa karşı profil
 - `motion-render ours <id> [--step N] [--no-cam] [--dir D]`.
 - Piksel profili: `fast` yolu (480×270 gri), blok 16 px, arama ± 6 px, 2'şer örnek; dokusuz blok (varyans < 40) atlanır; kare hareketi = blok yer değiştirmelerinin ortalaması; "hareketli" bilgisi th = max(0,5, 0,2 · tepe) px (yalnız bilgi).
