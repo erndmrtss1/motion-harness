@@ -31,3 +31,14 @@ test('RULES: zanaat kapısı ZN-1…ZN-5 ölçüleri frame-check tiplerine bağl
   const { TYPE_NAMES } = await import('../lib/fc/index.mjs');
   assert.equal(TYPE_NAMES.length, 25);
 });
+
+test('PLAYBOOK: ilkel kütüphanesi onayı → film; brief ≠ kapı (BAĞLAM satırı, CRAFT-REF şablonu)', () => {
+  const p = read('skills/motion-core/references/PLAYBOOK.md');
+  assert.match(p, /sözlük ─► ilkel kütüphanesi ─► P1/);
+  assert.ok(p.includes('### 4.4a İlkel kütüphanesi'));
+  assert.ok(p.includes('**Brief ≠ kapı (1.3).**'));
+  assert.ok(read('templates/FAZ.md').includes('BAĞLAM: docs/SOZLUK.md (tüm film) · docs/CRAFT-REF.md'));
+  assert.ok(read('commands/faz.md').includes('## 3a. `ilkel`'));
+  assert.ok(read('templates/CRAFT-REF.md').includes('## 4. Onaylı ilkeller'));
+  assert.ok(read('agents/motion-director.md').includes('**Film bağlamı**'));
+});

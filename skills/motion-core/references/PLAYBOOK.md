@@ -213,6 +213,7 @@ FAZ F<n>[-B|-C] — <KAPSAM BAŞLIĞI> [→ <hedef çıktı/sürüm>] [(kredi 0)
 - <karar> … (kapalı; bir daha listelenmez)
 İLKE | KURAL | ELEME KURALI (project.md §x'e ekle): <yeni bağlayıcı kural>
 DEVİR: <önceki birim son karesi> → <bu birimin ilk anahtarı>; fark ≤ <eşik>
+BAĞLAM: docs/SOZLUK.md (tüm film) · docs/CRAFT-REF.md · onaylı ilkeller <world/…> · <bağlayıcı kararlar>   ← kapı listesi değil
 
 0. <ön iş / TEŞHİS — düzeltmeden önce, sayıyla neden>
 1. <birim/shot kimliği> (<zaman aralığı>): <görsel tarif · alet · kamera ·
@@ -246,6 +247,10 @@ EK F<n> / F<n> ARA NOTLAR: 1. … 2. …   ← sonradan gelen düzeltmeler
 
 İstemler telgraf üslubundadır: "·" ayraçlı listeler, "→" zincirleri. Her ölçüt sayıyla verilir.
 
+**Brief ≠ kapı (1.3).** Director brief'i **tüm film bağlamını** taşır: onaylı sözlük (bütün perdeler, yalnız birimin satırları değil) + `docs/CRAFT-REF.md` +
+onaylı ilkeller (§4.4a) + birimin bağlayıcı kararları. Kapı listesi brief'e yazılmaz ve tasarım kapıya göre yapılmaz; kapılar (frame-check, ölçüm,
+reviewer) işten **sonra** QA olarak koşar (§2.3). Kota ölçütleri brief'te hedef olarak verilmez (RULES §0.8).
+
 ### 3.2 Daimi çalışma kuralları (her fazda)
 
 1. **Soru yok.** Eksik ya da uyumsuz olanı işaretle ve devam et; kullanıcının vermesi gereken karar raporda "açık karar" olur. **İstisna:** bağlayıcı bir tablodan (pencere, shot, sözlük) sapmak gerekiyorsa önce sorulur (DUR-3).
@@ -268,9 +273,13 @@ EK F<n> / F<n> ARA NOTLAR: 1. … 2. …   ← sonradan gelen düzeltmeler
 ### 4.0 Genel sıra
 
 ```text
-F0 kurulum ─► ses hattı ─► look-dev (yeni world) ─► sözlük ─► P1 … Pn perde akışı ─► master ─► teslim ─► retro/promote
-              (varsa)       DUR: yön seçimi         DUR: onay   DUR: her perde teslimi    DUR       DUR
+F0 kurulum ─► ses hattı ─► look-dev (yeni world) ─► sözlük ─► ilkel kütüphanesi ─► P1 … Pn perde akışı ─► master ─► teslim ─► retro/promote
+              (varsa)       DUR: yön seçimi         DUR: onay   DUR: mekanik onayı     DUR: her perde teslimi    DUR       DUR
 ```
+
+**İlkel kütüphanesi onayı → film (1.3).** Film birimleri yalnız **onaylı** hareket ilkelleriyle kurulur (§4.4a). Kütüphane onaylanmadan perde
+tasarımı başlamaz; perde sırasında yeni bir mekanik gerekirse önce kütüphaneye eklenir, test edilir, onaylanır. Kapılar (frame-check, reviewer)
+işten **sonra** QA olarak koşar; tasarım kapı listesine göre yapılmaz.
 
 Perdeler sırayla tasarlanır. Bir perdenin tam render'ı arka planda koşarken bir sonraki perde tasarlanabilir; bu PARALEL iştir.
 
@@ -387,6 +396,23 @@ motion-render amap build --anchors amap.config.json                       # tasa
 - Kaynaklı içerik (formül, veri, alıntı) **kaynaktan aynen** alınır; uydurulmaz. Aday gerekiyorsa `motion-research` aday tablosu çıkarır: A/B/C · kaynak + sayfa · ölçütler. **DUR 1** (aday seçimi).
 - **Bilinen bir eleme kuralını önceden sor:** aday sunmadan önce kullanıcıdan gelebilecek eleme ölçütü sorulur.
 - **DUR — sözlük onayı.** Onaylı sözlük bağlayıcıdır; sapma kullanıcı kararıdır. Düzeltmeler `project.md` §11'e tablo olarak işlenir.
+
+### 4.4a İlkel kütüphanesi (hareket mekanikleri) onayı → film
+
+Sözlükten sonra, ilk perdeden **önce**. Amaç: filmin bütün hareket mekaniklerinin (çizim, nesne girişi/çıkışı, katlama, yırtılma, kamera hamlesi…)
+zanaatını film bağlamından bağımsız, tek tek doğrulamak; perdeler onaylı ilkelleri dizer.
+
+1. **Envanter.** Sözlüğün "alet · işi" ve "ne çizilir" sütunlarından mekanik listesi (bir mekanik = bir world ilkeli + hareket tanımı). Alet yalnız
+   cümle anlamı isterse girer; kota için ekipman eklenmez (RULES §0.8 KO-3).
+2. **Zanaat referansı** `docs/CRAFT-REF.md` (şablon `templates/CRAFT-REF.md`): referans klipler (`project.md` §3 "Kalite referansı") ve mekanik başına
+   ölçülmüş süre, easing, hız profili. Zanaat kütüphane world'lerinden ve referanslardan serbestçe örnek alınır; kimlik (palet, iskelet, nesne dili)
+   alınmaz (UCUZ #11).
+3. **Test.** Her ilkel için director `motion-render motion-test <ilkel> --props <hareket> --ref <klip>` koşar: 3 s 1080p30 mp4 + hız/ivme grafiği +
+   referansla yan yana kontak (`out/motion-test/<ad>/`). Kabul (kusur ölçüleri, RULES §8.1): C1 sıçrama ≤ %5 tepe, giriş/çıkış ≥ 0,4 s,
+   tek kare beliriş 0; profil referansla yan yana gösterilir (sayı + grafik).
+4. **Kapı (QA).** Taze reviewer `varlik` kapısı: test klipleri referansa göre (kalibrasyon §3.0), mp4 oynatımından (§7.1).
+5. **DUR — mekanik onayı** (DUR-1). Kullanıcı kontak + grafik + mp4'lere bakar; onaylı ilkeller `docs/CRAFT-REF.md` §4'e ve `world/DECISIONS.md`'ye yazılır.
+   Onaylı ilkelin hareket tanımı (süre, easing, profil) perdede değiştirilmez; değişiklik kütüphaneye döner ve yeniden onaylanır.
 
 ### 4.5 P<n> — perde akışı (çekirdek döngü)
 

@@ -20,6 +20,8 @@ FAZ F<n>[-B|-C] — <KAPSAM BAŞLIĞI> [→ <hedef çıktı/sürüm>] [(kredi 0)
 - <karar> … KAPALI KARAR
 İLKE | KURAL | ELEME KURALI (project.md §<x>'e ekle): <yeni bağlayıcı kural>
 DEVİR: <önceki birim son karesi> → <bu birimin ilk anahtarı>; fark ≤ <2/255 | 1.1 × komşu>
+BAĞLAM: docs/SOZLUK.md (tüm film) · docs/CRAFT-REF.md · onaylı ilkeller <world/…> · <bağlayıcı kararlar>
+        (brief ≠ kapı: kapı listesi yazılmaz; kapılar işten sonra QA olarak koşar — PLAYBOOK §3.1)
 
 0. <ön iş / TEŞHİS — düzeltmeden önce, sayıyla neden>
 1. <birim/shot kimliği> (<zaman aralığı>): <görsel tarif · alet · kamera · vuruş zamanı (≤ 1 kare) ·

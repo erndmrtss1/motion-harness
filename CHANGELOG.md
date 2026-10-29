@@ -35,6 +35,11 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   tipografi ailesi); 3/3 VAR, 2/3 sınırda. **Zanaat (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri) kütüphaneden
   serbestçe örnek alınır.** RULES UCUZ-11 + §0.3, reviewer SKILL §4.1 ve eval kipi, motion-world SKILL, PLAYBOOK, şablon, ajan tanımı.
   Test `craft.test.mjs` (K3 kota → UYARI, basamakla → ihlal) + `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: kotalar uyarı, UCUZ #11 daraltma).
+- **İlkel kütüphanesi onayı → film; brief ≠ kapı** (PLAYBOOK §4.0, §3.1, yeni §4.4a; `/motion:faz ilkel`; director ajanı; `templates/FAZ.md`,
+  yeni `templates/CRAFT-REF.md`): sözlükten sonra filmin hareket mekanikleri world ilkeli olarak kurulur, `motion-test --ref` ile test edilir,
+  taze reviewer QA'sından geçer ve kullanıcı onaylar (DUR-1); perdeler yalnız onaylı ilkellerle kurulur. Director brief'i tüm film bağlamını taşır
+  (tüm sözlük + `docs/CRAFT-REF.md` + onaylı ilkeller; `BAĞLAM:` satırı); kapı listesi brief'e yazılmaz, kapılar işten sonra QA olarak koşar; kota
+  hedef değildir. Test `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: director brief'i = sözlük + CRAFT-REF + onaylı mekanikler; kapılar QA).
 
 ## 1.2.0 — 2026-10-19
 
