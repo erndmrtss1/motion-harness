@@ -7,7 +7,7 @@ Komutlar `render/CONTRACT.md` §6 ile birebir aynıdır. Bağlantılı belgeler:
 | belge | içerik |
 |---|---|
 | `RULES.md` | SERT ve VARSAYILAN kurallar, K-kuralları, eşikler |
-| `MEASURE.md` | qc'nin 16 kontrolü, frame-check'in 20 tipi, OURS/K1/K3, keskinlik, devir |
+| `MEASURE.md` | qc'nin 16 kontrolü, frame-check'in 25 tipi (zanaat kapısı: pop · onset · velocity · entryExit · moves), OURS/K1/K3, keskinlik, devir |
 | `AUDIO.md` | ses hattı, kayma, eşlem, sessiz kuyruk, loudness |
 | `GENAI.md` | üretken varlık, bütçe, ledger, kabul |
 | `LESSONS.md` | tuzaklar ve dersler |

@@ -19,6 +19,6 @@
   },
   "scripts": {
     "smoke": "node bin/motion-render.mjs smoke",
-    "test": "node --test test/"
+    "test": "node --test \"test/**/*.test.mjs\""
   }
 }

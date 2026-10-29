@@ -2,6 +2,26 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## 1.3.0-dev — dal `feat/craft-1.3` (yayımlanmadı)
+
+Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapıları ve araçlar (kimlik kuralı değil). Kaynak: proje bulguları PN-25…99
+(kapanan PN'ler madde sonunda). Değerlendirme kanıtı `evals/craft-1.3/KANIT.md`.
+
+- **frame-check zanaat kapısı (Katman D, 5 yeni tip; 20 → 25)** `render/lib/fc/craft.mjs`, RULES §8.1 ZN-1…ZN-5, MEASURE §4 Katman D:
+  - `pop` (ZN-1): tek kare belirme/kaybolma — hareketle açıklanamayan değişimin aynı yönlü olay bölümündeki payı ≥ 0,5 (animatikte 0,75);
+    geçiş pencereleri `exclude` (kare aralığı ya da `$__<kanca>`), ince şerit/geçiş/kesme ayrı listelenir.
+  - `onset` (ZN-5, ÇEN-1'in ölçüsü): görünür başlangıç. **A/B kipi** (gizleme sözleşmesi: alet gizli ↔ öğe gizli, sayfa iki kez çizilir) kesin;
+    piksel kipi kare dizininden, alet örtmesi olan satırı "belirsiz" (UYARI) sayar.
+  - `velocity` (ZN-2): C1 hız sürekliliği, kamera (`__camSpeed`, shot sınırında bölünür) ve nesne (`__tools` uçları, `__boxes` merkezleri);
+    ardışık |Δv| ≤ %5 hamle tepesi, kalkış/varış dahil.
+  - `entryExit` (ZN-3): giriş/çıkış ≥ 0,4 s (ilk görünür → tam görünür; araçta giriş/çıkış evresi). Kanca `vis` (görünür pay) önerilir.
+  - `moves` (ZN-4, UYARI): kamera hamlesi/shot, eşik parametre (varsayılan ≤ 2), isteğe bağlı hamle süresi tabanı.
+  - Sayfa ölçümü `PAGE` iki yeni tür (`shapes`, `track`); `box:` başvurusunda sonda `*` önek eşleşmesi. CONTRACT §5: `vis`, `phase`,
+    olay `region`/`hide`, geçiş penceresi kancası, gizleme global'leri. Testler `render/test/craft.test.mjs` (7). `npm test` Node 24 için glob'lu.
+  - Kanıt: v3'teki üç bilinen kusur yakalandı — kart k1076 (`pop`, r1 kareleri), lyric k1159 (`pop`), pergel e37 +20 kare (`onset` A/B).
+    Bilinen sınır: düşük kontrastlı küçük nesne (bant, 496 px²) `minPx` altında kalır.
+  - Kapanan PN: **PN-99** (`frame-check onset` gizleme sözleşmesiyle + `pop` tek kare görünür alan payı).
+
 ## 1.2.0 — 2026-10-19
 
 Paket artık süreç **ve bir world kütüphanesi** taşır (HK-36). Kullanım: iki kişinin kendi projelerinde kullandığı araç; depo özel.

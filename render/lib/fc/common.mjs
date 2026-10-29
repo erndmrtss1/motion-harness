@@ -13,6 +13,7 @@ export const DEFAULT_SEVERITY = {
   luma: 'warn', black: 'error', temporal: 'error', ramp: 'warn', seam: 'error', identical: 'error', edgeDark: 'warn',
   accentLocation: 'error', accentColor: 'error', sharpness: 'warn', stroke: 'warn', motion: 'warn', overlapPx: 'error',
   framing: 'error', toolPath: 'error', overlap: 'error', camera: 'error', sync: 'error', loudness: 'error', glyph: 'error',
+  pop: 'error', onset: 'error', velocity: 'error', entryExit: 'error', moves: 'warn',
 };
 export const SEVERITIES = ['error', 'warn', 'info'];
 

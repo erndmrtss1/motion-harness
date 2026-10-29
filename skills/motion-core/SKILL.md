@@ -145,7 +145,7 @@ Tam liste, eşik, override ve ölçüm yöntemi: [RULES.md](references/RULES.md)
 |---|---|---|
 | [PLAYBOOK.md](references/PLAYBOOK.md) | fazlar, kapılar, roller ve orkestrasyon, reviewer sözleşmesi, FAZ istemi, P<n> döngüsü, master, teslim, kısmi render protokolü, DUR, rapor biçimi | her faz ve kapı |
 | [RULES.md](references/RULES.md) | bütün kurallar (id · tanım · ölçüm · varsayılan · override · zorunlu · sınıf · ders), YARATICILIK KURALI, §0.6, K1–K8, UCUZ 11, DUR 11, profiller, eşik özeti, çelişki çözümleri | kural/eşik sorusu, kapı, rapor |
-| [MEASURE.md](references/MEASURE.md) | qc 16 kontrol, frame-check 20 tip (parametre, varsayılan, kanca, örnek `checks`), K1/K3/OURS, S×, 2×, dikiş, ΔE2000, loudness, grade zinciri, ölçüm aracı öz-hatası, komut → JSON | ölçüm, QC, `checks[]` yazımı |
+| [MEASURE.md](references/MEASURE.md) | qc 16 kontrol, frame-check 25 tip (zanaat kapısı dahil; parametre, varsayılan, kanca, örnek `checks`), K1/K3/OURS, S×, 2×, dikiş, ΔE2000, loudness, grade zinciri, ölçüm aracı öz-hatası, komut → JSON | ölçüm, QC, `checks[]` yazımı |
 | [GENAI.md](references/GENAI.md) | üretken varlık: varlık ≠ sahne, ihtiyaç listesi, pilot, bütçe/ledger, ingest, kabul, lisans | üretken varlık gerektiğinde |
 | [AUDIO.md](references/AUDIO.md) | ses hattı: transkript doğrulama, vuruş haritası, ses kilidi, eşlem, kayma tablosu, sessiz kuyruk, loudness | ses varsa |
 | [DOCS-TEMPLATES.md](references/DOCS-TEMPLATES.md) | belge dizini ve şablon kuralları (RAPOR, KÜNYE, REVIEWER, RETRO, TESLİM, RENDER_REPORT, SES-KAYMA) | belge yazarken |
