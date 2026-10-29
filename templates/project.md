@@ -53,7 +53,13 @@
   |---|---|---|
   | 12 | <…> | <…> |
 
-- **OURS tabanı:** hold ≤ 0.6 · hareketli ≥ 0.4 (ölçü hedefleri §10).
+- **Kalite referansı (reviewer kalibrasyonu, zorunlu):** §0.6 puanı bu kliplere görelidir; tablo boşsa reviewer kapıda durur (DUR-1).
+
+  | klip | neyin referansı | §0.6 maddeleri | not |
+  |---|---|---|---|
+  | <out/ref/….mp4 · kütüphane world demosu> | <hareket zanaatı · çizim · geçiş · kamera …> | <4, 5, 6 …> | <kaynak, süre> |
+
+- **OURS tabanı:** hold ≤ 0.6 · hareketli ≥ 0.4 (ölçü hedefleri §10; kota UYARI sınıfıdır, RULES §0.8).
 - **Tipografi zanaatı:**
   - optik boyut, satır ritmi, display tracking;
   - 3 seviye hiyerarşi;

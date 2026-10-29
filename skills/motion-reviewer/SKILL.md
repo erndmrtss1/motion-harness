@@ -59,6 +59,7 @@ Bu dosya ise yalnız inceleme yöntemini, karar sözlüğünü ve dönüş biçi
 | A/B | A/B kayıtları (json + png) | pencere dışı fark |
 | varlık | `assets/gen/manifest.json` (items + ledger + lost) | bütçe ve varlık kuralı |
 | canlı | canlı sayfa ve ayar paneli (yalnız çalıştırmak için) · canlı QC json | yönlendirici; kendi koşun kanıttır |
+| referans klip | `project.md` §3 "Kalite referansı" tablosundaki klipler (ör. `out/ref/*.mp4`, kütüphane world demosunun render'ı) | **kalibrasyon** (§3.0): §0.6 puanı bu kliplere görelidir |
 | hafıza | `docs/REVIEWER.md` | önceki reviewer kayıtları; düzeltme turunda önceki karar |
 | kapsam bilgisi | istemde verilen "değişen kare aralıkları" listesi; düzeltme turunda yapanın madde → durum listesi (`1 → UYGULANDI, f…`) | yalnız *nereye* bakılacağı. *Neden*, *nasıl* ve yapanın sayıları yoktur; her madde senin ölçümünle doğrulanır |
 
@@ -125,7 +126,21 @@ Kanıtı olmayan bulgu kayda girmez. "Gözle" denen yerde de kırpım verilir.
 
 ## 3. §0.6 zevk listesi: sekiz madde
 
-Her madde **evet / hayır** olarak işaretlenir. Kanıtı kendi kırpımındır.
+### 3.0 Kalibrasyon (zorunlu; puandan önce)
+
+§0.6 puanı mutlak değil, **referans kliplere görelidir**. "Evet" = birim bu maddede referansın çıtasına ulaşıyor. Kalibrasyonsuz puan verilmez.
+
+1. **Referansı bul.** `project.md` §3 "Kalite referansı" tablosu (klip yolu · neyin referansı · hangi maddeler). Kapı isteminde de yol verilir.
+   - **Referans yoksa durursun.** §0.6 puanlanmaz; kayıt `KARAR: GEÇMEZ · §0.6 yok · …` satırı ve hemen altında `DUR: kalibrasyon referansı yok` satırıyla biter.
+     Ana oturum referansı kullanıcıdan ister (DUR-1); tur sayılmaz. Look-dev ve varyant kapısında referans, seçilen world'ün ya da onaylı style frame'in karesidir.
+2. **Referansı kendi yönteminle ölç** (birimle aynı yöntem, aynı çözünürlük): madde başına çıta. Örnek: easing (madde 5) için referans hamlesinin kare başı
+   yer değiştirme serisi ve tepeye oranla en büyük ardışık sıçrama; ikincil hareket (4) için gecikme (kare); hold (6) için tutuşta mikro hareket (ardışık fark
+   /255); malzeme (2) için yerel luma std. Hız profili için `motion-render motion-test <sahne> --ref <klip>` kullanılabilir (çıktı `out/review/<kapı-id>/` altına: `--out`).
+3. **Göreli puanla.** Her maddede birimin sayısı referans çıtasının yanında yazılır: "evet" = çıtaya ulaşıyor (ölçülebilir maddede ± %20 içinde ya da daha iyi;
+   gözle değerlendirilen maddede referansla aynı kırpım boyutunda yan yana kanıt). Referansın kendisi o maddede "evet" değilse madde referansla değil kuralla puanlanır ve not düşülür.
+4. **Kayıt.** KARAR satırının altına ikinci satır: `kalibrasyon: <ref adları> · <madde: çıta → birim, …>` (en çok 4 madde; ayrıntı kanıt klasöründe).
+
+Her madde **evet / hayır** olarak işaretlenir. Kanıtı kendi kırpımındır; çıtası referansın aynı ölçüsüdür.
 
 | # | madde | "evet" demek için | kendi kanıtın |
 |---|---|---|---|
@@ -251,7 +266,8 @@ Her denetimin sonucu üç değerden biridir: geçti / kaldı / ölçülemedi. Ka
    - Sahne yalnız `assets/gen/` yolunu mu kullanıyor?
    - Yer tutucu render'a girmiş mi?
 6. **Devir / dikiş.** Birim sınırında önceki ve sonraki kare farkı MEASURE ölçütünün içinde mi? Kendi `imgdiff`'in kullanılır.
-7. **Ses ve vuruş.** Fiziksel olayın ilk görünür karesi ile kelime başı arasındaki fark proje ölçütü içinde mi?
+7. **Ses ve vuruş.** Fiziksel olayın ilk görünür karesi ile kelime başı arasındaki fark proje ölçütü içinde mi? Yönlendirici: `frame-check` `onset`
+   (A/B kipi kesin; piksel kipinin "belirsiz" satırı karar değildir). Kod kancası zamanı görünürlüğü söylemez.
    - Kelime zamanı `script/` dosyalarındandır. Bunlar çıktı sayılır, gerekçe değil.
    - Kareyi sen bulursun.
 
@@ -264,7 +280,7 @@ Her denetimin sonucu üç değerden biridir: geçti / kaldı / ölçülemedi. Ka
 | `varyant` | Birim başına 3 yön still | 5 (1, 2, 3, 7, 8). Hareket maddeleri animatikte. | Yön başına SEÇ / ELE ve birim için GEÇER / GEÇMEZ (§12) |
 | `lookdev` | World yönleri (still + `world.json` taslağı) | 5 | Yön başına SEÇ / ELE ve GEÇER / GEÇMEZ (§12) |
 | `storyboard` | Boyalı kareler ve hareket notları | 8. Hareket maddeleri karelerin altındaki nottan "plan" olarak işaretlenir. | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
-| `animatik` | Yarım çözünürlük ve animatik fps ile birim | 8 | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
+| `animatik` | Yarım çözünürlük ve animatik fps ile birim; **mp4 oynatımından** gözlem + ölçüm (§7.1) | 8 | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
 | `render` | Tam çözünürlük birim | 8 | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
 | `teslim` | Tam render, kapanış ölçümleri, bütçe | 8 | **TESLİM GEÇER** / ŞARTLI GEÇER / GEÇMEZ |
 | `master` | Tek sürekli encode: film QC, ses yüksekliği, dikişler, son kareler, önceki master ile bit eşliği | yok (birim kararları geçerli) | TESLİM GEÇER / GEÇMEZ |
@@ -272,6 +288,19 @@ Her denetimin sonucu üç değerden biridir: geçti / kaldı / ölçülemedi. Ka
 | `varlik` | Logo, marka varlığı, üretken pilot gibi ölçüm ağırlıklı ön koşullar | yok | GEÇER / GEÇMEZ |
 
 Animatikte ölçeğe bağlı ölçüler "tam renderda" olarak ertelenir: keskinlik, ince çizgi, metin kenarı. Bu ertelenen ölçüler karar dışıdır.
+
+### 7.1 Animatik kapısında oynatım (zorunlu)
+
+Animatik bir **video** olarak değerlendirilir; kare dizisi kontağı tek başına yetmez (tek karede kaybolan öğe, hız kırığı ve ritim kontakta görünmez).
+
+1. **Kaynak = mp4.** `out/scenes/<id>_animatic.mp4` (sesli) kare dizininden bağımsız çözülür: `ffmpeg -i <mp4> -vf fps=<animatik fps> …`. Ölçüm ve gözlem bu
+   çözümden alınır; PNG dizini yalnız tam boy kırpım içindir. mp4 yoksa ya da kare sayısı/süresi manifestle tutmuyorsa madde "ölçülemedi" (karar §1.3).
+2. **Gözlem (oynatma sırasıyla).** Baştan sona her 0,5 s'lik mp4 kontağı + her geçiş, giriş/çıkış ve vuruş penceresinde ±0,3 s **ardışık bütün kareler**
+   şeridi (mp4'ten). Şeritler zaman sırasıyla, durmadan okunur. Gövdeye "Oynatım gözlemi" tablosu: `an (s) · ne görüldü · kare · ölçü`.
+3. **Ölçüm (mp4 üzerinde).** `frame-check <id> --mp4 <mp4> --step <N> --only pop` (tek kare belir/kaybol) ve kendi betiklerin: ardışık fark serisi,
+   hareket eden bölgenin kare başı yer değiştirmesi (C1: ardışık sıçrama ≤ %5 tepe), giriş/çıkış süreleri (≥ 0,4 s). Ses varsa vuruş anları mp4'ün ses
+   izine göre (kelime zamanı `script/` dosyalarından).
+4. **Kayıt.** Güncellik satırının yanına `Oynatım: <mp4> · <n> kare çözüldü · <süre> s · şerit <k>`.
 
 Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alırsın, örnek: `motion-render probe <id> --frame N --bench N` ya da kendi kısa betiğin. Çıktı yalnız `out/review/<kapı-id>/` altına gider. Yapanın canlı QC dosyası yönlendiricidir.
 
@@ -284,7 +313,7 @@ Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alır
 | **TESLİM GEÇER** | Yalnız `teslim` ve `master` kapısında verilir. Şartların hepsi tutmalı: §0.6 eşiği tutuyor, UCUZ geçer, ön plan ve hata görünümü temiz, SERT ihlali 0 (kayıtlı istisnalar gerekçeli), bütçe `match`. Birim teslim edilebilir. |
 | **GEÇER** | Kapı eşiği tutuyor, UCUZ geçer, SERT ihlali 0, ön plan ve hata görünümü temiz. Akış bir sonraki adıma geçer. Küçük notlar teslimi durdurmaz. |
 | **ŞARTLI GEÇER** | Eşik tutuyor ve VAR işaret yok. Ancak kare aralığıyla yazılmış, sayılı ve doğrulanabilir şartlar var: "sınırda" UCUZ, ölçülemeyen ve ölçülebilir kılınacak madde, küçük düzeltme. Şartlar yeni bir inceleme turu açmaz; yerine getirildikleri ölçümle ya da bir sonraki kapıda doğrulanır. |
-| **GEÇMEZ** | Şunlardan biri yeter: eşik altı; UCUZ VAR (#11 dahil); kayıtsız SERT ihlali; ön plan sorusunda ters cevap; hata gibi görünen öğe; bayat kare; teslimde ölçülemeyen SERT madde. |
+| **GEÇMEZ** | Şunlardan biri yeter: eşik altı; UCUZ VAR (#11 dahil); kayıtsız SERT ihlali; ön plan sorusunda ters cevap; hata gibi görünen öğe; bayat kare; teslimde ölçülemeyen SERT madde; kalibrasyon referansı yok (§3.0; altında `DUR:` satırı, tur sayılmaz). |
 
 - Kararı belirleyen en ağır bulgu kayıtta ilk sırada yazılır.
 - Karar değiştirilemez, yumuşatılamaz. "Geçer ama…" yazmazsın: ya şartlıdır ya geçmez.
@@ -322,6 +351,8 @@ r2 GEÇMEZ ─► DUR: kontak + nedenler, render YOK (tam render / teslim başla
 ```
 KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>[ · ayrışma: iskelet A↔B a, A↔C b, B↔C c (eşik t, UYARI) · palet A↔B x, A↔C y, B↔C z · uyarı n]   (ayrışma parçası yalnız lookdev kapısında, §12 madde 6)
 qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · …   (yalnız lookdev kapısında, ikinci satır; HK-34)
+kalibrasyon: <ref adları> · <madde: çıta → birim, …>   (her kapıda; §3.0)
+DUR: kalibrasyon referansı yok   (yalnız referans yoksa; §0.6 puanlanmaz)
 ```
 
 Örnek: `KARAR: GEÇMEZ · §0.6 5/8 · UCUZ VAR #2,#7 · kapı animatik full ≥7/8 · tur r1 · birim P2`
@@ -337,6 +368,7 @@ Ardından şu gövde gelir (kaynak projede kararlı hâle gelmiş biçim). Topla
 ```markdown
 ## <birim> · <kapı>: bağımsız inceleme (r<k>)
 Güncellik: <probe↔kayıtlı kare imgdiff sonucu> · Kapsam: <kare sayısı, açılan tam boy kare sayısı> · Yöntem: <kendi betikleri: out/review/<kapı-id>/m-*.mjs>
+Kalibrasyon: <ref klipleri · madde başı çıta (kendi ölçümün)> · Oynatım (animatik): <mp4 · çözülen kare · şerit sayısı>
 
 ### Kontroller
 | madde | sonuç | kanıt (f · t s · kırpım · ölçü) |
@@ -349,9 +381,9 @@ Güncellik: <probe↔kayıtlı kare imgdiff sonucu> · Kapsam: <kare sayısı, a
 | devir / dikiş | | |
 | ses / vuruş | | |
 
-### §0.6: <x>/<n> (eşik ≥<e>/<n>)
-| # | madde | evet/hayır | kanıt |
-|---|---|---|---|
+### §0.6: <x>/<n> (eşik ≥<e>/<n>; referansa göreli)
+| # | madde | evet/hayır | kanıt (birim) | çıta (referans) |
+|---|---|---|---|---|
 | 1 | derinlik | | |
 | 2 | malzeme | | |
 | 3 | yönlü ışık | | |

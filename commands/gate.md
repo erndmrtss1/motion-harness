@@ -54,7 +54,9 @@ Kaynaklar:
    - İstek: ne · hangi kareler · ölçütün kaynağı.
    - Measure sayıları **reviewer'a verilmez**. Raporda yapanın sayısıyla yan yana konur.
 4. **Yapanın puanı.** Director raporundaki §0.6 (yapan) puanını kendine not et. Bu puan reviewer'a verilmez.
-5. Bakiye, kapı bütçe içeriyorsa okunur (`motion-render doctor`).
+5. **Kalibrasyon referansı** (reviewer SKILL §3.0): `project.md` §3 "Kalite referansı" tablosundaki klipler var mı? Yoksa reviewer açılmaz:
+   **DUR** (DUR-1, referans iste); tur sayılmaz. Animatik kapısında `out/scenes/<id>_animatic.mp4` (sesli) hazır olmalı (§7.1 oynatım).
+6. Bakiye, kapı bütçe içeriyorsa okunur (`motion-render doctor`).
 
 ## 2. Reviewer'ı aç (her zaman yeni ajan)
 
@@ -71,6 +73,7 @@ Kurallar: ${CLAUDE_PLUGIN_ROOT}/skills/motion-reviewer/SKILL.md · RULES.md · M
 World: world/world.json (origin) · Kütüphane (#11): ${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md
 Manifest: scenes.json (birim <id>)
 Çıktılar: out/frames/<id>[_tag]/ · out/scenes/<…>.mp4 · out/probe/<id>-qc.json · out/probe/<id>-fc.json (+ sheet) · kontak <yol> · A/B <yol> · assets/gen/manifest.json
+Kalibrasyon (§3.0): <referans klip yolları · project.md §3 Kalite referansı> · [animatik] Oynatım (§7.1): out/scenes/<id>_animatic.mp4
 [lookdev] Ayrışma: out/review/lookdev-diff.md (iskelet + palet UYARI; gerekçe zorunlu) · yönlerin tam kareleri · qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · …
 [r2] Önceki kayıt: docs/REVIEWER.md "<birim> · <tür> · r1" · Değişen kare aralıkları: <…> · Madde → durum: <1 → UYGULANDI f…, …> (sayısız)
 Lütfen özellikle bak: <madde listesi; kare aralığıyla>

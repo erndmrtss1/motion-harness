@@ -21,6 +21,13 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   - Kanıt: v3'teki üç bilinen kusur yakalandı — kart k1076 (`pop`, r1 kareleri), lyric k1159 (`pop`), pergel e37 +20 kare (`onset` A/B).
     Bilinen sınır: düşük kontrastlı küçük nesne (bant, 496 px²) `minPx` altında kalır.
   - Kapanan PN: **PN-99** (`frame-check onset` gizleme sözleşmesiyle + `pop` tek kare görünür alan payı).
+- **Reviewer kalibrasyonu ve animatik oynatımı** (motion-reviewer SKILL §3.0, §7.1; ajan tanımı, `/motion:gate` adım 5, şablonlar):
+  - §0.6 puanı **referans kliplere görelidir**: kalibrasyon adımı zorunlu (referansı kendi yöntemiyle ölç → madde başı çıta → göreli puan).
+    `project.md` §3 "Kalite referansı" tablosu boşsa reviewer durur (`DUR: kalibrasyon referansı yok`; kapı DUR-1, tur sayılmaz).
+    KARAR'ın altına `kalibrasyon:` satırı; §0.6 tablosunda "çıta (referans)" sütunu.
+  - Animatik kapısında **mp4 oynatımı**: kare dizininden bağımsız çözüm; her 0,5 s kontak + geçiş/giriş/çıkış pencerelerinde ardışık kare şeritleri;
+    ölçüm mp4 üzerinde (`frame-check --mp4 … --only pop`, C1, giriş/çıkış). Kayıtta "Oynatım" satırı.
+  - Test `render/test/docs.test.mjs` (KARAR düzenli ifadesi örnekle, kalibrasyon/oynatım adımları, ZN satırları ↔ fc tipleri). Kapanan PN: — (kaynak proje kararı: reviewer referans kliple kalibre, animatikte video izlenir).
 
 ## 1.2.0 — 2026-10-19
 
