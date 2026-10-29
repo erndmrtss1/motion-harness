@@ -53,3 +53,18 @@ Komutlar (ölçüm; proje kökünde, çıktı proje dışına):
 motion-render frame-check <sahne> --step 2 --frames-dir out/frames/<animatik> --checks <scratch>/pop.json --out <scratch>/pop.json
 motion-render frame-check <sahne> --checks <scratch>/design.json --out <scratch>/design.json      # velocity · entryExit · moves · onset A/B
 ```
+
+## Madde 2 — `motion-render motion-test`
+
+Kütüphane world `focusfx-paper` ile kurulan geçici projede (`motion-render init --world focusfx-paper --demo`), ilkel `FXRule` (çelik cetvel),
+`x` 1960 → 300 (`out3`, 1,4 s), `angle` 0 → −2° (`sine`); referans: sahibin önceki projesinden 3 s çizim klibi (`--ref`).
+
+| çıktı | sonuç |
+|---|---|
+| süre | 90 kare (3 s @30, 1920×1080), çizim + kodlama 17,6 s |
+| dosyalar | `<ad>.mp4` · `<ad>-hiz.png` (hız + ivme, iki çizgi) · `<ad>-hiz.json` · `<ad>-kontak.png` (6 an × 2 satır) · `<ad>-yan.mp4` (1920×540) |
+| test profili | giriş k2–k3 105 px/kare @30 (kadraj dışından tam hızla) → `out3` ile azalıyor; **C1 en kötü %60 tepe** — out3 en hızlı başladığı için kalkışta hız sıçraması (gerçek kusur; kalkış rampası gerekir) |
+| referans profili | ~0,93 s'de hızlı kamera hareketi (tepe 135 px/kare @30); kesme kareleri (karenin > %50'si değişti, artık yüksek) tepe/C1 dışı |
+
+Düzeltilen ölçüm hataları (e2e ile bulundu): alt piksel parabolü yalnız gerçek yerel en azda ve ±0,5 içinde (öncesi: düz SAD vadisinde 8957 px/kare);
+arama yarıçapı 160 px @1080 (kadraj dışından hızlı giriş).

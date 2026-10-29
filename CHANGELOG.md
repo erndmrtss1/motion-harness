@@ -21,6 +21,12 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   - Kanıt: v3'teki üç bilinen kusur yakalandı — kart k1076 (`pop`, r1 kareleri), lyric k1159 (`pop`), pergel e37 +20 kare (`onset` A/B).
     Bilinen sınır: düşük kontrastlı küçük nesne (bant, 496 px²) `minPx` altında kalır.
   - Kapanan PN: **PN-99** (`frame-check onset` gizleme sözleşmesiyle + `pop` tek kare görünür alan payı).
+- **`motion-render motion-test <ilkel> [--ref <klip>]`** (`render/cmd/motion-test.mjs`, `render/lib/motion-test.mjs`): world ilkeli (ya da hazır test
+  sahnesi) için test sayfası üretir (prop'lar sabit ya da anahtar kare `[[t, değer, easing]]`), 3 s 1080p30 klip çizer; hız profili (px/kare @1080) ve
+  ivme grafiği (SVG → PNG), C1 sıçrama özeti, 0,5 s kontak ve `--ref` klibiyle yan yana kontak + 1920×540 mp4. Hız iki klipte aynı yöntemle
+  (değişen piksellerde SAD kaydırma vektörü; piramit + alt piksel) ölçülür, kesme kareleri ayrılır. Ağır iş kilidine dahil. Test
+  `render/test/motion-test.test.mjs` (anahtar kare ara değeri, 6 px/kare kayma ölçümü, grafik/kontak). Kanıt KANIT.md madde 2.
+  Kapanan PN: — (kaynak proje kararı: zanaat referans kliple; ilkel kütüphanesi kapısının aracı, madde 5).
 - **Reviewer kalibrasyonu ve animatik oynatımı** (motion-reviewer SKILL §3.0, §7.1; ajan tanımı, `/motion:gate` adım 5, şablonlar):
   - §0.6 puanı **referans kliplere görelidir**: kalibrasyon adımı zorunlu (referansı kendi yöntemiyle ölç → madde başı çıta → göreli puan).
     `project.md` §3 "Kalite referansı" tablosu boşsa reviewer durur (`DUR: kalibrasyon referansı yok`; kapı DUR-1, tur sayılmaz).
