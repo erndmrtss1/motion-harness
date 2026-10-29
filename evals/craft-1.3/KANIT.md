@@ -37,6 +37,10 @@ kırpım çiftlerinde gözle doğrulandı (gerçek tek kare değişimi; yeni ZN-
 | e36 seri A ilk mum (kontrol) | +2,9 | +1,9 | r2 +0,9 (görünürlük eşiği farkı ≈ 1 kare) |
 | e67 bacak 1a (kontrol) | +10,5 | +23,5 belirsiz (%19) | sayfa v3'ten sonra değişti (world 2.3.0); A/B güncel kodu ölçer |
 
+**Son kodla yeniden ölçüm** (harness `ae32296`, bütün maddeler commit'li; makine penceresi temiz, proje ağacında değişiklik 0): kart k1076 r1'de 66 256 px²
+pay 1,00, son v3'te yok · lyric k1159 son v3'te 56 768 px² pay 0,979 · pergel e37 A/B +20,2 kare (ilk fark f1656), e56 +20,8 · `pop` ihlali r1 15, son v3 7 —
+yukarıdaki tablolarla birebir.
+
 Sonuç: alet çizginin ucunu örttüğünde piksel kipi güvenilmez — bu satırlar UYARI ("belirsiz, A/B ile ölç") olur, hata değil. Kesin ölçü A/B.
 
 Tasarım katmanı (sahne sayfası, 2882 kare @60):
