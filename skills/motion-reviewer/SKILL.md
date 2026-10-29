@@ -194,18 +194,17 @@ Paket süreci ve bir **world kütüphanesi** taşır (`skills/motion-world/libra
 - **Proje yeni world kuruyor** (`world.json` `origin: "lookdev"`): yön, kütüphanedeki herhangi bir world'e ya da önceki projeye benziyorsa.
 - **Proje kütüphaneden world seçmiş** (`origin: "library:<ad>"` ve `project.md` §6'da seçim kaydı): yön, seçilmiş world **dışındaki** bir kütüphane world'üne benziyorsa. Seçilmiş world'e benzerlik #11 değildir; "<seçilmiş world>'e benzer" bir ELE gerekçesi olmaz.
 
-Benzerlik şu beş eksende karşılaştırılır:
+Benzerlik yalnız **kimlik** eksenlerinde karşılaştırılır. **kimlik** ekseni üçtür: **palet · iskelet (kompozisyon) · nesne dili** (malzeme, primitif/alet görünümü, tipografi ailesi). **Zanaat** (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri, geçiş mekaniği) kimlik değildir; kütüphaneden serbestçe örnek alınır ve #11'de sayılmaz (1.3).
 
 | eksen | eşleşme sayılır |
 |---|---|
 | palet | `world.json` paleti ve kontaktan ölçülen baskın renkler. Renklerin yarısından fazlası karşılaştırılan world'ün paletindeki bir renge ΔE2000 ≤ 10 yakın. |
-| tipografi | Display rolünde aynı aile ya da aynı kesim ailesi. |
-| malzeme / primitif | `primitives` adlarında Jaccard ≥ 0,3 ya da aynı malzeme metaforu (yüzey, alet, ışık düzeni). |
-| kompozisyon | Anahtar karelerde kahraman yerleşimi ve ölçeği örneğin tarif ettiği düzene oturuyor. |
-| hareket imzası | Aynı kamera dili, aynı geçiş kalıpları, aynı "imza" anlar. |
+| iskelet (kompozisyon) | Anahtar karelerde kahraman yerleşimi, ölçeği ve öğe dağılımı karşılaştırılanın düzenine oturuyor (`lookdev-diff` iskelet skoru ≥ eşik). |
+| nesne dili | `primitives` adlarında Jaccard ≥ 0,3 ya da aynı malzeme metaforu / alet görünümü; display rolünde aynı tipografi ailesi. |
 
-- **≥ 3 eksende eşleşme: #11 VAR.**
+- **3 eksende eşleşme: #11 VAR.**
 - 2 eksende eşleşme: **sınırda**.
+- Easing, süre, hız profili ve mekanik benzerliği (ör. aynı katlama ya da cetvel davranışı) eşleşme **sayılmaz**; ELE gerekçesi olmaz.
 - Seçilmiş world'de bile önceki projenin **içeriğini** (shot tasarımları, sıraları, imza anları, ekrandaki metin) birebir yeniden kurmak #11'dir.
 - Eski kayıt: `origin: "example:<ad>"` ve §6'da açık istek kaydı, `library:<ad>` seçimi gibi okunur.
 - Eşleşme eşikleri eval kipinde (§13) ayarlanır. Değiştiyse kayıtta belirtilir.
@@ -478,9 +477,9 @@ Seçim önerin yapanın seçimiyle uyuşmazsa ana oturum bunu açık karar olara
 
 **1. Proje içi.** Her projenin teslim edilen birimleri için §3 ve §4 taraması yapılır. Proje başına §0.6 ve UCUZ sonucu yazılır.
 
-**2. Projeler arası benzerlik.** Her proje çifti için §4.1'in beş ekseni ölçülür. **≥ 3 eksende eşleşme = benzer çift.**
+**2. Projeler arası benzerlik.** Her proje çifti için §4.1'in üç kimlik ekseni ölçülür. **3 eksende eşleşme = benzer çift.**
 
-**3. Kaynak görünüme benzerlik.** Her proje, seçmediği kütüphane world'lerinin her biriyle aynı beş eksende karşılaştırılır. Kütüphane world'leri kaynak projenin görünüm ailesidir.
+**3. Kaynak görünüme benzerlik.** Her proje, seçmediği kütüphane world'lerinin her biriyle aynı üç kimlik ekseninde karşılaştırılır. Kütüphane world'leri kaynak projenin görünüm ailesidir.
 
 **Çıktının ilk satırı:**
 

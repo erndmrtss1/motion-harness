@@ -616,6 +616,7 @@ Hamle = shot içinde kamera hızı ≥ `floor` koşusu (aradaki < `mergeSec` bo�
 - **Çıktı:** qc JSON K1 satırı (kare başı alan, yükseklik, geçti/kaldı); `motion-render k1` → `out/probe/<id>-k1.json`.
 
 ### M-K3 · sürekli kamera (K3)
+**Sınıf (1.3): UYARI — kota** (RULES §0.8 KO-1). `fc:camera` K3 satırı tek başına kalırsa kontrol `warn` verir (`k3Gate: true` eski SERT davranışı), `ours` "kota altı" yazar; kapı kusur ölçüleriyle (BAS-1, ZN-2) karar verir.
 - Kaynak: sahne kancası `__camSpeed(fps, n)` → kare başı kamera ekran hızı (dünya örnek noktalarının izdüşüm farkı büyüklüğü, px/kare). **Deterministiktir;** blok eşleme yavaş pan'ı sayamadığı için K3 kapısı pikselden değil kancadan ölçülür.
 - **Mutlak eşik:** `TH = 0,02 · W / fps` px/kare (W = 1920 → 38,4 px/s; 60 fps'te 0,64 px/kare). Göreli eşik (tepenin %20'si) yavaş izlemeyi tutuş saydığı için **kullanılmaz**.
 - Shot payı = (v ≥ TH kare sayısı) / shot kare sayısı; shotlar `ours`'ta manifest `shots[]` (sahne ya da `parent`; `af0`/`af1` ses zamanı önce, yoksa `f0`/`f1`), `fc:camera`'da `shots` parametresi (`[[ad, f0, f1]]` ya da `"$__shots"`). Eşik/hedef: sahne `k3` > world `k3` (`camMin` 0,02, `movingMin` 0,4). Geçer: her shot pay ≥ 0,4 (hold ≤ 0,6) **ve** perde OURS hareketli ≥ 0,4.

@@ -28,6 +28,13 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   - Animatik kapısında **mp4 oynatımı**: kare dizininden bağımsız çözüm; her 0,5 s kontak + geçiş/giriş/çıkış pencerelerinde ardışık kare şeritleri;
     ölçüm mp4 üzerinde (`frame-check --mp4 … --only pop`, C1, giriş/çıkış). Kayıtta "Oynatım" satırı.
   - Test `render/test/docs.test.mjs` (KARAR düzenli ifadesi örnekle, kalibrasyon/oynatım adımları, ZN satırları ↔ fc tipleri). Kapanan PN: — (kaynak proje kararı: reviewer referans kliple kalibre, animatikte video izlenir).
+- **Kota ölçütleri UYARI sınıfı; kapı yalnız kusur ölçer** (RULES §0.8 KO-1…KO-4): K3 hareketli pay / OURS, olay yoğunluğu, ekipman/bileşen sayısı (K6),
+  sınır vuruşu. K3 ve K6 satırları SERT → UYARI (kota). `fc:camera` K3 satırı tek başına `warn` (`k3Gate: true` eski davranış); `ours` "kota altı
+  (UYARI)" yazar. Rapor biçimi `kota (bilgi): …`. Kota için kusur eklemek (kısa hamle, işsiz alet) yasak; kusur kapısı ayrıca yakalar.
+- **UCUZ #11 = kimlik, zanaat değil:** yalnız üç kimlik ekseni sayılır — **palet · iskelet (kompozisyon) · nesne dili** (malzeme, primitif/alet görünümü,
+  tipografi ailesi); 3/3 VAR, 2/3 sınırda. **Zanaat (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri) kütüphaneden
+  serbestçe örnek alınır.** RULES UCUZ-11 + §0.3, reviewer SKILL §4.1 ve eval kipi, motion-world SKILL, PLAYBOOK, şablon, ajan tanımı.
+  Test `craft.test.mjs` (K3 kota → UYARI, basamakla → ihlal) + `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: kotalar uyarı, UCUZ #11 daraltma).
 
 ## 1.2.0 — 2026-10-19
 

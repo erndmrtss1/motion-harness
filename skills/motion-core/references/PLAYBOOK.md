@@ -54,7 +54,7 @@ Proje belgelerinin şablonları paketin `templates/` klasöründedir.
 
 1. **World seçilmedikçe varsayılan yok.** Hiçbir primitif, renk, font, alet ya da geçiş kalıbı kendiliğinden gelmez. `world.json` yoksa sahne kodu yazılmaz; önce look-dev yapılır (§4.3).
 2. **Look-dev üç GERÇEKTEN farklı yön sunar.** İki yön, aşağıdaki altı eksenin en az üçünde ayrışmalıdır: ışık modeli · malzeme/zemin · ton (luma bandı) · tipografi · kamera dili · geçiş dili. Her yön ölçülür (§4.3). Aynı yönün üç renk varyantı, üç yön sayılmaz.
-3. **UCUZ #11: seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik.** Reviewer her kapıda tarar. Kütüphane world'leri (`skills/motion-world/library/`) yalnız kullanıcı seçerse (`motion-render init --world <örnek>`) yüklenir; seçilmeyen örnek okunabilir ama kopyalanmaz.
+3. **UCUZ #11: seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik.** Reviewer her kapıda tarar; yalnız kimliği (palet, iskelet, nesne dili) sayar, zanaatı (easing, süre, mekanik) değil. Kütüphane world'leri (`skills/motion-world/library/`) yalnız kullanıcı seçerse (`motion-render init --world <örnek>`) yüklenir; seçilmeyen örnek okunabilir ama kopyalanmaz.
 4. **Kalıp kanıtla girer.** Bir kalıp sahneye ancak A/B kanıtıyla girer; A/B'si olmayan katkı raporda "deneme" diye etiketlenir.
 5. Kaynak projeden gelen kural ve dersler **disiplindir**: kapı, ölçüm, belge. Değer gerektiren kurallar (bant, aksan sınıfı, K1 maskesi) değerini world'den alır. World bu değerleri vermiyorsa ilgili kontrol "ölçülemedi" uyarısı verir; değer uydurulmaz.
 
@@ -369,7 +369,7 @@ motion-render amap build --anchors amap.config.json                       # tasa
 4. **Reviewer (kapı `lookdev`, kapı-id `LOOK-lookdev-r1`).** Taze reviewer'a still'ler ve yön başına `world.json` taslakları verilir; yukarıdaki ölçüm tablosu verilmez (yapan sayısıdır, rapora ve kullanıcıya gider). Reviewer kendi ölçümüyle bakar:
    - üç yön gerçekten farklı mı: altı eksenin 3'ünden azında ayrışan yön "yön değil, sürüm" → ELE;
    - her yönde durağan §0.6 (`n = 5`) ve durağan UCUZ maddeleri;
-   - **UCUZ #11** (seçilmemiş world'e ya da önceki projeye benzerlik; beş eksen karşılaştırması);
+   - **UCUZ #11** (seçilmemiş world'e ya da önceki projeye benzerlik; üç kimlik ekseni: palet, iskelet, nesne dili; zanaat serbest);
    - yön başına **SEÇ / ELE** ve tek cümle kanıt. Seçimi yapanınkiyle uyuşmazsa açık karar olur.
 5. **DUR — yön seçimi.** Kullanıcı birini ya da bir birleşimi seçer.
 6. **World kaydı:**

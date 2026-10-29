@@ -141,4 +141,18 @@ test('PAGE: shapes (çokgen + kutu, önek eşleşmesi) ve track (araç/kutu izi,
   } finally { delete globalThis.window; }
 });
 
+test('camera: K3 payı kota (RULES §0.8 KO-1) — tek başına UYARI, basamakla birlikte ihlal', async () => {
+  const api = { fps: 60, frames: 120, eval: (fn, arg) => fn(arg) };
+  const ctx = { scene: { id: 'P', file: 'P.dc.html', frames: 120 }, W: worldDefaults({ camera: { k3: { minShare: 0.4 } } }), fps: 60, frames: 120 };
+  const slow = Array.from({ length: 120 }, (_, f) => (f > 100 ? 1 : 0.1));   // hareketli pay ≈ 0,16 < 0,4; basamak yok
+  globalThis.window = { __camSpeed: () => slow, __frameN: () => 120 };
+  try {
+    const q = await TYPES.camera.run({ __i: 0, type: 'camera', shots: [['S1', 0, 119]] }, ctx, api);
+    assert.equal(q.status, 'warn', q.summary); assert.equal(q.quota, 1); assert.match(q.summary, /kota altı/);
+    window.__camSpeed = () => slow.map((v, f) => (f === 60 ? 5 : v));   // basamak (kusur) + kota
+    const k = await TYPES.camera.run({ __i: 0, type: 'camera', shots: [['S1', 0, 119]] }, ctx, api);
+    assert.equal(k.status, 'fail'); assert.ok(k.violations.some((v) => v.rule === 'basamak'));
+  } finally { delete globalThis.window; }
+});
+
 test.after(() => { try { fs.rmSync(ROOT, { recursive: true, force: true }); } catch { /* yut */ } });

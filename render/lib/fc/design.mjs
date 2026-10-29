@@ -5,7 +5,7 @@
 //   camera   · __camSpeed(fps, n)    tepe, p95, basamak (|Δv| > stepJump), K3 hareketli pay (__shots ya da shots)
 // Zaman tabanı (isteğe bağlı kancalar): __frameN(fps) → kare sayısı · __frameT(i, fps) → T (ya da [T, dt]); yoksa T = i / fps.
 // Kancalar ekran px'i döndürür; dünya → ekran izdüşümü sahnenin işidir (frame-check projeye özgü geometri bilmez).
-import { verdict, unmeasured, hookName, deref, r2, r3, WIDTH, HEIGHT } from './common.mjs';
+import { verdict, result, unmeasured, hookName, deref, r2, r3, WIDTH, HEIGHT } from './common.mjs';
 
 // ── sayfa içi ölçüm (tek fonksiyon; Playwright kaynak metniyle taşır — dış kapsam kullanmaz) ──────────
 export function PAGE(a) {
@@ -289,10 +289,13 @@ async function camera(c, ctx, api) {
   if (maxSteps != null && s.steps.length > maxSteps) s.steps.forEach((j) => viol.push({ f: j, rule: 'basamak', dv: r2(v[j] - v[j - 1]), v: v[j] }));
   const maxPeak = c.maxPxPerFrame != null ? c.maxPxPerFrame : cam.maxPxPerFrame;
   if (maxPeak != null && s.peak > maxPeak) viol.push({ f: s.peakAt, rule: 'tepe', v: s.peak, max: maxPeak });
-  if (k3.minShare != null) s.k3.forEach((x) => { const sh = x['≥' + k3v[0]]; if (sh < k3.minShare) viol.push({ rule: 'K3', shot: x.shot, share: sh, min: k3.minShare }); });
+  // K3 payı kotadır (RULES §0.8 KO-1): tek başına kalırsa kontrol UYARI verir, kusur (basamak, tepe) varsa yine ihlaldir
+  const quota = [];
+  if (k3.minShare != null) s.k3.forEach((x) => { const sh = x['≥' + k3v[0]]; if (sh < k3.minShare) quota.push({ rule: 'K3', quota: true, shot: x.shot, share: sh, min: k3.minShare }); });
   const k3s = s.k3.map((x) => x.shot + ' ' + x['≥' + k3v[0]]).join(' / ');
-  return verdict(c, ctx, 'tepe ' + s.peak + ' @' + s.peakAt + ' · p95 ' + s.p95 + ' · basamak ' + s.steps.length + (k3s ? ' · K3 ' + k3s : ''),
-    { N: o.N, frames: v.length, stepJump, maxSteps, k3v, ...s, speed: c.keepSeries ? v : undefined }, viol);
+  const head = 'tepe ' + s.peak + ' @' + s.peakAt + ' · p95 ' + s.p95 + ' · basamak ' + s.steps.length + (k3s ? ' · K3 ' + k3s : ''), metrics = { N: o.N, frames: v.length, stepJump, maxSteps, k3v, ...s, speed: c.keepSeries ? v : undefined };
+  if (!viol.length && quota.length && c.k3Gate !== true) return result(c, 'warn', head + ' · K3 kota altı ' + quota.length + ' shot (UYARI, §0.8)', metrics, quota, { quota: quota.length });
+  return verdict(c, ctx, head, metrics, viol.concat(quota));
 }
 
 export const TYPES = {
