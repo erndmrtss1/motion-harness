@@ -23,6 +23,7 @@ motion-render doctor $ARGUMENTS
 | bileşen | nasıl | ✓ ölçütü |
 |---|---|---|
 | plugin | `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` okunur | ad `motion`, sürüm yazılır; `skills/`, `agents/`, `commands/`, `render/` mevcut |
+| plugin metinleri | doctor çıktısı (`motion-render plugin-sync --check`) | önbellekteki `commands/`, `skills/`, `agents/`, `templates/` kurulu checkout'la aynı. Farklıysa çözüm `motion-render plugin-sync` (ya da install betiği) + yeni oturum |
 | Node | `node --version` | install betiğindeki alt sınırı karşılıyor |
 | motion-render | `motion-render --version` | sürüm `render/CONTRACT.md` sürümüyle uyumlu |
 | ffmpeg / ffprobe | `ffmpeg -version`, `ffprobe -version` | PATH'te |

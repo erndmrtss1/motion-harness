@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { ROOT, MANIFEST_PATH } from '../lib/project.mjs';
 import { capabilities } from '../lib/ffmpeg.mjs';
+import { syncPlugin } from '../lib/plugin-sync.mjs';
 
 const JSON_OUT = process.argv.includes('--json');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -120,6 +121,10 @@ else {
   const r = run('claude plugin list', 60000), out = (r.stdout || '') + (r.stderr || '');
   if (r.status !== 0 && !out.trim()) add('Claude Code plugin', 'skip', 'claude plugin list çalışmadı');
   else add('Claude Code plugin', /\bmotion\b/.test(out) ? 'ok' : 'skip', /\bmotion\b/.test(out) ? 'motion kurulu' : 'motion yok → claude plugin install motion@motion-harness --scope user');
+  // PN-104: önbellekteki plugin metinleri bu checkout'la aynı mı (sürüm aynı kalınca `claude plugin update` önbelleği yenilemez)
+  const s = /\bmotion\b/.test(out) ? syncPlugin({ root: path.join(HERE, '..', '..'), check: true }) : { status: 'yok' }, b = s.before;
+  if (s.status === 'farklı') add('plugin metinleri', 'fail', `checkout'tan farklı: ${b.changed.length - b.eol.length} içerik + ${b.eol.length} satır sonu · ${b.added.length} yeni · ${b.stale.length} eski → motion-render plugin-sync`);
+  else if (s.status === 'güncel') add('plugin metinleri', 'ok', `checkout ile aynı (${b.files} dosya)`);
 }
 
 const reqFail = checks.filter((c) => c.required && c.status === 'fail');

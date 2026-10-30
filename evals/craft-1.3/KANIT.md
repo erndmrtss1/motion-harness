@@ -84,3 +84,13 @@ Birim testleri `render/test/core-tools.test.mjs` (4; tam takım `node --test ren
 | `plan-check` | sentetik plan (CLI) | kusur 1 (alet girişi 0,3 s < 0,4) · kota 2 (olay yoğunluğu 0,83 / 2,5 s, boş pencere) · çıkış 3. Projenin olay listesi başka şemada olduğundan gerçek veride koşulmadı (dönüştürme projenin işi) |
 | `seri-uret` | sentetik iki seri (CLI) | A: 10 öğe, seed 4 (2 deneme) · B: **üretimden önce çözülemez** — zıt uçlu bitişik pivotlar arasında 1 öğe (en az 2) · çıkış 3 |
 | `ingest-kapi` | düz gri zeminli kare (CLI) | doku std 0 < eşik → KALDI · çıkış 3; kazanç eşlemesi, kimlik artığı ve göz notu yolu birim testinde |
+
+## PN-104 — plugin metinleri kurulu checkout'tan
+
+Sorun: önbellek sürüm klasörüyle tutulur (`~/.claude/plugins/cache/motion-harness/motion/1.2.0`, 1.2.0 commit'inden kopya); dal ucu kurulu klona alınınca
+sürüm 1.2.0 kaldığı için install "güncel" dedi, `motion-render` 1.3 kodunu koşarken skill/ajan/komut metinleri 1.2.0'da kaldı.
+
+| ölçüm | yöntem | sonuç |
+|---|---|---|
+| gerçek önbellek ↔ 1.3 checkout | `motion-render plugin-sync --check` (salt okuma; önbelleğe yazılmadı — kurulu ortam faz sınırında güncellenir) | **farklı, çıkış 3** — 76 metin dosyası: 37 değişen (23'ü yalnız satır sonu: eski CRLF kopya) · 1 yeni (`templates/CRAFT-REF.md`) · 0 eski. İçerik farkı olan 14 dosya arasında `skills/motion-reviewer/SKILL.md` (§3.0 kalibrasyon), `agents/motion-director.md` (BAĞLAM), `commands/gate.md` (oynatım), `RULES.md`, `PLAYBOOK.md` |
+| eşitleme | `render/test/plugin-sync.test.mjs` (geçici checkout + geçici `installed_plugins.json` + önbellek) | 3/3: `--check` yazmaz · eşitleme değişen/yeni yazar, eski skill'i ve boş klasörünü siler, `render/lib` ve `docs/` dokunulmaz, kalan fark 0, ikinci koşu "güncel" · CLI çıkış 3 → 0 · install betikleri adım 3'te sürüm denetiminden sonra çağırır, hata sayılır |

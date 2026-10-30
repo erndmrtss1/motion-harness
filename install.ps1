@@ -92,6 +92,10 @@ else {
     $r = Run 'claude' @('plugin','update','motion@motion-harness','--scope','user')
     if ($r.code -eq 0) { Ok "plugin: motion güncellendi $v0 → $exp (yeni oturumda yüklenir)" } else { Bad "plugin update başarısız ($v0 → $exp)" }
   } else { Ok "plugin: motion $v0 (güncel)" }
+  # PN-104: sürüm aynı kalınca (dal ucu, -dev) önbellek yenilenmez → plugin metinleri (commands/, skills/, agents/, templates/) bu checkout'tan eşitlenir
+  $r = Run 'node' @((Join-Path $Render 'bin\motion-render.mjs'),'plugin-sync')
+  Say ('  ' + $r.out.Trim())
+  if ($r.code -ne 0) { $script:fails++ }
   $v1 = & $ver
   if (-not $v1) { Bad 'doğrulama: plugin listede yok' }
   elseif ($exp -and $v1 -ne $exp) { Bad "doğrulama: kurulu sürüm $v1, depo sürümü $exp" }

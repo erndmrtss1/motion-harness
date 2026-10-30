@@ -77,6 +77,9 @@ else
   elif [ -n "$EXP" ] && [ "$V0" != "$EXP" ]; then
     if claude plugin update motion@motion-harness --scope user >/dev/null 2>&1; then ok "plugin: motion güncellendi $V0 → $EXP (yeni oturumda yüklenir)"; else bad "plugin update başarısız ($V0 → $EXP)"; fi
   else ok "plugin: motion $V0 (güncel)"; fi
+  # PN-104: sürüm aynı kalınca (dal ucu, -dev) önbellek yenilenmez → plugin metinleri (commands/, skills/, agents/, templates/) bu checkout'tan eşitlenir
+  OUT="$(node "$RENDER/bin/motion-render.mjs" plugin-sync 2>&1)"; RC=$?
+  say "  $OUT"; [ $RC -eq 0 ] || FAILS=$((FAILS+1))
   V1="$(pver)"
   if ! claude plugin list 2>/dev/null | grep -q "motion@motion-harness"; then bad "doğrulama: plugin listede yok"
   elif [ -n "$EXP" ] && [ "$V1" != "$EXP" ]; then bad "doğrulama: kurulu sürüm $V1, depo sürümü $EXP"

@@ -61,6 +61,11 @@ Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapılar
   taze reviewer QA'sından geçer ve kullanıcı onaylar (DUR-1); perdeler yalnız onaylı ilkellerle kurulur. Director brief'i tüm film bağlamını taşır
   (tüm sözlük + `docs/CRAFT-REF.md` + onaylı ilkeller; `BAĞLAM:` satırı); kapı listesi brief'e yazılmaz, kapılar işten sonra QA olarak koşar; kota
   hedef değildir. Test `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: director brief'i = sözlük + CRAFT-REF + onaylı mekanikler; kapılar QA).
+- **Kurulum: plugin metinleri checkout'tan** (`motion-render plugin-sync`, `render/lib/plugin-sync.mjs`; `install.ps1` / `install.sh` adım 3, `doctor`):
+  Claude Code plugin'i önbelleğe sürüm klasörüyle kopyalar; sürüm aynı kalınca (dal ucu, `-dev`) HK-40 sürüm karşılaştırması "güncel" der ve skill/ajan/
+  komut metinleri eski kalır. Install betikleri artık sürüm adımından sonra `commands/`, `skills/`, `agents/`, `templates/`, `.claude-plugin/`,
+  `render/runtime/` dosyalarını kurulu checkout'tan önbelleğe bayt bayt eşitler (eski dosya silinir; `render/` kodu global bağdan koştuğu için
+  dokunulmaz); `doctor` "plugin metinleri" satırı farkı gösterir. Test `render/test/plugin-sync.test.mjs` (3). Kapanan PN: **PN-104**.
 
 ## 1.2.0 — 2026-10-19
 
