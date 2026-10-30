@@ -1,7 +1,7 @@
 {
   "name": "motion",
   "displayName": "motion-harness",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Motion-grafik üretim hattı: kapılar, ölçüm (qc + frame-check), bağımsız reviewer, varyant, DUR, rapor. Süreci taşır, üslubu değil — her proje kendi world'ünü look-dev'de kurar.",
   "author": { "name": "erndmrtss1" },
   "repository": "https://github.com/erndmrtss1/motion-harness",

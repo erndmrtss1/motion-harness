@@ -1,7 +1,7 @@
 # @motion/harness — sözleşme (CLI · manifest · world · sayfa kancaları)
 
 Bu belge paketin bütün parçalarının (skill'ler, ajanlar, komutlar, `render/`) uyduğu tek sözleşmedir.
-Değişiklik önce burada yapılır. Sürüm: 1.2.0.
+Değişiklik önce burada yapılır. Sürüm: 1.3.0.
 
 ## 1. Proje düzeni (her proje kökü)
 
@@ -154,12 +154,14 @@ Sahne sayfası `x-dc` alt kümesidir (kaynak projeyle uyumlu):
 | `__camSpeed(fps, n)` | qc kamera ivmesi, ours K3, frame-check `camera` ve `temporal` (`detect: ["dup"]`) | kare başı kamera ekran hızı (px/kare) dizisi (`MH.hooks.camSpeed`) |
 | `__camK(fps, n)` | ss2 | kare başı kamera ölçeği k (`MH.hooks.camK`) |
 | `__redExclude(fps, n)` | qc (sahne `redExclude` doluysa), frame-check `accentLocation` (`allow: ["$__redExclude"]`) | kare başı izinli aksan kutuları `[[x0, y0, x1, y1], …]` ekran px (`MH.hooks.accentExclude`) |
-| `__boxes(T)` | frame-check `framing`, `overlap` (`box:<ad>`, `kind:<tür>`) | `[{name, rect:[x,y,w,h] \| poly, kind, px?, pad?, minPx?, test?}]` ekran px; `kind`: `obj` \| `lyric` \| `label` \| `text` \| `cut` \| `out` \| `rr` (+ `paper` = masa payı yüzeyi, `ref` = yok sayılır); `px` = ekrandaki display boyu (`minPx` ile karşılaştırılır) |
-| `__tools(T, Tönceki)` | frame-check `toolPath`, `overlap` (`tool:<ad>[.<parça>]`) | `{ad: {poly \| tip:[x,y], visible?, ref?, parts?: {parça: poly}, phase?}}` ekran px |
+| `__boxes(T)` | frame-check `framing`, `overlap`, `onset` (bölge/maske), `velocity`, `entryExit` (`box:<ad>` — sonda `*` önek, `kind:<tür>`) | `[{name, rect:[x,y,w,h] \| poly, kind, px?, pad?, minPx?, test?, vis?, phase?}]` ekran px; `vis` = görünür pay 0..1 (kırpım × opaklık; `entryExit` için, yoksa 1); `phase` = evre adı; `kind`: `obj` \| `lyric` \| `label` \| `text` \| `cut` \| `out` \| `rr` (+ `paper` = masa payı yüzeyi, `ref` = yok sayılır); `px` = ekrandaki display boyu (`minPx` ile karşılaştırılır) |
+| `__tools(T, Tönceki)` | frame-check `toolPath`, `overlap` (`tool:<ad>[.<parça>]`), `velocity` (uç), `entryExit` (evre) | `{ad: {poly \| tip:[x,y], visible?, ref?, parts?: {parça: poly}, phase?, vis?}}` ekran px; `phase` dizgesinin boşlukla ayrılmış bir parçası giriş/çıkış evre adıysa (`gir`, `cik` …) `entryExit` onu kullanır |
 | `__holds()` | frame-check `toolPath` (`holds: "$__holds"`) | `[[t0,t1], …]` tutuş aralıkları |
-| `__events()` | frame-check `sync` (`mode: "events"`) | `[{t, word, kind, at?}]` fiziksel olay anları |
+| `__events()` | frame-check `sync` (`mode: "events"`), `onset` | `[{t, word, kind, at?, region?, hide?}]` fiziksel olay anları; `onset` için `region` (`[x,y,w,h]` ya da `box:`/`kind:` başvurusu) ve A/B'de `hide` (gizlenecek öğe anahtarı) |
 | `__glyphs(T, ad?)` | frame-check `overlap` (`glyphs[:<ad>]`) | yazılmış glif kutuları (`rect` \| `poly`) |
-| `__shots(fps)` | frame-check `camera` (`shots: "$__shots"`) | `[[ad, f0, f1], …]` K3 shot aralıkları |
+| `__shots(fps)` | frame-check `camera`, `velocity`, `moves` (`shots: "$__shots"`), `pop` (`exclude`) | `[[ad, f0, f1], …]` K3 shot aralıkları |
+| geçiş penceresi kancası (ad serbest, ör. `__gecis()`) | frame-check `pop` (`exclude: ["$__<ad>"]`) | `[{t, son} \| {t, dur} \| {t0, t1}]` saniye: tasarlanmış geçiş/ara sahne pencereleri (tek kare ölçüsü dışı) |
+| gizleme global'leri (proje adı, ör. `OLC_ALETSIZ`, `OLC_GIZLE`) | frame-check `onset` A/B (`base`, `hide`) | sayfa **başlangıçta** okur: alet katmanını / adı verilen öğeyi çizmez; varsayılan çıktı değişmez (yalnız ölçüm) |
 | `__frameN(fps)`, `__frameT(i, fps)` | frame-check tasarım tipleri (isteğe bağlı) | izdüşüm zaman tabanı: kare sayısı · kare i → T (ya da [T, dt]); yoksa T = i / fps |
 | `[data-hero]` (K1 `selector`), `[data-doku]`, `[data-c]`, `[data-fx]` (`[data-fx=write]` lyric) | qc K1/kadraj/metin, k1, k6, frame-check `identical` (`mode: "dom"`) | DOM işaretleri |
 
@@ -180,8 +182,13 @@ Dağıtıcı: `motion-render <komut> [--project <dizin>] …` · `motion-render 
 | `grade <id…> [--animatic]` · `grade <animatik-sayfa> [--audio [P]] [--dir D] [--fps N] [--start K] [--count M] [--ss s] [--out P] [--crf 16] [--world W]` · `grade --png in.png out.png [--world W]` · `encode <id…> \| --all` | grade zinciri (world) + H.264 → `out/scenes/<id>.mp4` (`--animatic`: `out/frames/<id>_animatic` → `<id>_animatic.mp4`); `--audio` yalnız manifestte `animatic` alanı olan sayfada · encode = grade'siz |
 | `qc <id> [--frames-dir D] [--step N] [--mp4 auto\|yol] [--no-glyph] [--no-cam] [--quiet]` | tek komut QC (16 kontrol) → `out/probe/<id>-qc.json` |
 | `qc film [--probe D] [--ids a,b]` · `qc film --rehearsal [--ids a,b]` · `qc film --cuts <id> [--at f,f…] [--frames-dir D] [--class ad]` | film grade sayfası `out/probe/_film-grade-sheet.png` + `_film-qc.json` · grade provası `out/probe/grade-rehearsal/` · geçiş şeritleri `out/probe/<id>-cuts.png` + `<id>-whole.json` |
-| `frame-check <id> [--only tip\|ad,…] [--frames-dir D] [--step N] [--mp4 auto\|yol] [--cand c.json] [--sheet] [--json] [--set K=V] [--checks f.json] [--out yol.json] [--list]` | manifest bildirimli 20 tip → `out/probe/<id>-fc.json` (`--sheet` → `out/probe/fc/<id>-<ad>.png`) |
+| `frame-check <id> [--only tip\|ad,…] [--frames-dir D] [--step N] [--mp4 auto\|yol] [--cand c.json] [--sheet] [--json] [--set K=V] [--checks f.json] [--out yol.json] [--list]` | manifest bildirimli 25 tip (zanaat kapısı: `pop`, `onset`, `velocity`, `entryExit`, `moves`) → `out/probe/<id>-fc.json` (`--sheet` → `out/probe/fc/<id>-<ad>.png`) |
 | `ours <id> [--dir D] [--step N] [--no-cam]` | OURS / K3 → `out/probe/<id>-ours.json` |
+| `motion-test <ilkel|sahne> [--props '<json>'] [--from "world/a.jsx …"] [--dur 3] [--fps 30] [--bg #808080] [--ref klip.mp4] [--ref-start s] [--name ad] [--out D]` | ilkel hareket testi (1.3): üretilen test sayfası (prop'lar sabit ya da `[[t, değer, easing]]`) → 3 s 1920×1080 @30 mp4 + hız/ivme grafiği (değişen piksellerde SAD kaydırma vektörü; test ve referans aynı yöntem) + 0,5 s kontak (+ referans satırı) + yan yana mp4 → `out/motion-test/<ad>/` |
+| `plan-check <events.json> [--rules r.json] [--refs a,b | --refs-file f.json] [--out yol.json] [--json]` | olay planı denetimi (render yok, 1.3): kusur (senkron, tek alet, giriş/çıkış ≥ 0,4 s, alet hızı, kanca kimlikleri) çıkış 3; kota (boş pencere, olay yoğunluğu, cümle kapsamı, sınır vuruşu) UYARI → `out/probe/plan-check.{json,md}` |
+| `parite --ours <dizin\|liste> --ref <dizin\|liste> [--tol 0.2] [--ust m,…] [--alt m,…] [--accent h0,h1,s] [--gate]` | kalite paritesi (1.3): grup, ink, içerik, negatif alan, kahraman oranı, luma (+ aksan) medyanları proje ↔ referans ± tol; tek yönlü sınır; varsayılan bilgi, `--gate` çıkış 3 → `out/probe/parite.{json,md}` |
+| `ingest-kapi <varlık-id\|görüntü> --accept <kabul.json\|istek.json> [--goz "<not>"] [--native] [--out D]` | plaka = malzeme kabulü (1.3): doku std · palet ΔE2000 (none/gain eşleme sonrası) · kimlik artığı · göz notu → GEÇTİ / GÖZ BEKLİYOR / KALDI (çıkış 3) → `out/probe/ingest-kapi/<ad>.malzeme.{json,md}` + eşlenmiş önizleme |
+| `seri-uret <girdi.json> [--out yol.json] [--js ad] [--rule kural.mjs] [--check]` | pivot kilitli süreklilik serisi (o_i = c_(i−1), kilitli pivot uçları, tohumlu yürüyüş + ileri bakış); üretimden önce çözülebilirlik; `--check` determinizm (1.3) |
 | `k1 <id> [--frames f,… \| --times t,…] [--lyric "METİN@t,…"] [--mask ink\|dom\|alpha] [--out P]` · `k1 contrast <id> <etiket> f1,f2,… [metin1,metin2] [--json f]` | K1 kahraman + lyric boyu → `out/probe/<id>-k1.json` · render öncesi kontrast probe'u → `out/probe/pc-<id>/` |
 | `k6 <id> [--at "S01:0.8,2.2;S02:…"]` | K6 bileşen sayımı (`[data-c]` + `[data-fx]`) → `out/probe/<id>-k6.json` |
 | `contact <id> [--step N] [--cols 8] [--dir D] [--fstep N] [--out P]` · `contact sheet <out.png> [--cols 3] [--w 640] [--title T] a.png[=etiket] …` · `contact storyboard <SB-id>` · `contact clips <id,id,…> [--t …] [--fps 30] [--out P] [--title T]` · `contact seq <id> --from A --to B [--step 3] [--cols 4] [--tag T] [--name seq] [--dir D]` | kontak → `out/probe/<id>-contact.png` · tablo · storyboard `out/boards/` · klipler `out/probe/clips/CLIPS.png` · sekans `out/probe/<id>[-<T>]-<ad>.png` |
@@ -201,7 +208,8 @@ Dağıtıcı: `motion-render <komut> [--project <dizin>] …` · `motion-render 
 | `smoke [--keep] [--world focusfx-paper] [--frames 12]` | kurulum denetimi: ffmpeg, Chromium, vendor, geçici proje → 12 kare 960×540 → qc → contact |
 | `live [<sayfa.html>] [--port 4317]` · `live [<sayfa>] --qc [--seconds 20] [--wav t.wav] [--fps 60]` · `live [<sayfa>] --capture [det\|rt]` · ortak `[--avatar world/avatar-<yön>.js] [--settings J] [--out D]` | canlı profil: yerel sunum (OBS/panel URL) · ölçüm (fps ortalama + p5, gecikme p95, düşen kare, tetik p95) → `out/probe/live-qc.json` + `.md` · deterministik yakalama `out/live/capture.mp4` · `--out D` ikisini de D'ye yazar (look-dev yönleri); sayfa şablonsa proje dosyaları `/__project/` altından sunulur |
 | `lookdev-diff [--dirs A,B,C \| --pages a.dc.html,…] [--frames 0,1,2] [--ref <png>[@CxR+şerit]] [--threshold t] [--out out/review/lookdev-diff.json] [--dump]` | look-dev ayrışması: iskelet (DOM: `__boxes(T)` ya da DOM yürüyüşü → kahraman/bant/metin/kenar 6×4 doluluk, kareler arası ortalama; 1.1 UYARI, eşik 2,2) + palet (zemin ΔE2000 + baskın renkler, UYARI ≥ 3,5) + varsayılan çekici; `--ref` yalnız palet. Çıktı `.json` + `.md`, KARAR `ayrışma:` parçası. Çıkış 0 · 3 (SERT kipte ihlal) · 2 kullanım/sayfa yok |
-| `doctor [--json]` | ortam + Higgsfield oturumu + bakiye |
+| `doctor [--json]` | ortam + Higgsfield oturumu + bakiye + plugin metinleri ↔ checkout |
+| `plugin-sync [--check] [--root <checkout>] [--plugins-dir <dizin>] [--json]` | plugin metinleri (`.claude-plugin/`, `commands/`, `skills/`, `agents/`, `templates/`, `render/runtime/`) kurulu checkout'tan Claude Code önbelleğine (`installed_plugins.json` → `installPath`) bayt bayt eşitlenir; eski dosya silinir, önbelleğin geri kalanına dokunulmaz. Sürüm aynı kalınca `claude plugin update` önbelleği yenilemediği için install betikleri çağırır (PN-104). `--check` yazmaz, fark → çıkış 3; kurulu değil → 0 |
 
 Çıkış kodları: 0 tamam · 1 hata · 2 kullanım · 3 QC/kontrol `error` · 4 bekçi duraksama · 5 kare atlandı · 6 disk < 40 GB (render) ya da üst sınır doldu (`wait`) · 7 `wait`: 150 s yeni kare yok (harness çöktü).
 

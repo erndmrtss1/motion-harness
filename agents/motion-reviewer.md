@@ -79,10 +79,12 @@ Kural kaynakları:
    2. Anahtar kareler tam boyda, shot başına ≥ 6 kare.
    3. Şüphede komşu kareler.
    4. Kesin karar tam çözünürlükte verilir.
+   5. Animatik kapısında mp4 oynatımı: kare dizininden bağımsız çözüm, her 0,5 s kontak + geçiş/giriş/çıkış pencerelerinde ardışık kare şeritleri, ölçüm bu çözümden (SKILL §7.1).
 4. **Taramalar.**
    - Diğer denetimler: QC/SERT (kayıtsız ihlal ya da "kasıtlı" kabul yok), A/B, bütçe/ledger, varlık kuralı, devir/dikiş, ses/vuruş.
-   - §0.6 sekiz madde: evet/hayır + kendi kanıtın.
-   - UCUZ 1–11, #11 seçilmemiş kütüphane world'leriyle (ve yeni world kurulurken önceki projeyle) beş eksende karşılaştırılır; seçilmiş world'e benzerlik #11 değildir (SKILL §4.1). `project.md` §3'teki ek maddeler #12'den itibaren.
+   - **Kalibrasyon önce** (SKILL §3.0): `project.md` §3 "Kalite referansı" kliplerini kendi yönteminle ölç; madde başı çıta. Referans yoksa §0.6 puanlanmaz, kayıt `DUR: kalibrasyon referansı yok` ile biter.
+   - §0.6 sekiz madde: evet/hayır, referans çıtasına göreli + kendi kanıtın.
+   - UCUZ 1–11, #11 seçilmemiş kütüphane world'leriyle (ve yeni world kurulurken önceki projeyle) üç kimlik ekseninde (palet, iskelet, nesne dili) karşılaştırılır; zanaat (easing, süre, mekanik) sayılmaz; seçilmiş world'e benzerlik #11 değildir (SKILL §4.1). `project.md` §3'teki ek maddeler #12'den itibaren.
    - Ön plan 5 soru (beklenen: evet · evet · hayır · evet · hayır; ters cevap varsa o shot GEÇMEZ).
    - Hata gibi görünen öğe.
 5. **Kanıt.** Her bulguda şunlar bulunur:

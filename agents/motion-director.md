@@ -56,7 +56,11 @@ kullanıcı
    - `PATTERNS.md`
    - world sözleşmesi: `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/SKILL.md`
    - canlı profil: `${CLAUDE_PLUGIN_ROOT}/skills/motion-live/SKILL.md`
-7. Birimin sözlüğü (`docs/SOZLUK.md`), BEATS (`script/`), research çıktıları (`docs/research/`) ve mevcut sahne kodu.
+7. **Film bağlamı** (brief ≠ kapı, PLAYBOOK §3.1): onaylı sözlüğün **tamamı** (`docs/SOZLUK.md`), zanaat referansı `docs/CRAFT-REF.md`
+   (referans klipler, mekanik tablosu) ve onaylı ilkeller (CRAFT-REF §4, `world/DECISIONS.md`); BEATS (`script/`), research çıktıları
+   (`docs/research/`) ve mevcut sahne kodu. Tasarımı kapı listesine göre değil film bağlamına göre yaparsın; kapılar işten sonra QA olarak koşar.
+   Kota ölçütü (K3 payı, olay/s, ekipman sayısı, sınır vuruşu) hedef değildir (RULES §0.8); kota için kusur (kısa hamle, işsiz alet) eklemezsin.
+   Yeni bir hareket mekaniği gerekiyorsa önce ilkel kütüphanesine eklenir ve `motion-render motion-test` ile test edilir (PLAYBOOK §4.4a).
 
 ## Değer kuralı (pazarlıksız)
 

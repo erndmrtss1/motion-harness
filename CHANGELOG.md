@@ -2,6 +2,71 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## 1.3.0 — 2026-10-30
+
+Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapıları ve araçlar (kimlik kuralı değil). Kaynak: proje bulguları PN-25…99
+(kapanan PN'ler madde sonunda). Değerlendirme kanıtı `evals/craft-1.3/KANIT.md`.
+
+- **frame-check zanaat kapısı (Katman D, 5 yeni tip; 20 → 25)** `render/lib/fc/craft.mjs`, RULES §8.1 ZN-1…ZN-5, MEASURE §4 Katman D:
+  - `pop` (ZN-1): tek kare belirme/kaybolma — hareketle açıklanamayan değişimin aynı yönlü olay bölümündeki payı ≥ 0,5 (animatikte 0,75);
+    geçiş pencereleri `exclude` (kare aralığı ya da `$__<kanca>`), ince şerit/geçiş/kesme ayrı listelenir.
+  - `onset` (ZN-5, ÇEN-1'in ölçüsü): görünür başlangıç. **A/B kipi** (gizleme sözleşmesi: alet gizli ↔ öğe gizli, sayfa iki kez çizilir) kesin;
+    piksel kipi kare dizininden, alet örtmesi olan satırı "belirsiz" (UYARI) sayar.
+  - `velocity` (ZN-2): C1 hız sürekliliği, kamera (`__camSpeed`, shot sınırında bölünür) ve nesne (`__tools` uçları, `__boxes` merkezleri);
+    ardışık |Δv| ≤ %5 hamle tepesi, kalkış/varış dahil.
+  - `entryExit` (ZN-3): giriş/çıkış ≥ 0,4 s (ilk görünür → tam görünür; araçta giriş/çıkış evresi). Kanca `vis` (görünür pay) önerilir.
+  - `moves` (ZN-4, UYARI): kamera hamlesi/shot, eşik parametre (varsayılan ≤ 2), isteğe bağlı hamle süresi tabanı.
+  - Sayfa ölçümü `PAGE` iki yeni tür (`shapes`, `track`); `box:` başvurusunda sonda `*` önek eşleşmesi. CONTRACT §5: `vis`, `phase`,
+    olay `region`/`hide`, geçiş penceresi kancası, gizleme global'leri. Testler `render/test/craft.test.mjs` (7). `npm test` Node 24 için glob'lu.
+  - Kanıt: v3'teki üç bilinen kusur yakalandı — kart k1076 (`pop`, r1 kareleri), lyric k1159 (`pop`), pergel e37 +20 kare (`onset` A/B).
+    Bilinen sınır: düşük kontrastlı küçük nesne (bant, 496 px²) `minPx` altında kalır.
+  - Kapanan PN: **PN-99** (`frame-check onset` gizleme sözleşmesiyle + `pop` tek kare görünür alan payı).
+- **`motion-render motion-test <ilkel> [--ref <klip>]`** (`render/cmd/motion-test.mjs`, `render/lib/motion-test.mjs`): world ilkeli (ya da hazır test
+  sahnesi) için test sayfası üretir (prop'lar sabit ya da anahtar kare `[[t, değer, easing]]`), 3 s 1080p30 klip çizer; hız profili (px/kare @1080) ve
+  ivme grafiği (SVG → PNG), C1 sıçrama özeti, 0,5 s kontak ve `--ref` klibiyle yan yana kontak + 1920×540 mp4. Hız iki klipte aynı yöntemle
+  (değişen piksellerde SAD kaydırma vektörü; piramit + alt piksel) ölçülür, kesme kareleri ayrılır. Ağır iş kilidine dahil. Test
+  `render/test/motion-test.test.mjs` (anahtar kare ara değeri, 6 px/kare kayma ölçümü, grafik/kontak). Kanıt KANIT.md madde 2.
+  Kapanan PN: — (kaynak proje kararı: zanaat referans kliple; ilkel kütüphanesi kapısının aracı, madde 5).
+- **Çekirdek araçlar (proje araçlarından genelleştirildi; projeye özgü grafik/marka kuralları çıkarıldı)** — CONTRACT §6, PLAYBOOK §4.4, GENAI §9.4,
+  MEASURE M-PARITE; testler `render/test/core-tools.test.mjs` (4):
+  - **`plan-check <events.json>`** (`lib/plan-check.mjs`): storyboard'dan önce olay planı. Kusur (çıkış 3): şema, senkron (0 ≤ t − a0 ≤ 1 kare),
+    tek alet + ardışık alet boşluğu, giriş/çıkış ≥ 0,4 s, alet ekran hızı (yol / evre karesi ≤ `toolMaxPx`; gereken süre yazılır), sahne kancasındaki
+    olay kimlikleri (`--refs`). Kota (UYARI): boş pencere, olay yoğunluğu, cümle kapsamı, sınır vuruşu. Kurallar world `plan` bloğu ‖ `--rules`.
+  - **`seri-uret <girdi.json>`** (`lib/seri.mjs`): pivot kilitli süreklilik serisi (o_i = c_(i−1), kilitli pivot uçları yerel uç, tohumlu yürüyüş +
+    ileri bakış); üretimden önce çözülebilirlik (zıt uçlu bitişik pivotlar arasında ≥ 2 öğe, adım bütçesi); projeye özgü geometri `--rule`; `--check`
+    determinizm; `--js` sayfa aynası.
+  - **`parite --ours … --ref …`** (`lib/parite.mjs`): kalite paritesi — grup, yüzey dışı ink (`inkContent`; tam en/boy yüzey grubu kahraman olamaz), içerik,
+    negatif alan, kahraman oranı, luma (+ aksan) medyanları ± tol, tek yönlü sınır; bilgi (`--gate` ile kapı). Referans kalite içindir, kimlik değildir.
+  - **`ingest-kapi <id|görüntü> --accept …`** (`lib/malzeme.mjs`): plaka = malzeme — doku std, ton eşlemesi (none/gain) sonrası palet ΔE2000, kimlik
+    artığı, göz notu; GEÇTİ / GÖZ BEKLİYOR / KALDI. Kabul kümesi istek öğesinin `accept` alanından.
+  - Kapanan PN: **PN-44** (ingest kapı paket komutu, kurallar dosyadan) · **PN-48** (`accept` makine-okur ölçü kümesi; kabul plaka = malzeme) ·
+    **PN-67** (kalite paritesi aracı) · **PN-69** (seri: pivotlar arası ≥ 2 öğe, ileri bakış, çözümsüzlük onaydan önce) · **PN-80** (`plan-check`) ·
+    **PN-81** (alet planlaması: giriş/çıkış süresi, ekran hızı → gereken süre, iki alet arası boşluk) · **PN-84** (kanca ↔ olay kimliği denetimi).
+- **Reviewer kalibrasyonu ve animatik oynatımı** (motion-reviewer SKILL §3.0, §7.1; ajan tanımı, `/motion:gate` adım 5, şablonlar):
+  - §0.6 puanı **referans kliplere görelidir**: kalibrasyon adımı zorunlu (referansı kendi yöntemiyle ölç → madde başı çıta → göreli puan).
+    `project.md` §3 "Kalite referansı" tablosu boşsa reviewer durur (`DUR: kalibrasyon referansı yok`; kapı DUR-1, tur sayılmaz).
+    KARAR'ın altına `kalibrasyon:` satırı; §0.6 tablosunda "çıta (referans)" sütunu.
+  - Animatik kapısında **mp4 oynatımı**: kare dizininden bağımsız çözüm; her 0,5 s kontak + geçiş/giriş/çıkış pencerelerinde ardışık kare şeritleri;
+    ölçüm mp4 üzerinde (`frame-check --mp4 … --only pop`, C1, giriş/çıkış). Kayıtta "Oynatım" satırı.
+  - Test `render/test/docs.test.mjs` (KARAR düzenli ifadesi örnekle, kalibrasyon/oynatım adımları, ZN satırları ↔ fc tipleri). Kapanan PN: — (kaynak proje kararı: reviewer referans kliple kalibre, animatikte video izlenir).
+- **Kota ölçütleri UYARI sınıfı; kapı yalnız kusur ölçer** (RULES §0.8 KO-1…KO-4): K3 hareketli pay / OURS, olay yoğunluğu, ekipman/bileşen sayısı (K6),
+  sınır vuruşu. K3 ve K6 satırları SERT → UYARI (kota). `fc:camera` K3 satırı tek başına `warn` (`k3Gate: true` eski davranış); `ours` "kota altı
+  (UYARI)" yazar. Rapor biçimi `kota (bilgi): …`. Kota için kusur eklemek (kısa hamle, işsiz alet) yasak; kusur kapısı ayrıca yakalar.
+- **UCUZ #11 = kimlik, zanaat değil:** yalnız üç kimlik ekseni sayılır — **palet · iskelet (kompozisyon) · nesne dili** (malzeme, primitif/alet görünümü,
+  tipografi ailesi); 3/3 VAR, 2/3 sınırda. **Zanaat (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri) kütüphaneden
+  serbestçe örnek alınır.** RULES UCUZ-11 + §0.3, reviewer SKILL §4.1 ve eval kipi, motion-world SKILL, PLAYBOOK, şablon, ajan tanımı.
+  Test `craft.test.mjs` (K3 kota → UYARI, basamakla → ihlal) + `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: kotalar uyarı, UCUZ #11 daraltma).
+- **İlkel kütüphanesi onayı → film; brief ≠ kapı** (PLAYBOOK §4.0, §3.1, yeni §4.4a; `/motion:faz ilkel`; director ajanı; `templates/FAZ.md`,
+  yeni `templates/CRAFT-REF.md`): sözlükten sonra filmin hareket mekanikleri world ilkeli olarak kurulur, `motion-test --ref` ile test edilir,
+  taze reviewer QA'sından geçer ve kullanıcı onaylar (DUR-1); perdeler yalnız onaylı ilkellerle kurulur. Director brief'i tüm film bağlamını taşır
+  (tüm sözlük + `docs/CRAFT-REF.md` + onaylı ilkeller; `BAĞLAM:` satırı); kapı listesi brief'e yazılmaz, kapılar işten sonra QA olarak koşar; kota
+  hedef değildir. Test `docs.test.mjs`. Kapanan PN: — (kaynak proje kararı: director brief'i = sözlük + CRAFT-REF + onaylı mekanikler; kapılar QA).
+- **Kurulum: plugin metinleri checkout'tan** (`motion-render plugin-sync`, `render/lib/plugin-sync.mjs`; `install.ps1` / `install.sh` adım 3, `doctor`):
+  Claude Code plugin'i önbelleğe sürüm klasörüyle kopyalar; sürüm aynı kalınca (dal ucu, `-dev`) HK-40 sürüm karşılaştırması "güncel" der ve skill/ajan/
+  komut metinleri eski kalır. Install betikleri artık sürüm adımından sonra `commands/`, `skills/`, `agents/`, `templates/`, `.claude-plugin/`,
+  `render/runtime/` dosyalarını kurulu checkout'tan önbelleğe bayt bayt eşitler (eski dosya silinir; `render/` kodu global bağdan koştuğu için
+  dokunulmaz); `doctor` "plugin metinleri" satırı farkı gösterir. Test `render/test/plugin-sync.test.mjs` (3). Kapanan PN: **PN-104**.
+
 ## 1.2.0 — 2026-10-19
 
 Paket artık süreç **ve bir world kütüphanesi** taşır (HK-36). Kullanım: iki kişinin kendi projelerinde kullandığı araç; depo özel.

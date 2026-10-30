@@ -67,7 +67,7 @@ world/
 2. **Her yön ölçülebilir.** Ölçülemeyen yön seçime sunulmaz: bant, kontrast, `k1.mask` (+ `selector`), aksan + sınıf, düşüm, hareket sayıları.
 3. **Yeni world kurarken "kütüphane world'ünün bir versiyonu" geçerli yön değildir — UCUZ #11.** Test: yön, bir kütüphane world'ü ya da önceki proje cinsinden
    "**X ama Y**" diye tarif edilebiliyorsa (ör. "teknik çizim ama koyu", "masa ama mavi") yön değildir, sürümdür → ELE.
-   Reviewer beş eksende (malzeme, palet, alet dili, kamera grameri, geçiş kalıbı) kütüphane world'leriyle karşılaştırır.
+   Reviewer üç kimlik ekseninde (palet, iskelet, nesne dili) kütüphane world'leriyle karşılaştırır; zanaat (easing, süre, mekanik) serbestçe örnek alınır (1.3).
 4. **Yön brief'ten türetilir.** Zincir: projenin kimlik cümlesi → ışığın kaynağı ve anlamı ("ışık = dikkat" gibi bir ilke) → malzeme → hareket
    grameri (malzemenin fiziği) → tipografi (malzemenin yazısı) → kamera dili (izleyicinin konumu). Her halkanın gerekçesi yön kartına yazılır.
 5. **Geçersiz yön örnekleri:** aynı yönün üç renk varyantı; (yeni world kurarken) bir kütüphane world'ünün ilkel setini palet değiştirip kullanmak; önceki filmin kamera
@@ -118,7 +118,7 @@ world/
 
    Rapor tablosu: `| yön | ayrışan eksenler | bant | en düşük metin kontrastı | en küçük metin px | K1 alan/yükseklik | kenar düşümü | aksan ΔE2000 | s/kare | §0.6 (yapan) | risk |`
 6. **Reviewer** (kapı `lookdev`, taze, yalnız okuma): still'ler + yön başına taslak `world.json`; yapan sayıları verilmez. Üç yön gerçekten
-   farklı mı (eksen sayımı), UCUZ #11 (beş eksen), durağan §0.6 ve UCUZ maddeleri, yön başına SEÇ / ELE + tek cümle kanıt.
+   farklı mı (eksen sayımı), UCUZ #11 (üç kimlik ekseni), durağan §0.6 ve UCUZ maddeleri, yön başına SEÇ / ELE + tek cümle kanıt.
 7. **DUR — yön seçimi.** Kullanıcı birini ya da bir birleşimi seçer. Birleşim yeni bir yön kartıdır: yeniden ölçülür.
 8. **World kaydı (kilit).**
    - `world/world.json` (§5): `origin: "lookdev"`, `band` ve `k1.mask` zorunlu; bütün değerler **seçilen yönün ölçülen** değerleri.

@@ -5,7 +5,7 @@
 //   camera   · __camSpeed(fps, n)    tepe, p95, basamak (|Δv| > stepJump), K3 hareketli pay (__shots ya da shots)
 // Zaman tabanı (isteğe bağlı kancalar): __frameN(fps) → kare sayısı · __frameT(i, fps) → T (ya da [T, dt]); yoksa T = i / fps.
 // Kancalar ekran px'i döndürür; dünya → ekran izdüşümü sahnenin işidir (frame-check projeye özgü geometri bilmez).
-import { verdict, unmeasured, hookName, deref, r2, r3, WIDTH, HEIGHT } from './common.mjs';
+import { verdict, result, unmeasured, hookName, deref, r2, r3, WIDTH, HEIGHT } from './common.mjs';
 
 // ── sayfa içi ölçüm (tek fonksiyon; Playwright kaynak metniyle taşır — dış kapsam kullanmaz) ──────────
 export function PAGE(a) {
@@ -27,11 +27,67 @@ export function PAGE(a) {
   var inConvex = function (Q, x, y) { var pos = 0, neg = 0; for (var e = 0; e < Q.length; e++) { var A = Q[e], B = Q[(e + 1) % Q.length], c = (B[0] - A[0]) * (y - A[1]) - (B[1] - A[1]) * (x - A[0]); if (c > 0) pos++; else if (c < 0) neg++; } return !(pos && neg); };
   var f0 = a.from || 0, f1 = Math.min(N, a.to != null ? a.to + 1 : N), step = a.step || 1;
   var get = function (o, path) { return path.split('.').reduce(function (x, k) { return x == null ? x : x[k]; }, o); };
+  // başvuru → şekiller: tool:<ad>[.<parça>] · box:<ad> (sonda * = önek) · kind:<tür> · glyphs[:<ad>] (overlap, shapes, track ortak)
+  var hk = { tool: '__tools', box: '__boxes', kind: '__boxes', glyphs: '__glyphs' };
+  var shapes = function (ref, T, Tp, cache) {
+    var s = ref.split(':'), kind = s[0], arg = s.slice(1).join(':'), out = [], meta = null, names = [];
+    var nameOk = function (n) { return arg.slice(-1) === '*' ? String(n).indexOf(arg.slice(0, -1)) === 0 : n === arg; };
+    if (kind === 'tool') {
+      var tl = cache.t || (cache.t = window.__tools(T, Tp) || {}), nm = arg.split('.')[0], part = arg.split('.')[1], t = tl[nm];
+      if (t) { meta = t; var g = part ? t.parts && t.parts[part] : t.poly || (t.tip ? [t.tip] : null); if (g) { out.push(pts(Array.isArray(g) ? g : g)); names.push(nm); } }
+    } else if (kind === 'box' || kind === 'kind') {
+      var bx = cache.b || (cache.b = window.__boxes(T) || []);
+      bx.forEach(function (b) { if (kind === 'box' ? nameOk(b.name) : b.kind === arg) { var Q = pts(b); if (Q) { out.push(Q); names.push(b.name); } } });
+    } else if (kind === 'glyphs') {
+      (window.__glyphs(T, arg || null) || []).forEach(function (g) { var Q = pts(g); if (Q) { out.push(Q); names.push(arg || 'glif'); } });
+    }
+    return { list: out.filter(Boolean), meta: meta, names: names };
+  };
+  var refsOk = function (refs) { for (var q = 0; q < refs.length; q++) { var k = refs[q].split(':')[0]; if (!hk[k]) return { error: 'bilinmeyen başvuru: ' + k }; if (!hasF(hk[k])) return { missing: hk[k] }; } return null; };
 
   if (a.kind === 'call') {   // kanca çağrısı (kamera hızı, tutuşlar, olaylar, aksan kutuları …)
     if (!hasF(a.fn)) return { missing: a.fn };
     var args = (a.args || []).map(function (x) { return x === '$N' ? N : x; });
     return { N: N, value: window[a.fn].apply(null, args) };
+  }
+
+  if (a.kind === 'shapes') {   // verilen T anlarında başvuru şekilleri (onset: bölge = dış kutu, maske = çokgen); a.names: kutu adları da döner
+    var bad0 = refsOk(a.refs || []); if (bad0) return bad0;
+    return { N: N, at: (a.Ts || []).map(function (T) {
+      var cache = {}, Tp = T - 1 / fps, o = {};
+      (a.refs || []).forEach(function (ref) { var S = shapes(ref, T, Tp, cache); o[ref] = S.list.map(function (Q) { return { box: R(bb(Q)), poly: Q.map(function (q) { return [Math.round(q[0]), Math.round(q[1])]; }) }; }); });
+      if (a.names) o.$names = (cache.b || (hasF('__boxes') ? window.__boxes(T) || [] : [])).map(function (b) { return b.name + ' · ' + b.kind; });
+      return o;
+    }) };
+  }
+
+  if (a.kind === 'track') {   // kare başı iz (velocity, entryExit): araçlar [f, x, y, kadraj, vis, evre] · kutular [f, cx, cy, x0, y0, x1, y1, kadraj, vis, evre]
+    var tr = { tools: {}, boxes: {} }, useT = a.tools !== false && hasF('__tools'), bref = a.boxes || [];
+    var bad1 = refsOk(bref); if (bad1) return bad1;
+    var inF = function (r) { return r[2] < 0 || r[0] > W || r[3] < 0 || r[1] > H ? 0 : r[0] >= 0 && r[2] <= W && r[1] >= 0 && r[3] <= H ? 2 : 1; };
+    for (var f4 = f0; f4 < f1; f4 += step) {
+      var T4 = TT(f4), Tp4 = f4 > 0 ? TT(f4 - 1) : T4 - 1 / fps, cache4 = {};
+      if (useT) {
+        var tl4 = cache4.t = window.__tools(T4, Tp4) || {};
+        Object.keys(tl4).forEach(function (n) {
+          var t = tl4[n]; if (!t || (a.only && a.only.indexOf(n) < 0)) return;
+          var Q = pts(t.poly ? { poly: t.poly } : t), tip = t.tip ? P(t.tip) : Q && Q[0]; if (!tip) return;
+          var r = Q && Q.length > 1 ? bb(Q) : [tip[0], tip[1], tip[0], tip[1]], k = t.visible != null ? (t.visible ? Math.max(1, inF(r)) : 0) : inF(r);
+          (tr.tools[n] = tr.tools[n] || []).push([f4, +tip[0].toFixed(2), +tip[1].toFixed(2), k, t.vis != null ? +t.vis : 1, t.phase != null ? String(get(t, a.phaseBy || 'phase')) : null]);
+        });
+      }
+      bref.forEach(function (ref) {
+        var S = shapes(ref, T4, Tp4, cache4), by = {};
+        S.list.forEach(function (Q, i) { var n = S.names[i], r = bb(Q); by[n] = by[n] ? [Math.min(by[n][0], r[0]), Math.min(by[n][1], r[1]), Math.max(by[n][2], r[2]), Math.max(by[n][3], r[3])] : r; });
+        var raw = cache4.b || [];
+        Object.keys(by).forEach(function (n) {
+          var r = by[n], src = raw.filter(function (b) { return b.name === n; })[0] || {};
+          (tr.boxes[n] = tr.boxes[n] || []).push([f4, +((r[0] + r[2]) / 2).toFixed(2), +((r[1] + r[3]) / 2).toFixed(2), Math.round(r[0]), Math.round(r[1]), Math.round(r[2]), Math.round(r[3]), inF(r),
+            src.vis != null ? +src.vis : 1, src.phase != null ? String(src.phase) : null]);
+        });
+      });
+    }
+    return { N: N, from: f0, to: f1 - 1, step: step, tools: tr.tools, boxes: tr.boxes };
   }
 
   if (a.kind === 'framing') {
@@ -120,21 +176,7 @@ export function PAGE(a) {
   }
 
   if (a.kind === 'overlap') {
-    var need = [a.a, a.b].map(function (s) { return s.split(':')[0]; }), hk = { tool: '__tools', box: '__boxes', kind: '__boxes', glyphs: '__glyphs' };
-    for (var q = 0; q < need.length; q++) if (!hk[need[q]]) return { error: 'bilinmeyen başvuru: ' + need[q] }; else if (!hasF(hk[need[q]])) return { missing: hk[need[q]] };
-    var shapes = function (ref, T, Tp, cache) {
-      var s = ref.split(':'), kind = s[0], arg = s.slice(1).join(':'), out = [], meta = null;
-      if (kind === 'tool') {
-        var tl = cache.t || (cache.t = window.__tools(T, Tp) || {}), nm = arg.split('.')[0], part = arg.split('.')[1], t = tl[nm];
-        if (t) { meta = t; var g = part ? t.parts && t.parts[part] : t.poly || (t.tip ? [t.tip] : null); if (g) out.push(pts(Array.isArray(g) ? g : g)); }
-      } else if (kind === 'box' || kind === 'kind') {
-        var bx = cache.b || (cache.b = window.__boxes(T) || []);
-        bx.forEach(function (b) { if ((kind === 'box' ? b.name : b.kind) === arg) { var Q = pts(b); if (Q) out.push(Q); } });
-      } else if (kind === 'glyphs') {
-        (window.__glyphs(T, arg || null) || []).forEach(function (g) { var Q = pts(g); if (Q) out.push(Q); });
-      }
-      return { list: out.filter(Boolean), meta: meta };
-    };
+    var bad2 = refsOk([a.a, a.b]); if (bad2) return bad2;
     var pad = a.pad || 0, pd = Array.isArray(pad) ? pad : [pad, pad, pad, pad];
     var hitBox = function (A, B) { var ra = bb(A), rb = bb(B); rb = [rb[0] - pd[0], rb[1] - pd[1], rb[2] + pd[2], rb[3] + pd[3]]; return ra[0] < rb[2] && ra[2] > rb[0] && ra[1] < rb[3] && ra[3] > rb[1]; };
     var hitSat = function (A, B) {
@@ -247,10 +289,13 @@ async function camera(c, ctx, api) {
   if (maxSteps != null && s.steps.length > maxSteps) s.steps.forEach((j) => viol.push({ f: j, rule: 'basamak', dv: r2(v[j] - v[j - 1]), v: v[j] }));
   const maxPeak = c.maxPxPerFrame != null ? c.maxPxPerFrame : cam.maxPxPerFrame;
   if (maxPeak != null && s.peak > maxPeak) viol.push({ f: s.peakAt, rule: 'tepe', v: s.peak, max: maxPeak });
-  if (k3.minShare != null) s.k3.forEach((x) => { const sh = x['≥' + k3v[0]]; if (sh < k3.minShare) viol.push({ rule: 'K3', shot: x.shot, share: sh, min: k3.minShare }); });
+  // K3 payı kotadır (RULES §0.8 KO-1): tek başına kalırsa kontrol UYARI verir, kusur (basamak, tepe) varsa yine ihlaldir
+  const quota = [];
+  if (k3.minShare != null) s.k3.forEach((x) => { const sh = x['≥' + k3v[0]]; if (sh < k3.minShare) quota.push({ rule: 'K3', quota: true, shot: x.shot, share: sh, min: k3.minShare }); });
   const k3s = s.k3.map((x) => x.shot + ' ' + x['≥' + k3v[0]]).join(' / ');
-  return verdict(c, ctx, 'tepe ' + s.peak + ' @' + s.peakAt + ' · p95 ' + s.p95 + ' · basamak ' + s.steps.length + (k3s ? ' · K3 ' + k3s : ''),
-    { N: o.N, frames: v.length, stepJump, maxSteps, k3v, ...s, speed: c.keepSeries ? v : undefined }, viol);
+  const head = 'tepe ' + s.peak + ' @' + s.peakAt + ' · p95 ' + s.p95 + ' · basamak ' + s.steps.length + (k3s ? ' · K3 ' + k3s : ''), metrics = { N: o.N, frames: v.length, stepJump, maxSteps, k3v, ...s, speed: c.keepSeries ? v : undefined };
+  if (!viol.length && quota.length && c.k3Gate !== true) return result(c, 'warn', head + ' · K3 kota altı ' + quota.length + ' shot (UYARI, §0.8)', metrics, quota, { quota: quota.length });
+  return verdict(c, ctx, head, metrics, viol.concat(quota));
 }
 
 export const TYPES = {

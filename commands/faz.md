@@ -1,6 +1,6 @@
 ---
-description: Bir motion fazını PLAYBOOK'a göre yürütür. Fazlar audio (ses hattı), lookdev (3 yön → yön seçimi), lexicon (sözlük/kaynak kapısı) ve P<n> (perde/birim döngüsü) olabilir. Yapımı motion-director'a, ihtiyaç ve kaynak işini motion-research'e, bağımsız ölçümü motion-measure'a verir; kapılarda taze motion-reviewer açar. Rapor ve DUR ile biter.
-argument-hint: "<audio|lookdev|lexicon|P<n>> [faz istemi / KARARLAR / ARA NOTLAR]"
+description: Bir motion fazını PLAYBOOK'a göre yürütür. Fazlar audio (ses hattı), lookdev (3 yön → yön seçimi), lexicon (sözlük/kaynak kapısı), ilkel (hareket mekaniği kütüphanesi → onay) ve P<n> (perde/birim döngüsü) olabilir. Yapımı motion-director'a, ihtiyaç ve kaynak işini motion-research'e, bağımsız ölçümü motion-measure'a verir; kapılarda taze motion-reviewer açar. Rapor ve DUR ile biter.
+argument-hint: "<audio|lookdev|lexicon|ilkel|P<n>> [faz istemi / KARARLAR / ARA NOTLAR]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
@@ -21,6 +21,7 @@ Akışın tek kaynağı: `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/references/PL
 | `audio` | §4.2 + `AUDIO.md` |
 | `lookdev` | §4.3 + `${CLAUDE_PLUGIN_ROOT}/skills/motion-world/SKILL.md` |
 | `lexicon` | §4.4 |
+| `ilkel` | §4.4a (ilkel kütüphanesi onayı; film bundan sonra) |
 | `P<n>` | §4.5 + §5 |
 
 ## Sen kimsin
@@ -90,6 +91,15 @@ Her ajan isteği **tek görev, tek çıktı, en küçük bağlam** ilkesine uyar
 3. Taslağı `docs/SOZLUK.md`'ye (şablon `templates/SOZLUK.md`) sen işlersin. Kullanıcı onayına kadar sözlük **taslaktır**.
 4. **DUR — sözlük onayı** (aday seçimi varsa DUR 1). Onaylı sözlük bağlayıcıdır; ondan sapmak kullanıcı kararıdır.
 
+## 3a. `ilkel`: hareket mekaniği kütüphanesi (PLAYBOOK §4.4a)
+
+1. Sözlükten mekanik envanteri çıkar (alet yalnız cümle anlamı isterse). `docs/CRAFT-REF.md` yoksa şablondan aç; referans klipler `project.md` §3'te olmalı
+   (yoksa **DUR**, referans iste).
+2. `motion:motion-director`'a tek görev: "ilkel kütüphanesi: <mekanikler> — world ilkeli + `motion-render motion-test <ilkel> --ref <klip>` her biri".
+   Girdi: tüm sözlük, CRAFT-REF, referans klipler. Kapı listesi verilmez.
+3. Test çıktıları (`out/motion-test/*/`) kusur ölçülerine bakılır (C1 ≤ %5 tepe, giriş/çıkış ≥ 0,4 s, tek kare 0); `/motion:gate ilkel varlik` taze reviewer.
+4. **DUR — mekanik onayı** (DUR-1). Onaylananlar CRAFT-REF §4 ve `world/DECISIONS.md`; `P1` ancak bundan sonra açılır.
+
 ## 4. `P<n>`: perde / birim döngüsü (PLAYBOOK §4.5)
 
 ```
@@ -105,7 +115,8 @@ sözlük ✓ → zaman + devir → izdüşüm kapısı → 3 varyant still/shot 
    - Üretim director'ın işidir ve GENAI.md prosedürüyle yapılır.
    - Bütçe dışı, liste dışı ya da sapma > %10 ise **DUR** (DUR-2).
 3. **Yapım.** `motion:motion-director`'a tek görev verilir: "P<n>: zaman + devir + izdüşüm kapısı + 3 varyant still/shot".
-   - Girdi: birim id, sözlük satırları, BEATS yolu, research çıktıları.
+   - Girdi (brief = film bağlamı): birim id, **tüm** sözlük, `docs/CRAFT-REF.md`, onaylı ilkeller, BEATS yolu, research çıktıları. Kapı listesi brief'e yazılmaz;
+     kapılar işten sonra QA olarak koşar (PLAYBOOK §3.1). Onaylı ilkel kütüphanesi yoksa P<n> açılmaz (§4.4a).
    - Director'ın raporundaki **§0.6 (yapan)** puanını not et. Bu puan reviewer'a verilmez.
 4. **Varyant kapısı.** `/motion:gate P<n> varyant` adımları uygulanır.
    - Seçimler uyuşursa sürer.

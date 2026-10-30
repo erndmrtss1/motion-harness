@@ -110,7 +110,7 @@ Kadraj parlak bölgesi: luma > %30 (77/255), 480×270, 3×3 kapanış, 8-komşu 
 
 ---
 
-## §4 frame-check — 20 tip
+## §4 frame-check — 25 tip
 
 ### §4.0 Sözleşme
 
@@ -129,11 +129,11 @@ motion-render frame-check <id> [--only tip|ad,…] [--frames-dir D] [--mp4 auto|
 - **Birimler:** kare seçimi ve pencere parametreleri **kare** (`step`, `window`, `n`, `runMax`, `bridge`, `last.n`, `tolFrames`); ses parametreleri **saniye** (`tol`, `win`, `max`, `hop`, `from`, `dur`, `tail.from`) ya da ms (`minMs`); konum px 1080p (`region` [x, y, w, h]; `box`/`allow` [x0, y0, x1, y1]); luma % (`band`, `min`, `max`, `darkShare.below`); fark ve renk kanalı 0–255 (`tol`, `staticMax`, `maxDelta`). px/kare eşikleri proje fps'inde uygulanır (ölçeklenmez).
 - **Kanca yoksa** ilgili kontrol "ölçülemedi" UYARI verir (hata değil). Kare/mp4 yoksa da "ölçülemedi". Bilinmeyen tip `skip`.
 - **Çıktı:** her kontrol için `type`, `name`, `severity`, `status` (`pass` | `fail` | `warn` = ölçülemedi ya da tümü incelendi | `skip`), `summary`, `metrics`, `violations` (ilk `maxViolations`), `violationCount`, (varsa) `evidence`. Rapor: `summary` sayıları, `hooks` (yüklenen/eksik), `sources`, `candidates` (`--cand`), `exit`.
-- **Katmanlar:** A = piksel/zaman (render sonrası, 13 tip) · B = tasarım zamanı izdüşüm (render yok, 4 tip) · C = ses/tipografi (3 tip).
+- **Katmanlar:** A = piksel/zaman (render sonrası, 13 tip) · B = tasarım zamanı izdüşüm (render yok, 4 tip) · C = ses/tipografi (3 tip) · D = zanaat kapısı (1.3; hareket kalitesi kusurları, 5 tip: `pop`, `onset` piksel · `velocity`, `entryExit`, `moves` tasarım).
 
-**Varsayılan önem** (`severity` ile değişir): `error` — black, temporal, seam, identical, accentLocation, accentColor, overlapPx, framing, toolPath, overlap, camera, sync, loudness, glyph · `warn` — luma, ramp, edgeDark, sharpness, stroke, motion.
+**Varsayılan önem** (`severity` ile değişir): `error` — black, temporal, seam, identical, accentLocation, accentColor, overlapPx, framing, toolPath, overlap, camera, sync, loudness, glyph, pop, onset, velocity, entryExit · `warn` — luma, ramp, edgeDark, sharpness, stroke, motion, moves.
 
-Kanca sözleşmesi (CONTRACT §5, özet): `__camSpeed(fps,n)` kare başı kamera ekran hızı · `__camK(fps,n)` kare başı kamera ölçeği k · `__redExclude(fps,n)` kare başı izinli aksan kutuları `[[x0,y0,x1,y1]…]` · `__boxes(T)` `[{name, rect|poly, kind: obj|lyric|label|text|cut|out|rr|paper|ref, px, pad?, minPx?}]` · `__tools(T, Tönceki)` `{ad: {poly|tip, visible?, ref?, parts?, phase?}}` · `__holds()` tutuş aralıkları · `__events()` `[{t, word, kind, at?}]` · `__glyphs(T, ad?)` yazılmış glif kutuları · `__shots(fps)` `[[ad, f0, f1]]` · isteğe bağlı `__frameN(fps)`, `__frameT(i, fps)` · DOM işaretleri `[data-hero]`, `[data-doku]`, `[data-c]`, `[data-fx]`.
+Kanca sözleşmesi (CONTRACT §5, özet): `__camSpeed(fps,n)` kare başı kamera ekran hızı · `__camK(fps,n)` kare başı kamera ölçeği k · `__redExclude(fps,n)` kare başı izinli aksan kutuları `[[x0,y0,x1,y1]…]` · `__boxes(T)` `[{name, rect|poly, kind: obj|lyric|label|text|cut|out|rr|paper|ref, px, pad?, minPx?, vis?, phase?}]` · `__tools(T, Tönceki)` `{ad: {poly|tip, visible?, ref?, parts?, phase?, vis?}}` · `__holds()` tutuş aralıkları · `__events()` `[{t, word, kind, at?, region?, hide?}]` · `__glyphs(T, ad?)` yazılmış glif kutuları · `__shots(fps)` `[[ad, f0, f1]]` · geçiş pencereleri (ör. `__gecis()` `[{t, son}|{t, dur}|{t0, t1}]`, `pop.exclude`) · isteğe bağlı `__frameN(fps)`, `__frameT(i, fps)` · DOM işaretleri `[data-hero]`, `[data-doku]`, `[data-c]`, `[data-fx]` · gizleme sözleşmesi (`onset` A/B): sayfa, başlangıçta okunan bir global'le öğeyi ya da alet katmanını çizmez.
 
 ### Katman A — piksel / zaman
 
@@ -501,6 +501,95 @@ Sayfadaki görünür karakterlerin kendiliğinden taranması qc#13'tedir; bu tip
 
 **Ekler (yeni tip değil):** `logo check` (M-LOGO) ayrı komuttur · `--sheet` / `evidence: true` = kanıt sayfası (ihlal kareleri, yoksa ölçülen karelerden örnek; kırpım `crop` ‖ `region` ‖ `box`, en yakın komşu büyütme, etiket `f · t s · luma%`).
 
+### Katman D — zanaat kapısı (1.3): hareket kalitesi kusurları
+
+Kapı yalnız **kusur** ölçer (RULES §8.1 ZN-1…ZN-5); kota ölçütleri (K3 payı, olay/s, ekipman sayısı, sınır vuruşu) bu katmanda yoktur, UYARI sınıfıdır (RULES §0.8 KO-1…KO-4). Ortak çekirdek "açıklanamayan değişim": ardışık iki karede |ΔY| ≥ `tY` olan bileşen, ±`search` px içinde en iyi kaydırmayla (ileri `cur(p) ↔ prev(p − d)` ve geri `prev(p) ↔ cur(p + d)` aynı vektörle) hâlâ tutmuyorsa yeni ya da kaybolan içeriktir; hareket eden nesne ve kamera kaydırmayla açıklanır. Kaynak: `render/lib/fc/craft.mjs` (saf fonksiyonlar `render/test/craft.test.mjs`).
+
+#### fc:pop (21) — tek kare belirme/kaybolma
+Kural: ZN-1, K8, HAT. Kanca: yalnız `exclude` kanca başvurusuysa. World: —. Önem: `error`.
+
+Ölçü: aday bileşenin kendi kutusundaki açıklanamayan piksel ÷ aynı yönlü (ortalama ΔY işareti aynı) **olay bölümünün** toplamı. Bölüm = adayın kutusuyla kesişen, boşluğu ≤ `gap` kare olan komşu karelerdeki açıklanamayan değişim; kutu üyeleriyle büyür (silinerek açılan öğenin şeritleri tek bölümdür). Tek karede tamamı beliren/kaybolan öğe ≈ 1,0; dört karede silinen öğe ≈ 0,25.
+
+| parametre | varsayılan | anlamı |
+|---|---|---|
+| `maxShare` | 0,5 | film karesi eşiği; `--step N ≥ 2` animatikte `p + (1 − p)/2` (0,75) — bir animatik karesi N film karesini kapsar |
+| `tY` · `scale` | 12 (/255) · `fast` (480×270) | değişim eşiği (krem üstü krem kart gibi düşük kontrast için düşük) · ölçüm yolu |
+| `minPx` · `minThick` | 900 px² · 6 px (@1080) | aday alanı · ortalama kalınlık (alan ÷ uzun kenar); altı = katman kenarının alt piksel kayması, ince şerit |
+| `search` · `searchMax` | 48 px · — | hareketle açıklama arama yarıçapı (@1080) · geniş arama yalnız açıkça verilirse (uzak kaydırma kaybolan koyu içeriği rastgele "açıklayabilir") |
+| `grow` · `margin` · `gap` | 12 px · 24 px · round(0,05·fps) kare | bileşen birleştirme · bölüm kutusu payı · bölüm boşluğu |
+| `stable` | true | basamak pikseli: değişimden önceki ve sonraki kare çiftinde kararlı (< tY/2); sürekli kayan doku elenir |
+| `cutShare` · `maxBoxShare` | 0,25 · 0,4 | karenin ≥ payı açıklanamıyorsa (kesme, ölçek, sayfa çevirme) ya da bileşen kutusu karenin ≥ payıysa → geçiş, aday değil (listelenir) |
+| `exclude` · `excludePad` | — · 0 | muaf pencereler: `[[a, b]…]` kare · `"$__<kanca>"` → `[[ad, f0, f1]]` (shot başı ± pad) ya da `[{t, son}\|{t, dur}\|{t0, t1}]` (s). Tasarlanmış geçiş tek kare ölçüsü dışıdır (GÇ kurallarıyla ölçülür) |
+| `cuts` · `polarity` | — · true | elle kesme kareleri · bölüme yalnız aynı yönlü değişim (kaybolan yazının üstünden hemen kayan sayfa ayrı olaydır) |
+
+Bilinen sınır: düz renkli öğe silinerek açılırken ilk şerit kenar kaydırmasıyla kısmen açıklanır, payı büyük çıkabilir; dokulu yüzeyde sorun yok. Rapor: ihlal başına `f`, `T`, `box` (@1080), `px`, `share`, `episode`, `d` (en iyi kaydırma); `metrics.top` en yüksek paylı 12 aday, `cuts`/`wide` geçiş kareleri.
+
+```json
+{"type":"pop","exclude":["$__gecis"]}
+```
+
+#### fc:onset (22) — görünür başlangıç
+Kural: ZN-5, ÇEN-1 (ölçü = olayın ilk **görünür** karesi). Kanca: `__events` (ya da satır içi `events`), A/B kipinde gizleme global'leri, `region`/`mask` başvurusunda `__boxes`/`__tools`. Önem: `error`.
+
+| kip | ne yapar | ne zaman |
+|---|---|---|
+| **A/B** (`hide` verilirse; kesin) | sayfa iki kez çizilir: A = `base` global'leri (ör. alet katmanı gizli), B = A + `hide` global'ine olayın `hide` değeri (öğe çizilmez). Bölgede \|Y_A − Y_B\| ≥ `tY` pikselleri birikir; ≥ `minPx` (ve uzanım ≥ `minExtent`) olan ilk sahne karesi = görünür başlangıç. Kare dizini gerekmez, tam çözünürlük, sahne fps'i | çizen alet çizginin ucunu örtüyorsa (kalem, pergel) — tek güvenilir yol |
+| **piksel** (varsayılan) | kare dizininde bölgenin (`region` başvurusu varsayılan **dinamik**: her karede öğenin o ana dek çizilmiş kendi çokgenleri + `regionPad`) yeni içeriği; bölge için tek kamera kaydırması SAD ile kestirilir, değer d kaydırmalı 3×3 komşuluk aralığı dışındaysa yeni. `mask` (`kind:alet` vb.) çokgenleri çıkarılır. Birikim ≥ `minPx` ve uzanım ≥ `minExtent` | alet içermeyen olay (kart, yazı, mum); alet çokgeni bölgenin ≥ `maskWarn` payını örtüyorsa satır **belirsiz** → yalnız belirsiz ihlal varsa UYARI ("A/B ile ölç") |
+
+| parametre | varsayılan | anlamı |
+|---|---|---|
+| `events` | `"$__events"` | satır içi `[{name, at\|t\|f, region, hide?, mask?, regionAt?, regionMode?}]`; `at` (a0) varsa çapa odur |
+| `region` | — | `[x, y, w, h]` @1080 · `"box:<ad>"` (`*` sonda = önek) · `"kind:<tür>"` · `"full"` |
+| `pre` · `post` | A/B 0,1 / 0,5 s · piksel 0,5 / 1,0 s | çapa çevresindeki pencere |
+| `tolFrames` · `earlyFrames` | 1 · 0 | geç toleransı (sahne karesi; `--step N`'de + N − 1) · erken toleransı (ÇEN-1: önce gelmez) |
+| `tY` · `minPx` · `minExtent` | 40 · 12 px · A/B 0 / piksel 12 px | PN-99 görünürlük eşiği; uzanım = birikimin dış kutusunun uzun kenarı (tek mürekkep noktası ya da kenar kırıntısı başlangıç sayılmaz) |
+| `base` · `hide` | — | A/B: A sayfasının global'leri · B'de olayın `hide` değerinin yazılacağı global adı |
+| `mask` · `maskPad` · `maskWarn` | — · 0 · 0,05 | piksel kipi alet çokgenleri · genişletme · belirsizlik eşiği |
+| `regionAt` · `regionMode` · `regionPad` | post · `dynamic` · 12 px | statik bölge anı (çapa + s) · `static` = `regionAt` anındaki dış kutu |
+
+```json
+{"type":"onset","base":{"OLC_ALETSIZ":1},"hide":"OLC_GIZLE","events":[{"name":"halka","at":27.263,"region":"box:dip-halka*","hide":"dip-halka"}]}
+```
+
+#### fc:velocity (23) — C1 hız sürekliliği
+Kural: ZN-2, BAS-1, KM-5. Kanca: `__camSpeed`, `__shots` (shot sınırında dizi bölünür), `__tools`, isteğe bağlı `__boxes`. Önem: `error`.
+
+Hamle = hız > `floor` koşusu; hamle başına tepe. Ardışık iki kare arası hız vektörü farkı |Δv| > max(`minDv`, `maxJump` × tepe) → sıçrama. Kalkış (0 → v) ve varış da sayılır: doğrusal kalkış ihlaldir. Araç ucu ve kutu merkezi **vektörle** ölçülür (hız sabitken 90° köşe |Δv| = √2·v); kamera skaler hızla (kanca). Kanca shot'un ilk karesinde 0 verdiği için her shot dizisinin ilk örneği atılır.
+
+| parametre | varsayılan | anlamı |
+|---|---|---|
+| `of` | `["camera","tools"]` | + `"box:<ad>"` / `"kind:<tür>"` kutu merkezleri |
+| `maxJump` · `floor` · `minDv` | 0,05 · 0,05 px/kare · 0,05 px/kare | tepenin payı · dinlenme tabanı · gürültü tabanı |
+| `visibleOnly` | true | araç/kutu: iki kare de kadrajda |
+
+inOutSine bir hamlede ilk adım ≈ tepe × π/N: %5 için hamle ≥ ≈ 63 kare @60 (1,05 s). Kısa rampalar (0,25 s) bu ölçüye takılır — kural bilinçli olarak sıkıdır (hız sıçraması = kusur).
+
+#### fc:entryExit (24) — giriş/çıkış süresi
+Kural: ZN-3. Kanca: `__tools` (evre adları), `__boxes` (`boxes` başvurusuyla seçilen; `vis` 0..1 görünür pay önerilir). Önem: `error`.
+
+Görünür = kadrajla kesişiyor ve `vis` > 0. Giriş = koşunun ilk görünür karesi → tam görünür (kadraj içinde ve `vis` = 1) ilk kare; araçta koşu giriş evresiyle başlıyorsa giriş evresinin süresi. Çıkış simetrik. Ölçüm aralığının ilk karesinde zaten görünen nesnenin girişi, son karesinde hâlâ görünenin çıkışı ölçülmez. `vis` vermeyen kutu (kırpımla açılan kart, yazı) anlık (0 s) görünür — kanca `vis` vermelidir.
+
+| parametre | varsayılan | anlamı |
+|---|---|---|
+| `minSec` | 0,4 s | giriş ve çıkış alt sınırı |
+| `of` · `boxes` | `["tools"]` · — | araçlar · izlenecek kutu başvuruları (`kind:kart`, `box:S02-*` …) |
+| `phases` | `{in: [gir, giris, giriş, in, enter], out: [cik, cikis, çıkış, out, exit]}` | evre dizgesinin boşlukla ayrılmış parçalarıyla eşleşir (`"S01-kalem gir"`) |
+
+#### fc:moves (25) — hamle/shot sayısı (UYARI)
+Kural: ZN-4 (UYARI sınıfı). Kanca: `__camSpeed`, `__shots`. Önem: `warn`.
+
+Hamle = shot içinde kamera hızı ≥ `floor` koşusu (aradaki < `mergeSec` boşluk birleşir, < `minRunSec` koşu sayılmaz). Shot başına hamle sayısı > `maxPerShot` ya da hamle süresi < `minSec` (verilirse) → UYARI.
+
+| parametre | varsayılan | anlamı |
+|---|---|---|
+| `maxPerShot` · `minSec` | 2 · — | eşik parametredir; proje yükseltir/düşürür (ör. hamle ≥ 2,5 s) |
+| `floor` | world `camera.k3.v` ‖ %2 ekran/s (0,64 px/kare @60) | hareketli kare tabanı (K3 ile aynı) |
+| `mergeSec` · `minRunSec` | 0,25 · 0,1 s | birleştirme · en kısa koşu |
+
+```json
+{"type":"moves","maxPerShot":2,"minSec":2.5}
+```
+
 ### §4.21 Bütün film bildirimi [ÖRNEK]
 
 ```json
@@ -527,12 +616,19 @@ Sayfadaki görünür karakterlerin kendiliğinden taranması qc#13'tedir; bu tip
 - **Çıktı:** qc JSON K1 satırı (kare başı alan, yükseklik, geçti/kaldı); `motion-render k1` → `out/probe/<id>-k1.json`.
 
 ### M-K3 · sürekli kamera (K3)
+**Sınıf (1.3): UYARI — kota** (RULES §0.8 KO-1). `fc:camera` K3 satırı tek başına kalırsa kontrol `warn` verir (`k3Gate: true` eski SERT davranışı), `ours` "kota altı" yazar; kapı kusur ölçüleriyle (BAS-1, ZN-2) karar verir.
 - Kaynak: sahne kancası `__camSpeed(fps, n)` → kare başı kamera ekran hızı (dünya örnek noktalarının izdüşüm farkı büyüklüğü, px/kare). **Deterministiktir;** blok eşleme yavaş pan'ı sayamadığı için K3 kapısı pikselden değil kancadan ölçülür.
 - **Mutlak eşik:** `TH = 0,02 · W / fps` px/kare (W = 1920 → 38,4 px/s; 60 fps'te 0,64 px/kare). Göreli eşik (tepenin %20'si) yavaş izlemeyi tutuş saydığı için **kullanılmaz**.
 - Shot payı = (v ≥ TH kare sayısı) / shot kare sayısı; shotlar `ours`'ta manifest `shots[]` (sahne ya da `parent`; `af0`/`af1` ses zamanı önce, yoksa `f0`/`f1`), `fc:camera`'da `shots` parametresi (`[[ad, f0, f1]]` ya da `"$__shots"`). Eşik/hedef: sahne `k3` > world `k3` (`camMin` 0,02, `movingMin` 0,4). Geçer: her shot pay ≥ 0,4 (hold ≤ 0,6) **ve** perde OURS hareketli ≥ 0,4.
 - Hariç: sessiz kuyruk (kural), `profile: "typographic"`.
 - Animatikte: kanca render fps'inden bağımsızdır; piksel tabanlı ölçümde yer değiştirme `÷ (scale · step)` ile tam çözünürlük ve tek kare aralığına çevrilir.
 - Sınırdaki shot (pay ≈ 0,4): varışı ~0,1 s geciktirmek çoğu kez yeter (tasarım zamanında `--cand` ile sınanır).
+
+### M-PARITE · kalite paritesi (1.3)
+`motion-render parite --ours <kareler> --ref <kareler>`: grup sayısı (E kenar/ink elemanları, 24 px @1080 genişletmeyle birleşen bileşenler), ink payı
+(L* < 35; `inkContent` yalnız yüzey dışı grupların ink'i — dış kutusu kare eninin/boyunun ≥ %90'ı olan yüzey grubu kahraman olamaz), içerik ve negatif alan payı (≥ %2 tek yüzey bölgeleri), kahraman/ikincil kutu oranı, luma, isteğe bağlı aksan payı; medyanlar ± tol (varsayılan
+%20), tek yönlü sınır `--ust/--alt` (ör. sadelik serbest: grup ve ink yalnız üstten). Referans kalite içindir, kimlik değildir; reviewer kalibrasyonunda
+(motion-reviewer §3.0) ve ilkel/style frame kapısında bilgi olarak kullanılır (`--gate` ile kapı).
 
 ### M-OURS · referansa karşı profil
 - `motion-render ours <id> [--step N] [--no-cam] [--dir D]`.

@@ -68,6 +68,7 @@
 > Kâğıt / pafta / cetvel / rapido dili **focusfx-paper** world'üne (kütüphane) aittir. Bir world seçilmedikçe hiçbir primitif, renk, font, alet ya da geçiş kalıbı varsayılan olarak gelmez.
 > `/motion:init`'te **"yeni world"** seçilirse look-dev fazı brief'ten **sıfırdan** bir dil kurar: **3 gerçekten farklı yön** (malzeme, ışık, hareket grameri, tipografi, kamera dili); her yön **ölçülebilirdir** — bant, kontrast ve K1 maske tanımı `world.json`'a yazılır.
 > Yeni world kurulurken **"bir kütüphane world'ünün versiyonu"** sayılan yön varyant olarak kabul edilmez; reviewer'ın UCUZ listesinde **#11 "seçilmemiş world'e ya da önceki projeye benzerlik"** vardır. Seçilmiş world'e benzerlik özelliktir (HK-36).
+> **Kimlik ≠ zanaat (1.3):** #11 yalnız kimliği (palet, iskelet, nesne dili) sayar. Zanaat (easing, süre, mekanik) kütüphaneden serbestçe örnek alınır.
 > Kurallar (K1–K8, çentik ≤ 1 kare, basamak 0, örtme 0, tek vurgu rengi, §0.6) üslup değil **DİSİPLİNDİR**: her world'de geçerlidir; ama **eşikleri ve ölçüm maskeleri world başına yeniden tanımlanır**.
 > Bootcamp K-xx kalıpları ve dersler **"ilham / uyarı"** statüsündedir: okunur, kopyalanmaz. Bulunan yeni kalıp world'e **K-yeni** olarak yazılır ve `/motion:promote` ile core'a önerilir.
 
@@ -121,7 +122,7 @@ Her sahne / perde / yeniden teklif render'dan önce sekiz soruyla denetlenir. He
 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
-| SK-1 | **SERT** = ölçülen her şey: `qc` (16), `frame-check` (20 tip), K1–K8, çentik, basamak, örtme, aksan, fade, son kare, kadraj/okunurluk, UCUZ, DUR. İstisna yalnız manifestte kayıtlı olur (`review`, `exceptions`, ADR'li `cut`). | qc, fc | — | — | hayır | SERT | varsayılan kural gibi korunursa her sahne kit kompozisyonunda kalıyordu |
+| SK-1 | **SERT** = ölçülen her şey: `qc` (16), `frame-check` (25 tip; zanaat kapısı §8.1), K1–K8, çentik, basamak, örtme, aksan, fade, son kare, kadraj/okunurluk, UCUZ, DUR. İstisna yalnız manifestte kayıtlı olur (`review`, `exceptions`, ADR'li `cut`). Kota ölçütleri (§0.8) SERT değil UYARI'dır. | qc, fc | — | — | hayır | SERT | varsayılan kural gibi korunursa her sahne kit kompozisyonunda kalıyordu |
 | SK-2 | SERT ihlalin seviyesi **HATA** (çıkış 3, render/teslim yok) ya da **UYARI**; UYARI de kapanır: yönetmen geçişinde düzeltilir ya da `review.<tür>: [a, b, gerekçe]` ile incelendi kaydı yazılır. | qc, fc | — | — | hayır | SERT | açık bırakılan uyarılar teslimde birikti |
 | SK-3 | **VARSAYILAN** (düz zemin, düz yazı, tek katman, kit kompozisyonu, world malzeme seti, repertuvar sırası, bu dosyada VARSAYILAN işaretli her satır) aşılırken üç şey yazılır: **gerekçe**, **kaynak** (K-nn / referans / "kendi"), **geri alma yolu** (dosya · satır · bayrak). | rapor | — | — | hayır | SERT | — |
 | SK-4 | **Üç kez aynı bulgu → kural:** üç sahne/turda tekrar eden bulgu ölçülebilir kurala + kontrole dönüşür (`/motion:promote`). | retro | 3 | — | hayır | SERT | kahraman/metin/boş siyah kuralı böyle doğdu |
@@ -130,6 +131,23 @@ Her sahne / perde / yeniden teklif render'dan önce sekiz soruyla denetlenir. He
 | KT-3 | Görev başına **1–3 katkı**; hepsi QC'den geçer; A/B'si olmayan katkı **"deneme"** etiketli kalır. | rapor | 1–3 | — | hayır | VARSAYILAN | — |
 | KT-4 | **Sadakat gerekmez:** mevcut sahne stili korunmak zorunda değil; yeniden teklif doğrudan değişiklik değil A/B'dir (çatal + storyboard). | rapor | — | — | hayır | VARSAYILAN | — |
 | KT-5 | Kalıp sahneye **A/B kanıtı kullanıcıca kabul edilince** girer; A/B'siz kullanım ancak `project.md` faz kararında "A/B muaf: K-xx, gerekçe" kaydıyla. Birim demo kanıt değildir. | rapor | — | proje (muafiyet) | hayır | SERT | kalıplar A/B kaydı olmadan kullanıldı (kural kapsamı belirsizdi) |
+
+---
+
+## §0.8 Kota ölçütleri: UYARI sınıfı (1.3)
+
+Kapı **yalnız kusur** ölçer (SERT, §8.1 zanaat kapısı dahil). Bir miktarın tabanı olan ölçütler (kota) kusur değildir: kapıyı kilitlemez, render'ı durdurmaz.
+Ölçülür ve raporlanır; altında kalınırsa reviewer bilgi satırı ve gerekçe ister, karar §0.6 ve kusur ölçülerine dayanır. Kota artırmak için kusur eklemek
+(kısa kamera hamleleri, işsiz alet, "katman olsun diye" nesne) yasaktır: kusur kapısı onu ayrıca yakalar.
+
+| id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
+|---|---|---|---|---|---|---|---|
+| KO-1 | **K3 hareketli pay / OURS:** shot başına kamera hareketli payı ve perde OURS (K3). | M-K3, M-OURS, fc:camera (K3 satırı UYARI) | ≥ 0,4 · hold ≤ 0,6 | proje | hayır | UYARI | "her shot hareketli" kotası kısa, çok sayıda kamera hamlesi doğurdu; zanaat düştü |
+| KO-2 | **Olay yoğunluğu:** anlamlı olay sıklığı (ör. ≥ 1 / 2,5 s) ve içeriksiz pencere üst sınırı. | plan-check, rev | proje tanımlar | proje | hayır | UYARI | olay kotası anlatı yerine sayı üretti |
+| KO-3 | **Ekipman / bileşen sayısı:** perde başına alet sınıfı sayısı, shot başına motor bileşeni (K6 sayımı). | künye, `[data-c]`, rev | proje tanımlar · K6 | proje | hayır | UYARI | "≥ N ekipman" kotası cümle anlamı istemeyen aletleri sahneye soktu |
+| KO-4 | **Sınır vuruşu:** her cümle/shot sınırında adlı vuruş (kamera hamlesi, nesne girişi, ara sahne, match-cut). | plan-check, rev | proje tanımlar | proje | hayır | UYARI | 31/31 sınır vuruşu kotası kamerayı her sınırda oynattı |
+
+Raporda biçim: `kota (bilgi): K3 S01 0,52 · S06 0,41 ✗ · olay/2,5 s 0,9 · ekipman 3 · sınır 13/14`.
 
 ---
 
@@ -142,12 +160,12 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 | K1 | **ÖLÇEK:** kahraman = world'ün tanımladığı maske (`world.k1.mask`: `dom` · `ink` · `alpha`, + `selector`); anahtar karelerde maske alanı ≥ `areaMin` **ya da** yüksekliği ≥ `heightMin`. Maske kahramanın bütünüdür (çizim yığını tek nesne). | M-K1, M-QC5 | alan ≥ 0,30 **ya da** yükseklik ≥ 0,50 | world (maske, eşik) · proje (eşik, yalnız yukarı) | **evet** (maske world'de; varsayılan yok) | SERT | yer tutucu ve küçük kahraman yüzünden render reddedildi; maske zemini (kâğıdı) sayınca ölçü yalan söyledi |
 | K1-M | Okunacak display metin (kahraman metin) ≥ `k1.lyricMin` px. | M-K1, fc:framing | proje tanımlar | proje | hayır | SERT | — |
 | K2 | **KATMAN:** ≥ 3 derinlik katmanı (ön plan · kahraman · arka doku) **ve** ön plan kuralı (ÖNP). Sayım tek başına geçersiz. | rev (ön plan tablosu) | 3 katman | world (ön planın ne olduğu) | hayır | SERT | katman olsun diye süzülen ön plan nesnesi reddedildi |
-| K3 | **SÜREKLİ KAMERA:** her shot'ta hareketli pay ≥ 0,4 **ve** hold ≤ 0,6; hareketli kare = kamera ekran hızı ≥ **%2 ekran genişliği/s** (mutlak; 1920 px'te 38,4 px/s = 0,64 px/kare @60). Drift tek başına yetmez. Perde toplamı OURS ≥ 0,4. Sessiz kuyruk K3 dışıdır. | M-K3, M-OURS, fc:camera | pay ≥ 0,4 · hold ≤ 0,6 | proje (gerekçeli; `profile:"typographic"` muaf) | hayır | SERT | göreli eşik (tepenin %20'si) yavaş izlemeyi "tutuş" saydı → mutlak eşik |
+| K3 | **SÜREKLİ KAMERA:** her shot'ta hareketli pay ≥ 0,4 **ve** hold ≤ 0,6; hareketli kare = kamera ekran hızı ≥ **%2 ekran genişliği/s** (mutlak; 1920 px'te 38,4 px/s = 0,64 px/kare @60). Drift tek başına yetmez. Perde toplamı OURS ≥ 0,4. Sessiz kuyruk K3 dışıdır. | M-K3, M-OURS, fc:camera | pay ≥ 0,4 · hold ≤ 0,6 | proje (gerekçeli; `profile:"typographic"` muaf) | hayır | UYARI (kota, §0.8 KO-1) | göreli eşik (tepenin %20'si) yavaş izlemeyi "tutuş" saydı → mutlak eşik |
 | K4 | **YER TUTUCU RENDER'A GİRMEZ;** varlık yoksa shot motorla çözülür. Yer tutucu siyah olmaz; beklenen kütle/ton taşır (taslak aşamasında). | rev, ledger (`assets/gen/manifest.json` durum) | 0 | — | hayır | SERT | yer tutuculu render reddedildi |
 | K5 | **HER ÖĞENİN ANLATI İŞİ VAR:** ekrandaki her nesne/alet/gösterge kendi doğasıyla gerçek bir iş yapar (gerçek eğri, gerçek mekanizma, gerçek ölçüm); "kelime + şekil" süsü ve "katman olsun diye" nesne yasak. Künyede her öğenin "işi" sütunu. | rev, künye | — | — | hayır | SERT | sembolik şekil + kelime ucuz göründü |
-| K6 | **YOĞUNLUK:** shot başına ≥ 4 farklı motor bileşeni + 3 katman + sürekli kamera + 1 geçiş kalıbı + 1 ışık olayı + ≥ 2 ikincil hareket; künyede bileşen listesi. Altı → "yerleştirme", geri. | `[data-c]` sayımı, künye, rev | yukarıdaki | proje (profil; gerekçeli) | hayır | SERT | "envanter tabandır, tavan değil": mevcut bileşenler kullanılmadan seyrek sahne çıktı |
+| K6 | **YOĞUNLUK:** shot başına ≥ 4 farklı motor bileşeni + 3 katman + sürekli kamera + 1 geçiş kalıbı + 1 ışık olayı + ≥ 2 ikincil hareket; künyede bileşen listesi. Altı → "yerleştirme", geri. | `[data-c]` sayımı, künye, rev | yukarıdaki | proje (profil; gerekçeli) | hayır | UYARI (kota, §0.8 KO-3) | "envanter tabandır, tavan değil": mevcut bileşenler kullanılmadan seyrek sahne çıktı |
 | K7 | **ANİMATİK KAPISI:** tam render'dan önce animatik (960×540 @30 fps, grade dahil) + kontak + OURS → reviewer → kullanıcı; onaysız tam render yok (DUR-1). Profil farkı §19. | rapor | 960×540 @30 | profil | hayır | SERT | onaysız tam render saatler sonra reddedildi; 15 fps animatik "kasıyordu" |
-| K8 | **ZANAAT:** ağırlıklı easing; hiçbir iki öğe aynı anda başlayıp bitmez (ofset ≥ 0,1 s); oturmalar tepe > `motion.settlePx` (2 px); **hiçbir öğe tek karede belirmez/değişmez** (ardışık fark oranı ≤ 1,5); geçişler tasarlanmış; renk derinliği + kıyas sayfası. | rev, fc:temporal, fc:toolPath | ofset ≥ 0,1 s (6 kare @60) · oran ≤ 1,5 · oturma > 2 px | world (ofset ≥ 0,05 s tabanı altına inemez; settlePx) | hayır | SERT | aynı anda başlayan öğeler "şablon" gibi göründü; tek karede değişen temsil basamak yaptı |
+| K8 | **ZANAAT:** ağırlıklı easing; hiçbir iki öğe aynı anda başlayıp bitmez (ofset ≥ 0,1 s); oturmalar tepe > `motion.settlePx` (2 px); **hiçbir öğe tek karede belirmez/değişmez** (ardışık fark oranı ≤ 1,5); geçişler tasarlanmış; renk derinliği + kıyas sayfası. | rev, fc:temporal, fc:pop (ZN-1), fc:toolPath | ofset ≥ 0,1 s (6 kare @60) · oran ≤ 1,5 · oturma > 2 px | world (ofset ≥ 0,05 s tabanı altına inemez; settlePx) | hayır | SERT | aynı anda başlayan öğeler "şablon" gibi göründü; tek karede değişen temsil basamak yaptı |
 | ÖNP | **Ön plan nesnesi:** zeminde yatar, temas gölgesi var, kadraj kenarında yarısı dışarıda olabilir, bulanıklık ≤ 2 px, kahramanı örtmez (alan ≤ %5), **metni hiç örtmez**, kendi başına süzülmez; yalnız anlatıda işi olan nesne görünür. | rev (5 soru, RV-6), fc:overlap | ≤ 2 px · ≤ %5 · metin 0 | world | hayır | SERT | ekran uzayında süzülen ön plan "hata" gibi okundu |
 | HAT | **Hata gibi görünen öğe yok:** kesik kelime, havada nesne/kablo, birden beliren/kaybolan öğe, anlamsız alet, kırpık ok/çizgi, kadraj kenarında yanlış okunan yarım işaret. | rev (kontak + anahtar kare) | 0 | — | hayır | SERT | kadraj kenarında yarım "?" işareti "!" okundu |
 
@@ -157,7 +175,7 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
-| ÇEN-1 | **Çentik ≤ 1 kare:** fiziksel olay (çentik, damga, çarpma, vuruş) konuşulan kelimenin ses başından **sonra** ve **en fazla 1 kare** içinde başlar; ölçü = olayın ilk görünür karesi − kelime başı. | fc:sync (`events`) | 0 ≤ Δ ≤ 1 kare (≤ 16,7 ms @60) | — | hayır | SERT | olay kelimenin önüne düşünce ses–görüntü kopuk göründü |
+| ÇEN-1 | **Çentik ≤ 1 kare:** fiziksel olay (çentik, damga, çarpma, vuruş) konuşulan kelimenin ses başından **sonra** ve **en fazla 1 kare** içinde başlar; ölçü = olayın ilk görünür karesi − kelime başı. | fc:sync (`events`; kod zamanı), fc:onset (görünür piksel; ZN-5) | 0 ≤ Δ ≤ 1 kare (≤ 16,7 ms @60) | — | hayır | SERT | olay kelimenin önüne düşünce ses–görüntü kopuk göründü |
 | ÇEN-2 | Olay anında **tam** gelir (ilerlemeli değil); tasarım anı = kelime başının sayfa karesi. | rev, fc:sync | — | — | hayır | SERT | — |
 | BAS-1 | **Basamak 0:** kamera ekran hızında ardışık iki kare arası ani değişim > `camera.stepJump` olan kare sayısı **0**. | fc:camera, M-STEP | 2,5 px/kare @60 (≡ 150 px/s hız sıçraması) · sayım 0 | world (eşik) | hayır | SERT | monoton kübik eğride ara anahtarda hız sıfırlandı; görünür sıçrama |
 | BAS-2 | **Vurgu kamerada değil nesnede** (ölçek, oturma, yoğunluk). Kamera darbesi yok. Darbe sarsıntısı yalnız darbe alan katmanda ve world izniyle; bütün kadraj yer değiştirmesi ≤ 1 px ve yine BAS-1'e tabidir. | fc:camera, rev | kamera darbesi 0 | world (katman sarsıntısı izni) | hayır | SERT | damgaya eklenen kamera darbesi reddedildi |
@@ -272,6 +290,18 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 | KM-12 | Yazım hızı ≤ `motion.writeGlyphsPerSec`; yazım zamanı yola orantılı (glif başına eşit dilim zıplama yapar). | fc:toolPath, künye | world tanımlar ([ÖRNEK] 12 glif/s) | world | hayır | VARSAYILAN | — |
 | KM-13 | 3B katman ≤ 12/kare; aynı z'deki içerik tek kapta. | probe `--bench` | 12 | — | hayır | VARSAYILAN | render süresi katman sayısıyla patladı |
 | KM-14 | **Bilinçli hold:** son vuruş kesmeden ≥ 0,25 s önce biter; ölü açılış ≤ 1,3 s; çizim arası ≤ 0,6 s. | künye, rev | 0,25 · 1,3 · 0,6 s | world | hayır | VARSAYILAN | — |
+
+### §8.1 Zanaat kapısı: hareket kalitesi kusurları (1.3)
+
+Kapı **kusur** ölçer; kota ölçmez (§0.8). Ölçüler `frame-check` Katman D (MEASURE §4, `fc:pop` … `fc:moves`); animatik kapısında `pop` + `onset` kare dizininden (`--step 2`), `velocity` + `entryExit` + `moves` sahne sayfasından (tam kare hızı) koşar. Zanaat (easing, süre, mekanik) kütüphane world'lerinden serbestçe örnek alınır (UCUZ #11 kimliği sayar, zanaatı değil).
+
+| id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
+|---|---|---|---|---|---|---|---|
+| ZN-1 | **Tek kare belirme/kaybolma yok:** içerik bölgesinde bir öğenin görünür alanının ≥ yarısı tek film karesinde belirmez ya da kaybolmaz (simetrik: giriş ve çıkış). Tasarlanmış geçiş penceresi (`exclude`) ölçü dışıdır, geçiş GÇ kurallarıyla ölçülür. | fc:pop | pay < 0,5 / film karesi (animatik `--step 2`: < 0,75) · alan ≥ 900 px² | proje (`exclude`, `review.pop`) | hayır | SERT | belirme ölçülüp kaybolma ölçülmediği için tek karede kaybolan yazı üç ölçerden geçti; reviewer GEÇMEZ verdi |
+| ZN-2 | **C1 hız sürekliliği:** kamera ve nesne (alet ucu, izlenen kutu) hızı süreklidir; ardışık iki kare arası hız vektörü farkı ≤ %5 hamle tepesi (kalkış ve varış dahil). | fc:velocity | ≤ 0,05 × tepe · taban 0,05 px/kare | proje (yalnız sıkılaştırır) | hayır | SERT | sabit hız + kısa rampa "basamak 0" geçti ama göz hız kırığını gördü |
+| ZN-3 | **Giriş/çıkış süresi:** her öğe girişi (ilk görünür kare → tam görünür) ve çıkışı (tam görünürden → son görünür kare) ≥ 0,4 s; anlık beliriş 0 s sayılır. | fc:entryExit | ≥ 0,4 s | proje (yalnız yukarı) | hayır | SERT | 6 karelik (0,1 s) kırpımla çıkan yazılar ve tek karede düşen kartlar ucuz göründü |
+| ZN-4 | **Hamle/shot:** kamera hamlesi shot başına sayılır; eşik projede yazılır. **UYARI** sınıfıdır (kapıyı kilitlemez), reviewer gerekçe yazar. | fc:moves | ≤ 2 hamle/shot (eşik parametre) | proje | hayır | UYARI | kısa ve çok sayıda kamera hamlesi "her shot hareketli" kotasından doğdu |
+| ZN-5 | **Görünür başlangıç:** olay öğesinin ilk **görünür** karesi (|ΔY| ≥ 40/255, ≥ 12 px @1080) kelime çapasından sonra ve ≤ 1 kare içinde (ÇEN-1'in ölçüsü). Alet çizginin ucunu örtüyorsa A/B kipi (gizleme sözleşmesi) zorunlu; piksel kipinin belirsiz satırı karar değildir. | fc:onset | 0 ≤ Δ ≤ 1 kare | — | hayır | SERT | kod kancası "çizildi" derken yay ilk 14 karede görünür eşiğin altındaydı; kanca zamanı görünürlüğü söylemez |
 
 ---
 
@@ -420,7 +450,7 @@ Sessiz kuyruk (SES-14) → SN-7; master sesi (SES-16) → MS-2; olay ↔ kelime 
 | UCUZ-8 | Stok görünümlü üretken klip. | rev | 0 | — | hayır | SERT | — |
 | UCUZ-9 | Yapay zekâ artefaktı (el, yüz, yazı, geometri kırığı). | rev, fc:temporal (`src: asset`) | 0 | — | hayır | SERT | — |
 | UCUZ-10 | Metin üstüne doğrudan efekt. | rev | 0 | — | hayır | SERT | — |
-| UCUZ-11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik** (malzeme, palet, alet dili, kamera grameri ya da geçiş kalıbı seçilmemiş bir kütüphane world'ünden ya da önceki filmden taşınmış; brief'ten ya da seçilen world'den türemiyor). Seçilmiş world'e benzerlik #11 değildir (HK-36). | rev | 0 | — | hayır | SERT | paket bir önceki filmden çıkarıldı; üslubun sızması en büyük risk |
+| UCUZ-11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik.** Yalnız **kimlik** ekseni üçtür: **palet · iskelet (kompozisyon) · nesne dili** (malzeme, primitif/alet görünümü, tipografi ailesi). **Zanaat** (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri, geçiş mekaniği) kimlik değildir; kütüphaneden serbestçe örnek alınır ve #11'de sayılmaz. Seçilmiş world'e benzerlik #11 değildir (HK-36). | rev | 0 | — | hayır | SERT | paket bir önceki filmden çıkarıldı; üslubun sızması en büyük risk |
 
 Raporda biçim: `UCUZ: geçer | VAR #n | sınırda #n`.
 
@@ -514,7 +544,7 @@ Kaynak eşiklerinin çoğu 30 fps karesiyle yazılmıştı; paket saniye tutar.
 | 2× pad / blend | [ÖRNEK] 0,1 s | 6 | 3 | SS-1 |
 | çentik | ≤ 1 kare | 1 (16,7 ms) | 1 (33,3 ms) | ÇEN-1 |
 | ses kayması | ≤ 33 ms | — | — | SES-10 |
-| K3 hareketli kare | ≥ 0,02 · W px/s (38,4 px/s @1920) | 0,64 px/kare | 1,28 px/kare | K3 |
+| K3 hareketli kare (kota, UYARI) | ≥ 0,02 · W px/s (38,4 px/s @1920) | 0,64 px/kare | 1,28 px/kare | K3, KO-1 |
 | basamak | ani hız değişimi > 150 px/s | 2,5 px/kare | 5 px/kare | BAS-1 |
 | ivme tabanı | 120 px/s | 2 px/kare | 4 px/kare | KM-5 |
 | [ÖRNEK] alet hızı | 3420 px/s | 57 px/kare | 114 px/kare | KM-10 |

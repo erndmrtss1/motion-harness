@@ -95,8 +95,9 @@ async function pagePhase(set, list, sink, label) {
     }
   });
 }
+ctx.globals = Object.assign({}, declSet, globals);   // ek sayfa açan tipler (onset A/B) aynı globallerle başlar
 if (pageChecks.length) {
-  browser = await chromium.launch({ args: chromiumArgs([scene]) });
+  browser = ctx.browser = await chromium.launch({ args: chromiumArgs([scene]) });
   try {
     await pagePhase(globals, pageChecks, results, null);
   } catch (e) {

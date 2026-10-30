@@ -47,7 +47,7 @@ if (own.includes('--help') || own.includes('-h')) {
 }
 // Süreçler arası ağır iş kilidi (MOTION_RENDER_LOCK=<dizin yolu>): birden çok oturum aynı makinede render/ölçüm yaparken
 // CPU'yu sırayla kullanır. mkdir atomiktir; sahibi ölmüşse kilit bayat sayılır. Alt süreçler MOTION_LOCK_HELD ile devralır.
-const HEAVY = new Set(['render', 'lookdev-diff', 'probe', 'ss2', 'run', 'qc', 'frame-check', 'fc', 'ours', 'k1', 'k6', 'grade', 'encode', 'expo-post', 'master', 'arsiv', 'live', 'smoke', 'contact']);
+const HEAVY = new Set(['render', 'lookdev-diff', 'motion-test', 'probe', 'ss2', 'run', 'qc', 'frame-check', 'fc', 'ours', 'k1', 'k6', 'grade', 'encode', 'expo-post', 'master', 'arsiv', 'live', 'smoke', 'contact']);
 if (process.env.MOTION_RENDER_LOCK && !process.env.MOTION_LOCK_HELD && HEAVY.has(cmd)) {
   const lock = path.resolve(process.env.MOTION_RENDER_LOCK), owner = path.join(lock, 'owner.json');
   const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
