@@ -2,7 +2,7 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
-## 1.3.0-dev — dal `feat/craft-1.3` (yayımlanmadı)
+## 1.3.0 — 2026-10-30
 
 Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapıları ve araçlar (kimlik kuralı değil). Kaynak: proje bulguları PN-25…99
 (kapanan PN'ler madde sonunda). Değerlendirme kanıtı `evals/craft-1.3/KANIT.md`.

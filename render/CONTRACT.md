@@ -1,7 +1,7 @@
 # @motion/harness — sözleşme (CLI · manifest · world · sayfa kancaları)
 
 Bu belge paketin bütün parçalarının (skill'ler, ajanlar, komutlar, `render/`) uyduğu tek sözleşmedir.
-Değişiklik önce burada yapılır. Sürüm: 1.2.0.
+Değişiklik önce burada yapılır. Sürüm: 1.3.0.
 
 ## 1. Proje düzeni (her proje kökü)
 
