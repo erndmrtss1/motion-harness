@@ -2,6 +2,189 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## 1.4.0 — 2026-11-05
+
+Konsolidasyon + herkese açık yayın. Bir kaynak projenin ölçülmüş bulguları (PN-104…148) genel yetenek olarak pakete taşındı: set yöntemi,
+ilkel mekaniği, ölçüm tanımları, orkestrasyon ve araçlar. Proje içeriği (sözlük, plakalar, kareler, kredi değerleri, proje sahibinin metinleri,
+kişi/hesap/yol) girmedi; kaynak projeden gelen her sayı ya world/proje alanıdır ya da "referans ölçümü (kaynak proje)" etiketlidir. Depo MIT
+lisanslıdır ve herkese açık yayına hazırlandı. Testler 38 → 77 (`cd render && npm test`).
+
+### Uyumluluk (önce okuyun)
+
+- **Render yolu değişmedi.** `render`, `probe`, `ss2`, `encode`, `grade`, `page.mjs` ve çalışma zamanı (`motion-core.jsx`, `motion-stage.jsx`,
+  `motion-runtime.js`) 1.3.0 ile aynıdır. Parite üçlüsü 1.3.0 ↔ 1.4.0 birebir (aynı makine, focusfx-paper demo): smoke 12/12 kare md5 farkı 0 · demo anahtar kareleri k90, k144 imgdiff 0 · demo 180/180
+  kare (1920×1080) md5 + framemd5 farkı 0 · x264 mp4 md5 aynı. Yeni mekanik ilkeller ayrı dosyadadır (`shared/motion-mek.jsx`).
+- **Ölçüm davranışı değişen yerler:**
+  - frame-check `temporal` eşik üstü **bütün** kareleri listeler; incelendi kaydı kare başına uygulandığından eskiden `warn` olan bir koşu `fail` olabilir.
+  - `pop` arama sınırına dayanan aday artık `fail` değil `warn`.
+  - `sharpness` bölge tanımı yokken aksan kotası 0 ise ya da `red` pikseli eşik altındaysa "ölçülemedi: bölge tanımı gerekli" yazar (eskiden ilgisiz sıcak bölgeyi eşleyebiliyordu).
+  - `frame-check --only` çıktısı `out/probe/<id>-fc-only-<tipler>.json` (tam kaydın üstüne yazmaz; `--out` ile değiştirilir).
+  - `plan-check` varsayılan çıktısı `out/probe/plan-check-<olay dosyası adı>.{json,md}` (eski sabit `plan-check.json`).
+- **contact:** `--fstep` → `--page-step` (anlamı aynı: disk karesi başına sayfa karesi). `--fstep` takma ad olarak çalışır, uyarı basar; etiket sahne
+  süresini aşarsa çıkış 2 (adım 1 animatikte `--fstep 30` etiketleri ×30 yazıyordu). Hücre aralığı `--step`'tir.
+- **Git geçmişi yeniden yazıldı** (yayın öncesi gizlilik): commit SHA'ları değişti. Var olan klonlar `git pull` yerine
+  `git fetch origin && git checkout -B main origin/main` ile güncellenir; eski SHA'ya bağlı denetimler (ör. proje `tools/render-oncesi` tabanı)
+  yeni SHA'ya çekilir.
+
+### Set yöntemi (photo-plate)
+
+- **`skills/motion-world/library/photo-plate/SET.md`** (yeni; `lessons.md` §7; `world.json` `set` · `edge` blokları):
+  - "Set üretilir, içerik çizilir" (SET-1…8): katmanlı plaka (arka · orta · ön); masa ve ön plan nesnesi plakanın parçası, zeminle aynı üretimde,
+    DOM'a nesne kesiği yok; still ve klip aynı set kaydı; plakada referans zorunlu (seed yoksa).
+  - 2.5D derinlik haritası (dilim ya da sürekli çarpıtma; DoF objektif modelinden) · fiziksel paralaks k(z) = H_c / (H_c − z), keyfi katman çarpanı değil.
+  - Set ışığını okuma: yön = en parlak %3'ün ağırlık merkezi, sıcaklık = beyaz nokta (temiz yüzey blokları), merkez/kenar oranı; **tek lamba yeri**
+    (film boyunca tek nokta, her set kaydının `lamp` bloğunda; director değiştirmez); eşleme **yalnız karartmayla**; düşen gölge oranı o = min(1, ortam / L).
+  - "Bütünlük = ışık + tasarım dili, envanter değil"; `set.json` şeması; plaka kabulü (malzeme `ingest-kapi` + kenar + yerleşim + yer/boy ± tolerans
+    + bölge dışı + dikiş + askıda); büyük masa ve set geçişi kalıbı; tuzaklar W-41…49.
+- **GENAI §17 maskeli bölge üretimi + §18 istem kalıpları:** bölge üretimi varsayılan (plakanın kalanı sabit); yer tutucu + ölçek referansı zorunlu
+  (onaylı plaka üstüne düz gri şekil + temiz plaka; düzenlemede metinle konum tarifi tutmaz); yer/boy kabul toleransı; model ↔ yöntem ayrışması
+  (sahneyi baştan kurma NCC ile ölçülür, çıktı boyu → büyütme ≤ ×1,25); işaret değil maske; iki aşamalı yöntem; deneme ≤ 3, sonra yöntem değişir
+  (açık karar) · **negatif liste** (istemde seri/stüdyo/sanatçı/marka/referans proje adı yok; malzeme/ışık/lens tarifi) · düz doku istemi bağlam +
+  kırpım · istemsiz araç modelleri · seed yoksa `image_references`. CATALOG'a çıktı boyu, seed, maske sütunları; istek alanları `method`, `place`,
+  `mask`, `attempt`, `accept.set`. RULES GEN-23, GEN-24.
+
+### İlkel mekaniği
+
+- **`skills/motion-world/references/ILKEL.md`** (yeni, ILK-1…12): sprite ilkeli — 9 dilim (köşe sabit, kenar tek eksen, merkez iki eksen; doku
+  gerilmez, kırpılır/döşenir), gösterim boyutunda çizim (raster bir kez; CSS ölçeğiyle büyütme yok), ölçekten bağımsız doku, küçük nesne doku
+  politikası, ışık sprite'tan değil sahneden, tek gölge + temas bandı · nesne/ön plan kuralı a–f · nesne kenarı kuralı + gövde sınıfı (düz / yuvarlak
+  / iç içe) · askıda nesne (**UCUZ #17**) · dikiş · ilkel kütüphanesi onayı → film (PLAYBOOK §4.4a).
+- **`render/runtime/motion-mek.jsx`** → projede `shared/motion-mek.jsx` (`MH.mek`; motion-core'dan sonra yüklenir; stilden bağımsız):
+  - `sweep` (süpürme: out / in / through; ön olay; yamuk hız profili; kadraj dışında hız sürer; tam örtme penceresi + `swap(T)` ile altta set
+    değişimi; `window()` → `MH.mek.hooks.windows` ile frame-check `pop` `exclude`).
+  - `fold` (menteşeli kalın kâğıt katlama: θ(t), ön olay, 4 menteşe, yüz değişimi, kalınlık şeritleri, zemin izi, gölge kaydı; yüzler dışarıdan).
+  - `travel` / `chain` (seyahat: crane-up → travel → crane-down; tek sürekli C1 yol, varış hızıyla settle, `peakMax`/`fit`, `dof(T)`, `hook()` → `__camSpeed`).
+  - Profil ailesi (hermite, quintic C2 — ivme/tepe ≈ 3,08/N, yamuk), her ilkelde `plan()` raporu (tepe, C1, görünür süre); `MHMoBlurK` (tamsayı
+    ötelemeli kutu çekirdeği, isteğe bağlı); `raster` tabanı (dinlenmede tam 0 yazılmayan dönme/öteleme, isteğe bağlı).
+  - `motion-test` hazır testleri `mek-supurme` · `mek-katlama` · `mek-seyahat`; `-hiz.json` `design` (tasarım hızı) + `plan`. Test `render/test/mek.test.mjs` (8).
+- **CRAFT-REF şablonu §5 "Genel referans"** (FocusFX ölçümü — varsayılan değil): easing ailesi, ivme/tepe·N tablosu, nesne sınıfına göre giriş–iş–çıkış
+  süreleri, geçişler, kamera, yazı, zanaat göstergeleri, taşınabilir ilkel tablosu; atıflar `skills/motion-world/library/focusfx-paper/` ve `motion-mek.jsx`.
+  **PATTERNS K-55** kadrajı örten süpürme · **K-56** kalın kâğıt katlama · **K-57** seyahat hamlesi.
+
+### Ölçüm
+
+- **MEASURE §5'e 13 ölçü (1.4):** M-C kural C piksel izleme (tepe px/kare @1080, görünür süre %10→%90, C1 ana hamle tepesine göre, settle; LK alt
+  piksel / baskın küme vektörü, öteleme + ölçek; DOM yalnız beklenti, kapıda tek sayı) · M-SEYAHAT seyahat hamlesi sınıfı · M-CANLI tutuş canlılığı
+  doku-normalize · M-VURUS vuruş ağırlığı (ön olay sınıfları, aynı an ≤ 1 başlangıç, aralık eşiği, ön olay ≠ vuruş, muafiyet sınıfı) · M-ONCU yumuşak
+  öncü görünürlük eşiği (referanstan kalibre) · M-LYRIC yazım pikselden · M-IZGARA kare ızgarası · M-AKSAN aksan sayımı world sınıfı + plaka dışı
+  (A/B) · M-ZS zaman-saflık (kök neden: Chromium kalıcı DOM düğümlerinde raster yeniden kullanımı; çözüm: içerik ağacı her karede taze, görüntü
+  gösterim boyutunda; tanık kare protokolü) · M-PROBE probe belirsizliği · M-KENAR nesne kenarı (w_matte = √(w² − w_taban² − w_optik²), hale,
+  gren sürekliliği, büyütme, gövde sınıfı) · M-ASKIDA temas bandı (göreli eşik) · M-DIKIS dikiş (kalınlık ≤ 2 satır, luma ≤ 10). Eşikler world
+  alanıdır (`plan`, `motion.liveness`, `edge`); §8 örneği.
+- **frame-check** (`render/lib/fc/*`; test `render/test/measure-14.test.mjs`): `sharpness` bölge kuralı + özet satırında ölçülen bölge sınıfı/kutusu ·
+  `pop` arama sınırı adayı (`warn`) + `searchMax: "auto"` · `onset` `tY` sınıf haritası ve yumuşak öncü için göreli eşik, A/B ilerleme satırı, kesilme
+  "kanca yok"tan ayrıldı · `temporal` tam liste · `--only` ayrı dosya. Tip sayısı 25 (yeni tip yok).
+- **plan-check:** world `plan` blokları (yalnız tanımlıysa) `entry` (sınıf başına giriş/çıkış) · `beats` (eşzamanlılık, aralık, öncü `of`, muaf
+  `exempt`) · `leads` (öncülük bandı) · `moves` (kural C fizibilitesi: kübik C1 ≈ 4/N, beşinci derece ≈ 3,08/N; seyahat sınıfı); `--fps`/`--round`
+  kare ızgarası. Blok ve `--fps` yoksa sonuç 1.3 ile aynı.
+- **RULES:** ÇK-17 ölçüm eşiği yalnız proje sahibi kararıyla · ÇK-18 araç kısıtı içeriği şekillendirmez (araç düzeltilir) · ÇK-19 estetik metrik
+  kapı dışı · ÇK-20 verim V1–V8 + belge hijyeni · ZN-6 kural C · ZN-7 vuruş ağırlığı · §8.2 NK-1 nesne kenarı (gövde sınıfıyla) · NK-2 temas · MT-11
+  zaman-saflık · UCUZ-17 askıda nesne · DUR-12 hareket kontağı · DUR-13 "kredi yüzünden" satırı dolu (DUR 13 tetik). UCUZ taraması 12 işaret
+  (#1–#11, #17; proje ek maddeleri #12–#16, #18…).
+- **LESSONS L-228…L-250:** Chromium/runtime (kesirli SVG metin y'si, kök ölçek ≠ 1 parıltısı, tek parlaklık süzgeci basamağı, `feOffset` yuvarlaması,
+  dinlenmede alt piksel → tamsayı netleşme, seek'te raster yeniden kullanımı, `feGaussianBlur` σ < 0,8, `rotate(0deg)` raster yolu, büyük CSS ölçek,
+  SVG id çakışması, süzgeç yüzeyi küçülmesi, MoBlur "over" bileşimi, DoF süzgecinin kalkması) · ölçer sınırları · süreç (stdin betiği yetim süreç).
+
+### Orkestrasyon
+
+- **Roller ve kapı ilkeleri** (PLAYBOOK §2.1, §3.3; ADR-026): ana oturum = kapı/QA; director = sanat yönetmeni brief'iyle tek tasarımcı-uygulayıcı
+  (`templates/BRIEF-DIRECTOR.md`, estetik ölçüt yalnız brief §1, ≤ 30k token); ölçüm ajanı iş başına ≤ 3 madde, tek tur; reviewer referans klip yan
+  yana zorunlu, still ve klip ayrı reviewer, iş başına ≤ 3 soru, sayısal estetik şartı bilgidir, şart satırı nesne tanımıyla. Kapı ≠ brief; kapı
+  sınıflaması (kusur · uyarı · bilgi · kapı dışı); "kredi yüzünden yapılmadı / kabul edildi" satırı zorunlu (doluysa DUR).
+- **Verim V1–V8** (PLAYBOOK §3.4, ADR-027): değişim-odaklı ölçüm (her iş değişiklik listesiyle başlar), tam tarama ve taze reviewer yalnız kilometre
+  taşında (`/motion:gate --ara` ara adım kapsamı), istisna raporu ≤ 40 satır (geçenler tek satır tablo), retro/dersler faz sonunda tek seferde, DUR
+  yalnız geri dönüşü pahalı kararda — gerisi **bilgi kontağı** (dosya gönderilir, akış sürer), kilitli kurallar listesi. `templates/RAPOR.md` iki biçim
+  (istisna · kapanış).
+- **Hareket kontağı adımı** (PLAYBOOK §4.5 Adım 6a, reviewer `hareket` kapısı, DUR-12): tam render'dan önce bütün hamle ve mekanikler referans kliple
+  yan yana tek videoda (`motion-render contact motion`) → "DUR — hareket".
+- **Kesinti ve makine** (PLAYBOOK §2.6, ADR-029): uzun görevde her adım sonunda commit + `docs/CHECKPOINT-<görev>.md` satırı; kesinti sonrası artefakt +
+  ledger mutabakatı, tanık kare ve süreç listesi denetimi; DUR öncesi arka plan süreç taraması; aynı anda tek render + `tools/render-oncesi`; harness
+  geliştirmesi kurulu klonda yapılmaz. Ölçüm ve reviewer ajanlarına yalnız `out/` altında Write (stdin betiği yok).
+- **Belge hijyeni — md zehirlenmesi karşıtı** (PLAYBOOK §3.5, ADR-028): `project.md` tek güncel spec (üstü çizili satır / silinti notu kalmaz),
+  karar metni aynen `docs/KARAR-TARIHI.md`'de (yeni şablon), özü `project.md` §11 karar tablosunda; `CLAUDE.md` ≤ 60 satır (şablon 82 → 45); brief
+  token tavanları; `celiski-tara` commit kapısı; yeni şablonlar `KARAR-TARIHI.md`, `BRIEF-DIRECTOR.md`, `PAKET-NOTLAR.md` (init `docs/`'a kopyalar).
+
+### Araçlar
+
+- **`motion-render celiski-tara [--rapor] [--ek a.md,b.md] [--config docs/celiski.json]`** (`render/lib/celiski.mjs`): bağlayıcı belge kümesinde
+  (a) arşivlenen terim etkin satırda · (b) üstü çizili / KALDIRILDI / GEÇERSİZ / iptal izi · (c) aynı kural anahtarı farklı değerle (metin + json
+  alanı) · (d) olmayan göreli yol · (e) brief > tavan (≈ ceil(kod noktası / 3)). Listeler `docs/celiski.json`'dan; çıkış 0 / 1 / 2. Commit kapısı
+  `.githooks/pre-commit` (`git config core.hooksPath .githooks`).
+- **`tools/render-oncesi.ps1` · `tools/render-oncesi.sh`** (init kopyalar): kurulu harness klonu beklenen tabanda (`tools/harness-taban.txt` ya da
+  parametre) ve temiz mi + başka Playwright Chromium / ffmpeg süreci var mı → 0 temiz / 1 engel. Klon yolu sabit değil (`-Klon` →
+  `MOTION_HARNESS_CLONE` → `motion-render --where` → `npm prefix -g`); kullanıcı yolu çıktıda maskelenir.
+- **`motion-render contact motion <id>`** (hareket kontağı): hamle pencereleri `auto` (`__camSpeed` + frame-check `moves` koşu tanımı) ya da plan
+  (`camera.moves`), ± pad; `--ref` ile yan yana; hamle etiketi tepe px/kare @1080 · görünür süre %10–90 · C1 en kötü; mp4 + json + kontak PNG.
+- **`contact --page-step`** (yukarıda) · **`motion-render --where`** (paketin koştuğu klonun kökü) · `help` komut başına tek satır tanım.
+- **init:** `docs/celiski.json`, `.githooks/pre-commit`, `tools/render-oncesi.*`, `.gitattributes`, `shared/motion-mek.jsx`; bitişte hooksPath ipucu
+  (git yapılandırmasına dokunmaz).
+- **doctor:** "kurulu klon" satırı — motion-render'ın koştuğu checkout temiz ve main/sürüm etiketinde değilse ✗ (zorunlu değil); git worktree ve
+  zip kurulumu atlanır.
+- Testler `render/test/tools-14.test.mjs` (9), `docs-world.test.mjs` (8), `docs.test.mjs` (+5).
+
+### Yayın
+
+- **MIT lisansı** (`LICENSE`; `plugin.json` ve `render/package.json` `license`). **README** herkese açık okura göre: ne olduğu, sıfırdan kurulum
+  10 adım (Node, Git, Claude Code, ffmpeg, Playwright Chromium, Linux sistem kitaplıkları), örnek world + örnek sahne, Higgsfield'ın isteğe bağlı ve
+  kullanıcının kendi hesabıyla kullanımı, katkı ve sorun bildirimi. İndirme: `git clone` ya da GitHub Release zip.
+- **`examples/ornek-plan/`**: `plan-check` için olay planı + kural dosyası örneği (kusur 0 · kota 0).
+- **`.gitignore`**: çıktı, kanıt, `.env`, ledger/manifest, plakalar, kişisel sahne kayıtları ve bütün medya (kare, klip, ses) izlenmez.
+- **Gizlilik taraması** (`dev/privacy-scan.mjs --history --remote=<uzak>`): içerik taramasına ek olarak commit **üst verisi** (yazar/committer/
+  tagger e-postası, commit ve etiket mesajları, ref adları), token ve iş/hesap kimliği desenleri, genel mutlak yol ve **uzak ref'ler** (refs/pull/*
+  dahil; yerel geçmişte olmayan nesneyi gösteren ref bulgudur). Yayın öncesi geçmiş `git filter-repo` ile yeniden yazıldı: kimlikler GitHub
+  noreply adresine eşlendi, mutlak yol taşıyan bir belge tüm geçmişten çıkarıldı.
+
+### PN eşlemesi
+
+| PN | 1.4 | nerede / kalan |
+|---|---|---|
+| PN-104 | kapandı (1.3) | install plugin-sync + doctor "plugin metinleri"; 1.4'te korunur |
+| PN-105 | kapandı (kod) | plan-check `entry` sınıf haritası |
+| PN-106 | açık (1.5) | `loadWorld(sceneId)` sahne başı world |
+| PN-107 | açık (1.5) | parite içerik maskesi yerel zemine göre |
+| PN-108 | kapandı (belge) | GENAI §18.2 düz doku istemi |
+| PN-109 | kısmi | motion-test `design` profili + L-249; SAD eşleşme kalitesi eşiği 1.5 |
+| PN-110 | kısmi (belge) | GENAI §18.4; `gen` `type: "tool"` / `policy.tools` 1.5 |
+| PN-111 | kısmi (belge) | GENAI §18.5 + CATALOG seed sütunu; `gen --dry` bilinmeyen parametre uyarısı 1.5 |
+| PN-112 | kısmi (belge) | M-AKSAN world sınıfı; ΔE2000 sınıfı kodu 1.5 |
+| PN-113 | kısmi (belge) | M-ASKIDA + UCUZ-17 + NK-2 (bağımsız ölçüm); fc tipi 1.5 |
+| PN-114 | kapandı (belge) | GENAI §17.2 yer tutucu kalıbı; `gen req` yardımcısı 1.5 |
+| PN-115 | kapandı (belge) | M-ASKIDA yöntemi |
+| PN-116 | kısmi (belge) | M-AKSAN; `accentColor` `relit` kodu 1.5 |
+| PN-117 | kapandı (kod) | plan-check `moves` fizibilitesi + `MH.mek` quintic profil, `plan()` |
+| PN-118 | kapandı (belge) | LESSONS L-228…230 |
+| PN-119 | kısmi | L-231 + isteğe bağlı `MHMoBlurK`; çekirdek `MHMoBlur` parite için değişmedi |
+| PN-120 | kısmi | L-232 + `raster` tabanı; `temporal` küresel sıçrama ayrımı 1.5 |
+| PN-121 | kapandı (kod) | fc `sharpness` |
+| PN-122 | kısmi (kod) | `pop` aday işareti + `auto`; ölçek değişiminde kutu ölçeklemeli eşleme 1.5 |
+| PN-123 | kısmi (belge) | M-ZS + LESSONS + ILK-9; `imgdiff zs` 1.5 |
+| PN-124 | kısmi (belge) | M-ZS (taze ağaç); `render --fresh-tree` 1.5 |
+| PN-125 | kısmi (belge) | LESSONS + M-PROBE; `probe --scale` doğrulaması 1.5 |
+| PN-126 | kısmi (belge) | M-KENAR + NK-1 + ILKEL §3; fc `edge` tipi 1.5 |
+| PN-127 | kısmi (kod) | plan-check `beats` · `leads` · `entry` · `moves`; fc `entryExit` sınıf `minSec`, `moves` görünür süre/settle 1.5 |
+| PN-128 | açık (1.5) | `render --range` dizin silme koruması (render yoluna 1.4'te dokunulmadı) |
+| PN-129 | kapandı (belge) | GENAI §17.3, §17.7 |
+| PN-130 | kısmi (belge) | GENAI §17.5–17.6; `gen` `mask` alanı, `--dry` çıktı boyu/büyütme 1.5 |
+| PN-131 | kapandı (kod) | `frame-check --only` ayrı dosya |
+| PN-132 | kapandı (belge) | V1–V8 PLAYBOOK §3.4 (V6 GENAI §17) |
+| PN-133 | kısmi (kod) | çıktı adı olay dosyasından + `moves`/`beats` şeması; tutuş penceresi ve lyric ekran payı 1.5 |
+| PN-134 | kısmi (belge) | M-AKSAN plaka A/B yöntemi; `accentLocation` A/B kodu 1.5 |
+| PN-135 | kapandı (kod) | plan-check `--fps` kare ızgarası |
+| PN-136 | kapandı (kod) | `temporal` tam liste |
+| PN-137 | kısmi | L-235 + `noZero`/`raster` (isteğe bağlı) |
+| PN-138 | açık (1.5) | velocity settle birleştirme; `MH.mek` `plan()` iki tanımı birlikte raporlar |
+| PN-139 | açık (1.5) | `pop` tek yönlü ilerleme (MEASURE "bilinen açık") |
+| PN-140 · PN-144 · PN-145 · PN-147 | açık (1.5) | grade son kare · qc metin kutusu ölçeği · entryExit `__events`'ten · lookdev-diff `--lib` |
+| PN-141 · PN-143 | kapandı (belge) | LESSONS L-236, L-238 |
+| PN-142 | kısmi (belge) | ILK-8 id öneki + L-237; DOM id çakışma denetimi 1.5 |
+| PN-146 | kısmi (kod) | onset A/B ilerleme + kesilme ayrımı; A kareleri tekil çizim, 0,5 ölçek 1.5 |
+| PN-148 | kapandı (kod) | onset sınıf/göreli eşik |
+| (önceki) PN-49 · PN-85 · PN-96 · PN-98 | kapandı (belge) | checkpoint · şart nesne tanımıyla · süreç taraması · ≤ 3 madde/soru |
+| (önceki) PN-67 | kapandı (belge) | makro/kompozisyon metriği kapı dışı, bilgi (ters yönde kapandı) |
+| (önceki) PN-101 | kapandı (kod) | `tools/render-oncesi` + `--where` + doctor "kurulu klon" |
+| (önceki) PN-36 · PN-48 · PN-55 · PN-56 · PN-57 · PN-65 | kısmi | still tazeliği adımı · set plakası profili · ILK-4 · doğruluk her render'da · W-48 · contact sözleşmesi |
+| (önceki) PN-53 · PN-83 | açık (1.5) | anlatı yoğunluğu kapısı · style frame zaman damgası |
+
 ## 1.3.0 — 2026-10-30
 
 Zanaat kapıları: ürün kalitesini hareket kalitesinden ölçen kusur kapıları ve araçlar (kimlik kuralı değil). Kaynak: proje bulguları PN-25…99
