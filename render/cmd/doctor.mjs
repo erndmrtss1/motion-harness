@@ -1,6 +1,6 @@
 // motion-render doctor — ortam denetimi (sözleşme §6): Node, paket bağımlılıkları, ffmpeg özellikleri, Chromium, proje dosyaları
 // (proje içindeyse: vendor, fonts/gf/map.json), disk, Higgsfield CLI oturumu + bakiye, Python/faster-whisper (isteğe bağlı),
-// Claude Code plugin'i.
+// Claude Code plugin'i, kurulu klonun durumu (1.4: temiz ve main/sürüm etiketinde mi; worktree ve zip kurulumu atlanır).
 //
 //   motion-render doctor [--json]
 //
@@ -125,6 +125,23 @@ else {
   const s = /\bmotion\b/.test(out) ? syncPlugin({ root: path.join(HERE, '..', '..'), check: true }) : { status: 'yok' }, b = s.before;
   if (s.status === 'farklı') add('plugin metinleri', 'fail', `checkout'tan farklı: ${b.changed.length - b.eol.length} içerik + ${b.eol.length} satır sonu · ${b.added.length} yeni · ${b.stale.length} eski → motion-render plugin-sync`);
   else if (s.status === 'güncel') add('plugin metinleri', 'ok', `checkout ile aynı (${b.files} dosya)`);
+}
+
+// 10) kurulu klon (1.4): motion-render'ın koştuğu checkout temiz ve main ya da sürüm etiketinde mi — geliştirme kurulu klonda yapılmaz
+//     (yarım kodla proje render'ı koşabilir); git worktree geliştirme kopyası sayılır, zip/Release kurulumu atlanır.
+{
+  const root = path.join(HERE, '..', '..'), g = (a) => spawnSync('git', ['-C', root, ...a], { encoding: 'utf8', windowsHide: true });
+  if (g(['rev-parse', '--is-inside-work-tree']).status !== 0) add('kurulu klon', 'skip', 'git checkout değil (zip/Release kurulumu)');
+  else {
+    const br = (g(['rev-parse', '--abbrev-ref', 'HEAD']).stdout || '').trim(), head = (g(['rev-parse', '--short', 'HEAD']).stdout || '').trim();
+    const tag = (g(['describe', '--tags', '--exact-match']).stdout || '').trim();
+    const dirty = (g(['status', '--porcelain', '--untracked-files=no']).stdout || '').split('\n').filter(Boolean).length;
+    let wt = false; try { wt = fs.statSync(path.join(root, '.git')).isFile(); } catch { /* yok */ }
+    const where = (br === 'HEAD' ? (tag || 'ayrık HEAD') : br) + ' · ' + head + (tag && br !== 'HEAD' ? ' (' + tag + ')' : '');
+    if (wt) add('kurulu klon', 'skip', where + ' · git worktree (geliştirme kopyası, kurulu klon değil)');
+    else if (dirty || !(br === 'main' || (br === 'HEAD' && tag))) add('kurulu klon', 'fail', where + (dirty ? ' · değişen ' + dirty + ' dosya' : '') + ' → geliştirme ayrı klonda/worktree\'de yapılır; kurulu klon main ya da sürüm etiketinde ve temiz kalır');
+    else add('kurulu klon', 'ok', where + ' · temiz');
+  }
 }
 
 const reqFail = checks.filter((c) => c.required && c.status === 'fail');

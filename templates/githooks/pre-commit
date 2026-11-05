@@ -1,0 +1,23 @@
+#!/bin/sh
+# .githooks/pre-commit — çelişki taraması commit kapısı (motion-render celiski-tara; yapılandırma docs/celiski.json).
+# Bağlayıcı küme bulgu verirse ya da brief token tavanı aşılırsa commit yok. Etkin kılma (bir kez): git config core.hooksPath .githooks
+# Komut: MOTION_RENDER ortam değişkeni (ör. MOTION_RENDER='node "<klon>/render/bin/motion-render.mjs"') ya da PATH'teki motion-render.
+cd "$(dirname "$0")/.." || exit 1
+if [ -n "${MOTION_RENDER:-}" ]; then
+  MR="$MOTION_RENDER"
+elif command -v motion-render >/dev/null 2>&1; then
+  MR=motion-render
+else
+  echo "pre-commit: motion-render bulunamadı (PATH'te yok, MOTION_RENDER boş) → commit yok. Kurulum: /motion:setup" >&2
+  exit 1
+fi
+eval "$MR celiski-tara"
+durum=$?
+if [ "$durum" -eq 1 ]; then
+  echo "celiski-tara: bulgu var → commit yok. Ayrıntı: motion-render celiski-tara --rapor (out/probe/celiski-tara.md)" >&2
+  exit 1
+elif [ "$durum" -ne 0 ]; then
+  echo "celiski-tara: koşmadı (çıkış $durum: kullanım / yapılandırma hatası, docs/celiski.json) → commit yok" >&2
+  exit 1
+fi
+exit 0
