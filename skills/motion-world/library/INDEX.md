@@ -17,7 +17,7 @@ Paket süreci ve bu kütüphaneyi taşır (HK-36). Bir proje ya buradan bir worl
 | [`desk-paper`](desk-paper/) | lambalı karanlık masa, kâğıt ve mürekkep: "modelleme, ima et" | world.json · `desk-paper.jsx` · lessons (d-xx tuzakları) · DECISIONS | %15–30 | dom | dark | `demo.dc.html` (4 s) | önceki masa üretimleri · örnek (damıtılmış) |
 | [`screen-dark`](screen-dark/) | ekran dünyası, masa dünyasıyla aynı sıcak karanlıkta: fosfor yalnız veri | world.json · `screen-dark.jsx` · lessons · DECISIONS | %12–22 (tipografik %6–14) | dom | dark | `demo.dc.html` (4 s) | önceki ekran üretimleri · örnek (damıtılmış) |
 | [`light-ui`](light-ui/) | düz, gölgesiz aydınlık arayüz vitrini | world.json · lessons (kod yok) | %30–55 (+ patlama ≤ %35) | dom | light | — | örnek (yalnız sözleşme) |
-| [`photo-plate`](photo-plate/) | gerçek görüntü atmosfer ve malzemedir, bilgi değil | world.json · lessons (kod yok) | %12–28 | alpha | dark | — | örnek (yalnız sözleşme) |
+| [`photo-plate`](photo-plate/) | gerçek görüntü atmosfer ve malzemedir, bilgi değil | world.json (+ `set` · `edge`, 1.4) · lessons · [`SET.md`](photo-plate/SET.md) set yöntemi (1.4) (kod yok) | %12–28 | alpha | dark | — | örnek (sözleşme + set yöntemi) |
 
 `world.json` dosyaları `motion-render manifest validate` şemasından geçer. Demo sahneleri yer tutucu kelimeler ("ÖRNEK", "BAŞLIK") kullanır;
 üretken varlık ve Google Fonts dışında font istemez (fontlar `motion-render vendor` ile lisans metniyle iner). Sayfa biçimi `render/CONTRACT.md` §4:

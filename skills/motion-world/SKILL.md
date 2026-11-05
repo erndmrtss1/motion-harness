@@ -197,6 +197,8 @@ function Piece() {
 | `bake` | — | `{noise: [{name, w, h, sigma, seed, amp?}], out}` | `motion-render world <ad> bake-noise` pişirir (`--out`, varsayılan `assets/fx`) |
 | `primitives` | — | world ilkellerinin adları | `world/*.jsx` dışa açılanlarla aynı |
 | `lessons` | — | ders dosyası yolu | `lessons.md` |
+| `set` (1.4) | — | set yöntemi sabitleri: katmanlar, **tek lamba** (`lamp`), objektif (`lens`), ışık okuma parametreleri, eşleme (yalnız karartma), gölge ortam modeli, plaka kabul toleransı | `library/photo-plate/SET.md` §3–§7; ölçülmemiş alan `null`; set başına değerler `set.json`'da. Araçlar okumaz |
+| `edge` (1.4) | — | nesne kenarı eşikleri: `matteMaxPx`, `haloMax`, `grainRatio`, `upscaleMax`, `contactGapPx`, `seam {rowsMax, lumaMax}`, `bodyClass`, `contact` | `references/ILKEL.md` §3–§5; ölçüm MEASURE M-KENAR · M-DIKIS · M-ASKIDA; projenin plakasıyla yeniden ölçülür. Araçlar okumaz |
 
 - Ölçülemeyen değer **uydurulmaz**: ilgili kontrol "ölçülemedi" der; zorunlu alan eksikse `manifest validate` hata verir (YR-4).
 - Örneklerdeki px/kare değerleri 1920×1080 · 60 fps'te ölçülmüştür. Proje başka tuval ya da fps kullanıyorsa ölçüm o koşulda yapılıp yazılır.
@@ -247,7 +249,8 @@ Ne gösteriyor: … · Sayılar: {dur, …} (kart satırı) · Mekanik ↔ gör�
 
 `library/` altındaki world'ler ve durumları `library/INDEX.md`'de listelenir. Bugün: **focusfx-paper** (üretim world'ü: FocusFX FX-01; world.json +
 jsx + lessons + DECISIONS + sözlük şablonu + demo), **desk-paper**, **screen-dark** (world.json + jsx + lessons + DECISIONS + demo), **light-ui**,
-**photo-plate** (world.json + lessons). Hiçbiri varsayılan değildir.
+**photo-plate** (world.json + lessons + `SET.md`: set yöntemi — katmanlı plaka, plakadan derinlik, tek lamba, set kaydı, plaka kabulü; 1.4).
+Hiçbiri varsayılan değildir.
 
 - **Okumak serbesttir:** süreç örneği olarak (bir world.json'un nasıl ölçüldüğü, bir lessons dosyasının nasıl tutulduğu, bir ilkelin T'nin saf
   fonksiyonu olarak nasıl yazıldığı). Yeni world kurarken yön kartına, palete, ilkele **kopyalanmaz**; sessizce önerilmez.
@@ -270,7 +273,9 @@ jsx + lessons + DECISIONS + sözlük şablonu + demo), **desk-paper**, **screen-
 
 ## 9. Çekirdek yardımcılar (world ilkelleri için kısa başvuru)
 
-Tam liste ve imzalar: `render/runtime/motion-core.jsx` başlık yorumu.
+Tam liste ve imzalar: `render/runtime/motion-core.jsx` başlık yorumu. İlkel **mekaniğinin** tasarım kuralları (fotoğraf sprite'ı 9 dilim, gösterim
+boyutunda çizim, ölçekten bağımsız doku, küçük nesne doku politikası, gölge/temas, nesne/ön plan kuralı a–f, nesne kenarı + gövde sınıfı, askıda
+nesne, dikiş, kütüphane onayı): `references/ILKEL.md` (1.4).
 
 | ihtiyaç | çekirdek |
 |---|---|

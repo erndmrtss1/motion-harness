@@ -4,6 +4,8 @@
 > projeye kendiliğinden vermez; kullanıcı açıkça isterse kendi plakasıyla look-dev'de kurulur (`../../SKILL.md` §8).
 > Kaynak: önceki üretimlerde gerçek görüntü (fotoğraf, stok video, kullanıcı görseli) üzerine kurulan sahneler ve plaka araçları. Bütün gömülü
 > plakalar (portre, damga, zemin, kokpit vb.) ve onlardan türetilmiş matlar çıkarıldı — örnek, kullanıcının kendi plakasını işleyen boş bir akıştır.
+> **1.4:** plaka bir filmin **seti** olduğunda (katmanlı plaka, plakadan derinlik, tek lamba, set kaydı) yöntem `SET.md`'dedir; ilkel mekaniği
+> (sprite, nesne/ön plan, nesne kenarı, askıda) motion-world `references/ILKEL.md`'de. Bu dosyanın §1–§6'sı tek plakalı sahne içindir.
 
 ## Kimlik
 
@@ -49,6 +51,10 @@ geçiş maskesi plakanın içinde başlar.
 Plaka en az iki katmana ayrılır (konu / arka plan; gerekirse orta). Hızlar arka plan %60, konu %100, ön öğe %130. Katman kenarı arkasında
 boşluk kalmasın: arka plan konunun altında 20–40 px uzatılır. Miktar küçük: 4–12 px (büyük paralaks 2.5D karton kesiği gibi görünür).
 
+**Set yönteminde (1.4) bu oranlar kullanılmaz.** Set kaydı olan sahnede paralaks keyfi katman çarpanı değildir; plakanın objektifi (yükseklik,
+ilke noktası, px/mm) ve nesnenin gerçek yüksekliği z'den türer: k(z) = H_c / (H_c − z), derinlik plakanın kendi derinlik haritasından
+(`SET.md` §2–§3). Yukarıdaki %60 / %100 / %130 ve `camera.parallax` yalnız set kaydı olmayan tek plakalı sahnenin varsayımıdır.
+
 ## 5. Kaynak ve lisans
 
 İndirilmiş sosyal medya içeriği filigran ya da kapanış kartı taşıyabilir: yalnız temiz bölüm, kırpımlarda filigran olmadığı görülür. Ticari kullanım
@@ -70,6 +76,11 @@ hakkı rapora "kullanıcı doğrulamalı" olarak yazılır. Gömülü varlık sa
 | `motion.upscaleMax` / `maskFlickerMax` / `loopMinGap` | 1.25 / 0.02 / 0.5 s | ölçüldü / kural |
 | `camera.parallax` | 0.6 / 1.0 / 1.3 · 4–12 px · 20–40 px | kural |
 | `camera.maxPxPerFrame`, `motion.writeGlyphsPerSec`, `settlePx` | 10 / 12 / 2 | varsayım — look-dev'de ölçülür |
+| `set.lamp` · `set.lens` · `set.shadow.ambient` (1.4) | `null` | ölçülmedi (uydurulmaz): look-dev'de projenin referans plakalarından (`SET.md` §3–§4) |
+| `set.lightRead` (1.4) | %3 · 12 px · 0,40 · 0,25 · %5 / %15 | yöntem parametresi — referans ölçümü (kaynak proje) |
+| `set.match` · `set.shadow.model` (1.4) | karartma, kazanç ≤ 1 · ortam / L | kural (`SET.md` §4) |
+| `set.accept` (1.4) | boy ±%10 · yer ±20 px · örtme 0 · deneme ≤ 3 | referans ölçümü (kaynak proje); proje `project.md` §6'da yeniden yazar |
+| `edge` (1.4) | matte ≤ 1 px · hale ≤ 2/255 · gren 1/1,5…1,5 · büyütme ≤ ×1,25 · temas boşluğu 0 · dikiş ≤ 2 satır / luma ≤ 10 · yuvarlak gövde ±%20 · temas ≥ %6 / gölge ≥ %3 | referans ölçümü (kaynak proje); tanım `references/ILKEL.md` §3–§5, ölçüm MEASURE M-KENAR · M-DIKIS · M-ASKIDA |
 
 ## Tuzaklar
 
@@ -80,8 +91,26 @@ hakkı rapora "kullanıcı doğrulamalı" olarak yazılır. Gömülü varlık sa
 | W-39 | 3B plaka (WebGL zemin, eğik kamera) denendi | terk: plaka düz kalır, derinlik katmanlarla |
 | W-40 | İndirilmiş içerikte filigran / kapanış kartı | yalnız temiz bölüm; lisans raporda |
 
+Set yöntemi tuzakları (W-41…W-49: konum metinle, matte ile yapıştırma, kesim maskesi dikişi, sabit gölge oranı, sprite'ta çift ışık, plaka
+gölgesi, referansın ışığı, iki "1:1", havuz merkezi yanlılığı) `SET.md` §10'dadır.
+
+## 7. Set yöntemi (1.4) — özet
+
+- **Set üretilir, içerik çizilir:** dünya (zemin, yüzey, masa nesneleri, düşüm) plakadır; içerik (veri, metin, çizgi) motordur ve set ışığına oturur;
+  tekrar eden nesne ilkel sprite'tır. Masa üstü / ön plan nesnesi plakanın parçasıdır, zeminle aynı üretimde (`SET.md` §0–§1).
+- **Derinlik plakadan, paralaks fizikten:** 2.5D derinlik haritası (alfa + gerçek yükseklik) → dilim ya da sürekli çarpıtma; DoF objektif modelinden
+  (`SET.md` §2–§3).
+- **Tek lamba:** yön, havuz, beyaz nokta, merkez/kenar oranı ölçülür; lamba yeri film boyunca tek nokta, her set kaydında; eşleme yalnız karartmayla;
+  düşen gölge ortam modelinden (`SET.md` §4).
+- **Bütünlük = ışık + tasarım dili, envanter değil:** sabitler (lamba, stok, palet, ilkeller, kamera zanaatı, ön plan kuralı) ↔ shot'un anlamından
+  gelen serbestler; set başına niyet paragrafı; bağlayıcı nesne komşu sette aynı nesne (`SET.md` §5).
+- **Set kaydı** (`set.json`) tek kaynak: still ve klip aynı kayıt; plakada referans zorunlu (seed yoksa) (`SET.md` §6).
+- **Plaka kabulü** = malzeme (`ingest-kapi`) + kenar + yerleşim + yer/boy + dikiş + askıda (`SET.md` §7); düzeltme maskeli bölge üretimiyle
+  (motion-core GENAI §17).
+
 ## Bileşen kodu neden yok
 
 Kaynakta bu world'ün ortak bileşeni yoktu; mantık sahnelere ve plakaya özgü araçlara gömülüydü ve plakaların hepsi proje içeriğiydi. Örnek,
 analiz → uzantı → key → paralaks akışını ve ölçülerini taşır; ilkeller (plaka katmanı, uzantı, paralaks yığını, world katmanı) kullanıcı isterse
-kendi plakasıyla look-dev'de yazılır.
+kendi plakasıyla look-dev'de yazılır. Set yönteminin ilkelleri (sprite, ön plan, kenar) için tasarım kuralları motion-world `references/ILKEL.md`'dedir
+(1.4); kod yine projede yazılır, kütüphaneye proje plakası girmez.
