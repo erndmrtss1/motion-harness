@@ -6,7 +6,8 @@
 // Bildirim: scenes.json sahne `checks: [...]` + checks/<id>.json (dizi ya da { hooks, set, checks }) birleşir. Kancalar: sahne `hooks`
 // + checks dosyasının `hooks`u; sahne modülleri yüklendikten sonra sayfaya enjekte edilir. Her kontrol: { type, name?, severity?, … }.
 // Katmanlar: piksel/zaman (13: kare dizini ya da mp4) · tasarım zamanı izdüşüm (4: render yok, sayfa kancaları) · ses/tipografi (3).
-// Çıktı: out/probe/<id>-fc.json (+ --sheet / "evidence": true → out/probe/fc/<id>-<ad>.png kanıt sayfaları).
+// Çıktı: out/probe/<id>-fc.json (+ --sheet / "evidence": true → out/probe/fc/<id>-<ad>.png kanıt sayfaları). --only koşusu (1.4): --out yoksa
+// out/probe/<id>-fc-only-<t1+t2>.json (tam kaydın üstüne yazmaz). Yazım .part → rename.
 // Durum: pass · fail (önem: error|warn|info) · warn (ölçülemedi / incelendi) · skip. Çıkış 3 = error düzeyinde ihlal (qc ile aynı).
 // --cand aday.json: [{ name, set: {GLOBAL: değer} }] (ya da { ad: {GLOBAL: değer} }) — her aday için tasarım kontrolleri ayrı sayfada
 // koşar, sonuçlar `candidates` altında karşılaştırılır (kamera adayı arama).
@@ -56,6 +57,7 @@ else {
 hooks = [...new Set(hooks)];
 checks = checks.map((c, i) => Object.assign({}, c, { __i: i }));
 const only = argOf('--only') ? argOf('--only').split(',').map((s) => s.trim()).filter(Boolean) : null;
+function onlySlug(list) { const s = list.join('+').replace(/[^A-Za-z0-9._+-]+/g, '_').slice(0, 80); return s || 'secim'; }
 if (only) checks = checks.filter((c) => only.includes(c.type) || (c.name && only.includes(c.name)));
 
 const tl = readTimeline(scene.file);
@@ -69,6 +71,8 @@ const ctx = {
   framesDir: argOf('--frames-dir') ? path.resolve(argOf('--frames-dir')) : null,
   mp4: mp4Arg === 'auto' ? latestMp4(scene.id) : mp4Arg ? path.resolve(ROOT, mp4Arg) : null,
   probeDir: path.join(OUT, 'probe'), pageData: {}, hooks: { declared: hooks, loaded: [], missing: [] }, sheet: has('--sheet'),
+  // uzun tipler (onset A/B) ilerleme satırını stderr'e yazar (stdout --json için temiz kalır)
+  progress: (s) => process.stderr.write(s + '\n'),
 };
 
 const results = [];
@@ -150,9 +154,11 @@ const report = {
   sources: { framesDir: ctx.framesDir ? rel(ctx.framesDir) : null, mp4: ctx.mp4 ? rel(ctx.mp4) : null },
   summary, checks: results, candidates: candidates || undefined, exit: errors.length ? 3 : 0,
 };
-const outFile = argOf('--out') ? path.resolve(argOf('--out')) : path.join(OUT, 'probe', scene.id + '-fc.json');
+// --only koşusu tam kaydın (<id>-fc.json) üstüne yazmaz (1.4, PN-131): --out yoksa <id>-fc-only-<süzgeç>.json
+const outFile = argOf('--out') ? path.resolve(argOf('--out')) : path.join(OUT, 'probe', scene.id + (only ? '-fc-only-' + onlySlug(only) : '-fc') + '.json');
+if (only) report.only = only;
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
-fs.writeFileSync(outFile, JSON.stringify(report, null, 1));
+fs.writeFileSync(outFile + '.part', JSON.stringify(report, null, 1)); fs.renameSync(outFile + '.part', outFile);
 
 if (JSON_OUT) process.stdout.write(JSON.stringify(report, null, 1) + '\n');
 else {

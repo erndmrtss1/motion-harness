@@ -59,6 +59,10 @@
 | ÇK-14 | **Tek görev, tek çıktı, en küçük bağlam:** alt ajana yalnız gereken dosyalar verilir; katalog/uzun araç çıktısı ajan bağlamına kopyalanmaz. | rapor | — | — | hayır | SERT | kalıcı reviewer bağlamı tur tur büyüdü (çok büyük bağlam) |
 | ÇK-15 | **Sayılar birimli:** s, kare@fps, px@1080p, %, /255, ΔE2000, LUFS, dBTP, kredi. | rapor | — | — | hayır | SERT | birimsiz sayı 30/60 fps karışıklığı yarattı |
 | ÇK-16 | **Ölçmeden "geçti" denmez:** her kapı iddiası bir JSON (`out/probe/…`) ya da kare kanıtına bağlanır. | rapor | — | — | hayır | SERT | "geçti ama okunmuyor" sahne bulguları |
+| ÇK-17 | **Ölçüm eşiği yalnız proje sahibi kararıyla değişir (1.4):** `checks` eşik/taban alanı, araç varsayılanı, world ölçü alanı; aşım ölçümle açık karar olur, eşik sessizce gevşetilmez. | rapor, MEASURE §0 | — | proje sahibi (karar kaydıyla) | hayır | SERT | ölçüye takılan içerikte eşiği esnetme eğilimi kapı anlamını aşındırdı |
+| ÇK-18 | **Araç kısıtı içeriği şekillendirmez (1.4):** araç bir içeriği ölçemiyor ya da yanlış sınıflıyorsa **araç düzeltilir** (proje ayarı; paket kodu ise paket notu); içerik araca göre kırpılmaz, ertelenmez, kaldırılmaz. | rapor, rev | — | — | hayır | SERT | aksan sınıfı gölgelenmiş fotoğraf aksanını tanımayınca içerik tasarımı tavizle daraltıldı |
+| ÇK-19 | **Estetik metrik kapı dışı (1.4):** kompozisyon/doluluk/derinlik oranı gibi estetik sayılar bilgi satırıdır; kapı kusur ölçüleri (§0.6, §8.1, SERT) ve reviewer kararıyla verilir. Ayrıntı PLAYBOOK §3.2. | rev, rapor | — | — | hayır | SERT | estetik metrik eşiği kapıya bağlanınca sayı için tasarım yapıldı |
+| ÇK-20 | **Verim V1–V8 (1.4):** PLAYBOOK §3.4 — değişim-odaklı ölçüm, tam tarama yalnız kilometre taşında; kapı sayısı eksilmez, eksilen tekrar ve ritüeldir. **Belge hijyeni:** PLAYBOOK §3.5 — tek güncel spec, `docs/KARAR-TARIHI.md`, `celiski-tara` commit kapısı. | rapor, `celiski-tara` | — | — | hayır | SERT | tam taramanın her ara adımda tekrarı ve çelişen spec kopyaları zamanı ve director brief'ini zehirledi |
 
 ---
 
@@ -294,6 +298,7 @@ Kaynak projede bir render reddinden sonra SERT ilan edilen sekiz kural. Paket bu
 ### §8.1 Zanaat kapısı: hareket kalitesi kusurları (1.3)
 
 Kapı **kusur** ölçer; kota ölçmez (§0.8). Ölçüler `frame-check` Katman D (MEASURE §4, `fc:pop` … `fc:moves`); animatik kapısında `pop` + `onset` kare dizininden (`--step 2`), `velocity` + `entryExit` + `moves` sahne sayfasından (tam kare hızı) koşar. Zanaat (easing, süre, mekanik) kütüphane world'lerinden serbestçe örnek alınır (UCUZ #11 kimliği sayar, zanaatı değil).
+1.4: kural C (ZN-6) ve vuruş ağırlığı (ZN-7) eşikleri world `plan` bloğundadır (look-dev / ilkel fazında kalite referansından ölçülerek yazılır); storyboard'dan önce `plan-check` (fizibilite, kare ızgarası `--fps`), render sonrası piksel ölçüsü (MEASURE §5 M-C, M-VURUS) ile ölçülür. Blok yoksa `plan-check` denetimi atlar ve kural reviewer maddesi olarak (hız, acele, öncü) gerekçeyle denetlenir; eşik yazıldıktan sonra kapı sayısı ölçüdür.
 
 | id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
 |---|---|---|---|---|---|---|---|
@@ -302,6 +307,17 @@ Kapı **kusur** ölçer; kota ölçmez (§0.8). Ölçüler `frame-check` Katman 
 | ZN-3 | **Giriş/çıkış süresi:** her öğe girişi (ilk görünür kare → tam görünür) ve çıkışı (tam görünürden → son görünür kare) ≥ 0,4 s; anlık beliriş 0 s sayılır. | fc:entryExit | ≥ 0,4 s | proje (yalnız yukarı) | hayır | SERT | 6 karelik (0,1 s) kırpımla çıkan yazılar ve tek karede düşen kartlar ucuz göründü |
 | ZN-4 | **Hamle/shot:** kamera hamlesi shot başına sayılır; eşik projede yazılır. **UYARI** sınıfıdır (kapıyı kilitlemez), reviewer gerekçe yazar. | fc:moves | ≤ 2 hamle/shot (eşik parametre) | proje | hayır | UYARI | kısa ve çok sayıda kamera hamlesi "her shot hareketli" kotasından doğdu |
 | ZN-5 | **Görünür başlangıç:** olay öğesinin ilk **görünür** karesi (|ΔY| ≥ 40/255, ≥ 12 px @1080) kelime çapasından sonra ve ≤ 1 kare içinde (ÇEN-1'in ölçüsü). Alet çizginin ucunu örtüyorsa A/B kipi (gizleme sözleşmesi) zorunlu; piksel kipinin belirsiz satırı karar değildir. | fc:onset | 0 ≤ Δ ≤ 1 kare | — | hayır | SERT | kod kancası "çizildi" derken yay ilk 14 karede görünür eşiğin altındaydı; kanca zamanı görünürlüğü söylemez |
+| ZN-6 | **Hareket kuralı C (1.4, KUSUR):** her kamera hamlesi tepe hız bandında, görünür süresi (yolun %10 → %90'ı) alt sınırın üstünde, C1 (ardışık \|Δv\| ÷ ana hamle tepesi; settle dahil) ≤ sınır, varışta settle ile; hamlenin amacı künyede yazılı. Seyahat hamlesi (crane-up → travel → crane-down) kendi sınıf bandıyla (M-SEYAHAT); sürüklenme ve sert varış geçmez. Kapı sayısı piksel izlemeden, tek yöntemle; kanca ve plan beklentidir. | M-C, M-SEYAHAT, plan-check (`moves`), fc:velocity (beklenti) | world tanımlar (`plan.moves`; [referans] tepe 8–14 px/kare @60 · görünür ≥ 1,0 s · C1 ≤ %5 · settle 0,28 s · seyahat 1,5–2,5 s, tepe ≤ 25) | world, proje (yalnız sıkılaştırır) | hayır | SERT | kısa yol + kısa süreli hamleler "ani kamera" okundu; hız ölçerleri (kanca, blok medyanı, piksel) ayrışınca kapı sayısı tek yönteme bağlandı |
+| ZN-7 | **Vuruş ağırlığı (1.4, KAPI):** her girişte fiziksel öncü (gölge, ışık, kılavuz) sınıf bandı kadar önce görünür; öncü ayrı vuruş değildir. Aynı anda ≤ `maxConcurrent` vuruş başlangıcı, ardışık başlangıçlar arası ≥ `minGapMs`; giriş süresi sınıf başına; tutuş penceresi shot içinde. Muafiyet yalnız proje sahibi kararıyla, olay başına kayıtlı (M-VURUS). | M-VURUS, M-ONCU, fc:onset (sınıf eşiği), fc:entryExit, plan-check (`beats`, `leads`, `entry`, `--fps`) | world tanımlar (`plan.beats` · `plan.leads` · `plan.entry`; [referans] ≤ 1 · ≥ 120 ms · gölge 60–70 ms · ışık 120–150 ms) | world, proje | hayır | SERT | öncüsüz ve üst üste başlayan vuruşlar "aceleci his" verdi; tek mutlak görünürlük eşiği yumuşak öncüyü geç saydı |
+
+### §8.2 Nesne, kenar ve temas (1.4)
+
+Üretken plaka, fotoğraf sprite'ı ya da yerel düzenlemeyle sahneye giren nesne için. Eşikler world alanı (`world.edge`, `world.edge.contact`; motion-world `references/ILKEL.md` §3–§5); ölçü bağımsız ölçümle (motion-measure) alınır, araç tipi değildir (25 tip sabit).
+
+| id | tanım | ölçüm | varsayılan | override | zorunlu | sınıf | kaynak dersi |
+|---|---|---|---|---|---|---|---|
+| NK-1 | **Nesne kenarı (gövde sınıfıyla):** nesne yüzeyle aynı malzemeden gelmiş gibi biter — matte yumuşatması, hale, kenarda kesilen gren, aşırı büyütme ve gölge temas boşluğu yok. **Düz** kenarda w_matte sınırı; **yuvarlak** gövdede (silindir, pah) hale ve terminatör kaynak plakaya göre ±%20 (mutlak eşik yok); iç içe kenarlı nesnede yalnız silüet. Maskeli bölge üretiminde dikiş çizgisi yok (M-DIKIS). | M-KENAR, M-DIKIS, meas | world tanımlar ([referans] w_matte ≤ 1 px @1× · hale ≤ 2/255 · gren 1/1,5…1,5 · büyütme ≤ ×1,25 · temas boşluğu 0 · dikiş ≤ 2 satır, ≤ 10/255) | world | hayır | SERT | ayrı üretilip matte ile yapıştırılan masa nesnesi kenarda yumuşadı, gren kenara ulaşmadı, sınır çizgisi göründü; yuvarlak gövdede mutlak hale eşiği doğal ışık tümseğini kusur saydı (tanım motion-world `references/ILKEL.md` §3, ILK-12 gövde sınıfı) |
+| NK-2 | **Temas:** zemindeki her nesnenin taban kenarında temas bandı ve gölgesi vardır (göreli eşik; yüzey değişirse ölçülemedi); yoksa nesne askıdadır (UCUZ-17). | M-ASKIDA, meas, rev | world tanımlar ([referans] temas ≥ %6 · gölge ≥ %3, göreli) | world | hayır | SERT | temas gölgesi olmayan masa nesnesi zeminden kopuk "havada" okundu; koyu yüzeyde /255 farkı küçük kaldığı için eşik görelileştirildi |
 
 ---
 
@@ -344,6 +360,7 @@ Mekanizma core, k eşikleri world (`world.supersample`).
 | MT-8 | `s.replace(a, () => b)`; dolar desenleri (`$&`, `$'`, `$1`) metne sızmaz. | kod | — | — | hayır | SERT | — |
 | MT-9 | Storyboard, look-dev ve render **aynı sahne kodundan** (kare → an eşlemi). | kod | — | — | hayır | SERT | ayrı kodla çizilen storyboard render'la tutmadı |
 | MT-10 | `undefined` prop varsayılanı ezmez (anahtarlar ayıklanır); tarayıcıda çizilecek PNG renk etiketsiz yazılır. | kod | — | — | hayır | SERT | — |
+| MT-11 | **Zaman-saflık (1.4):** karenin çıktısı önceki karelere bağlı değildir — ortadan başlayan render ↔ tam render tanık karelerde `imgdiff` 0. Kalıcı düğümde raster yeniden kullanımı görülürse içerik ağacı kare başı **taze** kurulur (içerik kökünün React anahtarı kare başı), görüntüler gösterim boyutunda çizilir. Tanık kare protokolü kısmi render öncesi ve sonrası da koşar. | M-ZS, fc:identical | fark 0 | — | hayır | SERT | hareket sırasında çizilmiş kare sonraki durgun karelerin rasterini değiştirdi; kod T'nin saf fonksiyonuyken çıktı geçmişe bağlıydı |
 
 ---
 
@@ -411,6 +428,8 @@ Sessiz kuyruk (SES-14) → SN-7; master sesi (SES-16) → MS-2; olay ↔ kelime 
 | GEN-14 | Motorun yapabildiğini (ışık, gölge, kamera, tipografi, geometri) isteme; varlıkta insan/el/yüz/yazı/logo yok. | rev (UCUZ-8, UCUZ-9) | — | proje | hayır | SERT | — |
 | GEN-16 | Klip ≤ `clipMaxSeconds` (core 5 s); donma ve ileri-geri yok. | `ingest`, rev | 5 s | proje (gerekçeyle yukarı) | hayır | SERT | — |
 | GEN-22 | Lisans notu her varlıkta (plan, tarih, model); malzemede bilinmiyorsa açık karar; referans videolar yalnız öğrenme. | `ingest`, rapor | — | — | hayır | SERT | — |
+| GEN-23 | **Plaka düzenlemesi maskeli bölge üretimiyle (1.4, varsayılan):** yer tutucu + ölçek referansı zorunlu; tam plaka yalnız ışık/kompozisyon değişince; aynı yöntemle deneme ≤ 3, sonra yöntem değişir (açık karar). | rev, M-DIKIS | 3 deneme | proje | hayır | SERT | metinle konum tarifi düzenlemede tutmadı; yer tutucu referansla tek üretimde yerinde ve boyunda geldi (GENAI §17) |
+| GEN-24 | **İstemde seri/stüdyo/sanatçı/marka/referans proje adı yok (1.4);** malzeme, ışık ve lens tarifi kullanılır. | rev | 0 | — | hayır | SERT | kimlik taşıyan adlar çıktıyı tanınır bir üsluba çekti (GENAI §18.1) |
 
 ---
 
@@ -451,12 +470,13 @@ Sessiz kuyruk (SES-14) → SN-7; master sesi (SES-16) → MS-2; olay ↔ kelime 
 | UCUZ-9 | Yapay zekâ artefaktı (el, yüz, yazı, geometri kırığı). | rev, fc:temporal (`src: asset`) | 0 | — | hayır | SERT | — |
 | UCUZ-10 | Metin üstüne doğrudan efekt. | rev | 0 | — | hayır | SERT | — |
 | UCUZ-11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik.** Yalnız **kimlik** ekseni üçtür: **palet · iskelet (kompozisyon) · nesne dili** (malzeme, primitif/alet görünümü, tipografi ailesi). **Zanaat** (easing, süre, hız profili, mekanik: katlama, cetvel, kalem, kamera hareket grameri, geçiş mekaniği) kimlik değildir; kütüphaneden serbestçe örnek alınır ve #11'de sayılmaz. Seçilmiş world'e benzerlik #11 değildir (HK-36). | rev | 0 | — | hayır | SERT | paket bir önceki filmden çıkarıldı; üslubun sızması en büyük risk |
+| UCUZ-17 | **Askıda nesne (1.4):** zeminde durması gereken nesnenin tabanında temas bandı ya da gölgesi yok; nesne zeminden kopuk "havada" okunur (NK-2; tanım motion-world `references/ILKEL.md` §4). | rev, M-ASKIDA | 0 | — | hayır | SERT | temas gölgesiz masa nesnesi reddedildi; ölçü göreli temas bandıyla yazıldı |
 
-Raporda biçim: `UCUZ: geçer | VAR #n | sınırda #n`.
+Raporda biçim: `UCUZ: geçer | VAR #n | sınırda #n`. #12–#16 projenin kendi işaretlerine bırakılır (`project.md` yasaklar listesi, 12'den numaralanır); paket işaretleri #17'den sürer (1.4).
 
 ---
 
-## §18 DUR sözleşmesi (birleşik, 11 tetik)
+## §18 DUR sözleşmesi (birleşik, 13 tetik)
 
 Varsayılan davranış "soru yok, işaretle ve devam" (ÇK-01). Aşağıdaki tetiklerde iş **durur**: teslim edilebilen teslim edilir, rapor yazılır (`**DUR — <nokta>**` satırıyla biter), sonraki adım **yeni kullanıcı kararıyla** açılır. İstemde açıkça "KAPI GEÇERSE DURMA" yazıyorsa ve kapı geçtiyse durulmaz.
 
@@ -469,10 +489,12 @@ Varsayılan davranış "soru yok, işaretle ve devam" (ÇK-01). Aşağıdaki tet
 | DUR-5 | Üretim aracı yok (YOL B). | `doctor`, `gen` | istem sayfasını yaz ve dur | — | hayır | SERT | — |
 | DUR-6 | Sahne açılmıyor (`PAGEERROR`, `x-import: FAILED`, sanity: seek çalışmıyor). | `probe`, `render` | render'a geçme | — | hayır | SERT | — |
 | DUR-7 | **Faz sonu:** her faz `DUR: <teslim>` ile biter; reviewer GEÇER kaydı yoksa FİNAL/TESLİM yazılmaz (RV-7). | rapor | teslim + rapor | — | hayır | SERT | — |
-| DUR-8 | **Ön koşul doğrulaması geçmedi:** "vektör" varlık raster kap çıktı · ses metninde beklenmeyen fark · girdi dosyası tutarsız. | `logo check`, fc:sync | dur ve doğru girdiyi iste | — | hayır | SERT | "SVG" dosyası base64 raster kaptı |
+| DUR-8 | **Ön koşul doğrulaması geçmedi:** "vektör" varlık raster kap çıktı · ses metninde beklenmeyen fark · girdi dosyası tutarsız (1.4: `tools/render-oncesi` çıkış 1). | `logo check`, fc:sync | dur ve doğru girdiyi iste | — | hayır | SERT | "SVG" dosyası base64 raster kaptı |
 | DUR-9 | Reviewer GEÇMEZ ve tek düzeltme turu da GEÇMEZ. | rev | kontak + nedenler; render yok | — | hayır | SERT | — |
 | DUR-10 | SERT ölçüm ihlali bulundu ve "kasıtlı" görünüyor. | qc, fc, rev | düzelt ya da önce sor; "kasıtlı" notuyla bırakma | — | hayır | SERT | — |
 | DUR-11 | Zevk puanı profil kapısının altında (Z-KAPI). | rev | render yok; storyboard/look-dev'e dön | proje (yalnız yukarı) | hayır | SERT | — |
+| DUR-12 | **Hareket kontağı hazır (1.4):** ilk perde ve yeni hamle/mekanik giren her perde (`contact motion`, PLAYBOOK §4.5 Adım 6a). | ana oturum | "DUR — hareket"; onaysız tam render yok | — | hayır | SERT | hamle zanaatı yalnız tam render'da görülünce geri dönüş pahalıydı |
+| DUR-13 | **Raporun "kredi yüzünden yapılmadı / kabul edildi" satırı dolu (1.4).** | rapor | dur ve sor; satır kabul mekanizması değildir | — | hayır | SERT | bütçe gerekçesiyle sessiz kalite tavizi |
 
 Ayrıca durduran ama DUR sayılmayan araç çıkışları: disk < 40 GB (çıkış 6), watchdog (4/5), QC HATA (çıkış 3) — sebep giderilmeden sonraki adıma geçilmez (look-dev kapısı istisna: qc bilgi satırıdır, HK-34 · gate §1).
 
@@ -552,6 +574,7 @@ Kaynak eşiklerinin çoğu 30 fps karesiyle yazılmıştı; paket saniye tutar.
 | hold / ölü açılış / çizim arası | 0,25 / 1,3 / 0,6 s | 15 / 78 / 36 | 8 / 39 / 18 | KM-14 |
 | watchdog kare / durma | 45 s / 120 s | — | — | RH-2 |
 | canlı | ≥ 60 fps · ≤ 100 ms · düşen 0 | — | — | PR-3 |
+| (1.4) kural C / seyahat · vuruş aralığı · öncülük | world `plan.moves` · `plan.beats` · `plan.leads` (ms → kare: alt sınır yukarı, üst sınır aşağı; M-IZGARA) | [referans] 0,12 s → 8 kare | 4 kare | ZN-6, ZN-7 |
 
 ---
 

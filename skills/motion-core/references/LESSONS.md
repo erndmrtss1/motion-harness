@@ -19,7 +19,7 @@
 > - kimliksiz prosedür maddeleri `GENAI §n` / `AUDIO §n`;
 > - `—` = kural yok, yalnız teknik bilgi.
 >
-> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval, 1.1 ve 1.2 dersleri L-220…L-227 = 227) + §9'da world sınıfı liste. Ham kaynaklar:
+> **Tekilleştirme:** ham ≈ 340 kayıt → **219 core ders** (+ eval, 1.1 ve 1.2 dersleri L-220…L-227 = 227; + 1.4 dersleri L-228…L-250 = 250, §1.5, §2.5 ve §8.5) + §9'da world sınıfı liste. Ham kaynaklar:
 > - tuzak arşivi 71 (63 core);
 > - skill / world / ADR / değişiklik kaydı / bellek dersleri 144 (105 core);
 > - kaynak proje retrosu 72;
@@ -105,6 +105,25 @@
 - **L-041 · Storyboard, look-dev ve render aynı koddan** — Tahta ve look-dev sayfaları sahne kodunu kare → an eşlemiyle çağırır. Ayrı çizilen storyboard render'la tutmadı. · *retro* · *MT-9*
 - **L-042 · Font yüklenmeden ölçüm** — Font yüklenmeden ölçülen düzen kalıcı yanlış kalır. `file://` font CORS'a takılır, yedek font çizilir, ölçüm boş döner. Sayfa http kökünden sunulur; ölçüm önbelleği yalnız `document.fonts.check` doğruyken tutulur. · *traps, retro* · *MT-4*
 
+### 1.5 Alt piksel, raster yolu ve süzgeç yüzeyi (1.4)
+
+Hepsi tek karede görünen sıçrama üretir (`fc:pop`, `fc:temporal` yakalar); kod T'nin saf fonksiyonu olsa da Chromium'un raster kararları kare kareye değişir.
+
+- **L-228 · Kesirli SVG metin y'si tam piksele oturur** — SVG `<text>` y'si kare başı kesirli değişince (yazımda "yukarıdan iner" oturması) Chromium glifleri düşeyde tam piksele oturtur: taban yarım pikseli geçtiği karede büyük harflerin bütün kenarı 1 px sıçrar ([ÖRNEK] kenarda 102/255, `pop` "tek kare belir/kaybol"). Oturma kesirli y ile değil **bileşik katman ötelemesiyle** yapılır (raster bir kez, bileşikte kayar) ya da yazımın ilk birkaç pikseline sığacak kadar kısa tutulur. · *1.4* · *K8, ZN-1*
+- **L-229 · Kök ölçek ≠ 1 parıltısı** — Kök katman ölçeği 1'e çok yakın ama 1 değilken (ör. 1,0012 → 1 oturma) büyük harf kenarlarında kare atlamalı parıltı çıkar; ölçek tam 1'de yoktur. Ölçek oturması \|ln k\| küçük bir eşiğin altına inince ([ÖRNEK] < 2·10⁻⁴) tam 1'e yazılır. · *1.4* · *K8*
+- **L-230 · Tek parlaklık süzgeci nefesi 8 bit basamağı** — Kök `filter: brightness()` ile verilen küçük ışık nefesi (ör. ±%1,2 / 5 s) 8 bit yuvarlamada **bütün kareyi aynı karede** bir düzey atlatır (`temporal` oran ≈ 2). Nefes uzamsal (havuz maskeli, bölgeye göre faz) ve titreşimli (dither) olur; tek küresel parlaklık süzgeci kullanılmaz. · *1.4* · *IŞ-9, BAS-3*
+- **L-231 · `feOffset` tamsayıya yuvarlanır** — Örnek ötelemeli hareket bulanıklığı (`feOffset dx = o·L·u`) Chromium'da tamsayı piksele yuvarlanır (x,50 yukarı); ötelemeler tam ±x,50'ye düştüğü karede örnekler asimetrik olur, bütün katman hamle yönünde ≈ 0,2 px kayar → piksel izlemede o karede hız basamağı (C1 > %5; bulanıklık kapalıyken basamak yok). Ayrıca çekirdek genişliği L ile basamaklı değişir ve hız eşiğinde açılıp kapanır. Örnekler simetrik tamsayı ötelemede, ağırlıklar L boyunda kutu çekirdeğinin örtüşmesinden kurulur (L sürekli → çekirdek sürekli); eşikte sert aç/kapa yerine rampa. · *1.4* · *ZN-2, ZN-6*
+- **L-232 · Dinlenmeye inerken tamsayı netleşme** — Kamera yumuşak oturmayla tam 0 ötelemeye inerken Chromium katmanı alt piksel konumunu basamaklı (≈ 1/16 px) örnekler; kesir sıfıra düştüğü karede katman **tamsayıya oturur** ve bütün kare bir anda netleşir ([ÖRNEK] sabit kâğıtta yüksek geçiren std 3,07 → 3,26/255). Yavaş kuyrukta komşu farklar küçük olduğundan `temporal` sıçrama sayar. Aynı nedenle dönme/öteleme kalan duruş kareleri dinlenme karesinden yumuşaktır. Duruşa inen hamlenin son karelerine başka sürekli hareket (yüzer drift) biner ya da dinlenme konumu tamsayı yazılmaz. · *1.4* · *BAS-3, MT-11*
+- **L-233 · Seek'te raster yeniden kullanımı → taze ağaç** — Seek render'ında karenin çıktısı önceki karelere bağlı olabildi: hareket sırasında (süzgeç açık) çizilmiş bir kare, sonraki durgun karelerde kalıcı düğümün rasterini değiştirdi; ortadan başlayan render tam render'dan farklı çıktı ([ÖRNEK] ort. 0,008–0,031/255). Görüntüyü gösterim boyutunda çizmek farkı yalnız azalttı; küçük sabit dönme + görünmez boya geçersizlemesi de sıfırlamadı. İçerik ağacının React anahtarı kare başı değişince (her karede yeniden kurulum) fark **0**, taze çıktı aynı, süre ≈ %1 arttı. Tek kare probe geçmişsiz olduğu için bunu göstermez (M-PROBE). · *1.4* · *MT-11, M-ZS*
+- **L-234 · `feGaussianBlur` eksen σ < 0,8 bırakılır** — Bir eksenin σ'sı ≈ 0,8'in altına inince Chromium o eksende bulanıklığı **uygulamaz**; eğik hamlede σ eşiğin altına düştüğü karede kâğıt greni tek karede sertleşir ([ÖRNEK] +%32). Ayrıca 3σ tamsayıyı geçerken çekirdek yarıçapı basamaklı değişir ([ÖRNEK] +%15). Hareket bulanıklığı eksen başına ayrı geçişle, eksen başı taban + karışımla (ya da çekirdek örnek ağırlıklarıyla açık) kurulur. · *1.4* · *ZN-1, KM-7*
+- **L-235 · `rotate()` tam 0deg eksen hizalı raster yoluna geçer** — Katman dönüşümündeki dönme dizesi tam `0deg`'e inince (drift dönmesi hamle sonunda söner; settle tamsayı dinlenmeye varır; duruşta dönme 0'dan kalkar) Chromium eksene hizalı raster yoluna geçer → tek karede gren/keskinlik basamağı ([ÖRNEK] MAD 0,44–1,37, keskinlik +%6,5). `rotate(2e-6deg)` → `rotate(0deg)` geçişi tek başına yeter. Dönme hiç tam 0 yazılmaz: \|rz\| ≥ 10⁻⁶ alt sınırı (geometri etkisi ≈ 10⁻⁵ px). Sabit hızlı hamlede görünmez, dinlenmeye yakın karelerde görünür. · *1.4* · *BAS-3, MT-11*
+- **L-236 · Büyük CSS ölçekte ardışık render raster düşer** — Büyük CSS ölçekli (ör. ×4 mercek) katmanda ölçek 1'e dönerken **ardışık** render yalnız siyah karo değil, dolguları da düşürdü (gövde saydam/koyu); siyah kare ayıklaması kaçırdı, `pop` yakaladı. Kare başı taze sayfa (probe) her karede doluydu. Büyük ölçekli katmanda ardışık render ↔ taze probe tanığı alınır; düşen kareler taze sayfayla yeniden çizilir. · *1.4* · *SS-4, MT-11*
+- **L-237 · İki set aynı sayfada → SVG id çakışması** — Aynı bileşen kütüphanesinden iki set aynı karede çizilince SVG `id`'leri çakıştı ([ÖRNEK] kare başına 272 kopya kimlik); `url(#…)` belgedeki **ilk** tanıma gider (çıkan setin ışığı/konumu) → süpürme bitince öğe altları tek karede değişti. Bileşen kimlikleri önekli üretilir (set/örnek öneki, varsayılan boş = eski çıktı); kare başı yinelenen `id` sayısı 0 olmalı. · *1.4* · *MT-7, MT-5*
+- **L-238 · Süzgeçli katmanda taşan içerik süzgeç yüzeyini küçültür** — Süzgeçli katmanın (kare başı süzgeç yolu) içinde kadraj/plaka dışına taşan büyük içerik (`overflow: visible` SVG, yüksek z'deki kartın büyük gölgesi) Chromium'un süzgeç çizim yüzeyini küçültür → zemin **tek karede** yumuşar ([ÖRNEK] keskinlik −%20). Süzgeç bölgesini daraltmak etkisiz; taşan içeriği sınırda kırpmak (`overflow: hidden`) çözer, öteki kareler bayt aynı kalır. · *1.4* · *ZN-1, MT-5*
+
+- **L-247 · MoBlur "over" bileşimi yarı saydam kamera içeriğinde kaplamayı ikiler (1.4)** — Yönlü bulanıklık örnekleri "over" ile birleşince yarı saydam katman kendi üstüne biner (ölçülen: luma 115 → 105, std 15 → 23). Bulanıklık uygulanan kamera katmanı opak zemin taşır. · *mekanik testi* · *PATTERNS K-57*
+- **L-248 · DoF süzgeci dinlenmede kalkarsa raster yolu değişir (1.4)** — Hamle bitince odak süzgeci tamamen kaldırılırsa (σ → 0, süzgeç yok) Chromium başka raster yoluna geçer ve dinlenme karesinde keskinlik basamağı çıkar; hamle boyunca ve dinlenmede küçük taban değer verilir (L-235 ile aynı aile). · *mekanik testi* · *PATTERNS K-57*
+
 ## 2. Ölçüm
 
 ### 2.1 Ölçerin kendisi
@@ -167,6 +186,19 @@
 - **L-070 · Yeni world özelliği tam render öncesi ölçülür** — Yeni ışık/doku özelliği ilk tam render'da kusur verdi → hareketli karelerde kenar/içeri luma oranı tam render öncesi ölçülür. · *retro* · *KD-11*
 - **L-071 · Render süresi ölçümle** — Render süresi riski tahminle değil ölçümle yönetilir (kare süresi profili + `--frame-log` + imgdiff); asıl maliyet beklenmedik yerdeydi. 2× süre tahmini ilk kareden iyimser çıktı → temsilci karelerden tahmin. · *retro* · *RH-3, M-BENCH*
 - **L-072 · Elle incelenen aralık kaydı** — Yönetmence incelenen QC uyarısı manifestte `review.<tür>: [[f0, f1, "not"]]` olarak durur. QC uyarıyı "incelendi"ye çevirir; hata gizlenmez. · *retro* · *SK-2*
+
+### 2.5 Ölçerin sınırları (1.4)
+
+- **L-239 · Varsayılan bölge içerikten bağımsız sonuç verir** — Keskinlik ölçüsünün varsayılan bölge çifti (aksan ↔ koyu nötr) aksansız klipte aksan olmayan sıcak bir zemini eşleyip "geçti", ışık değişince "bölgeler bulunamadı" verdi; hangi bölgenin ölçüldüğü yalnız satır içinde görünüyordu. Varsayılan bölge yalnız aksan olabilecek sahnede ölçülür; özet ölçülen bölgenin sınıfını ve kutusunu yazar; kapıda bölgeler açık tanımlanır. · *1.4* · *fc:sharpness, SS-2*
+- **L-240 · Arama penceresinden hızlı hareket pop sanılır** — Hızlı düşüp büyüyen kartta en iyi öteleme arama sınırına dayandı, hareket açıklanamadı ve kare "tek kare belirme" sayıldı; aynı kartın bir sonraki karesindeki pop ise gerçekti (bulanıklık hız eşiğinde tek karede kapandı). Sınırdaki en iyi öteleme ayrı işarettir: geniş pencere hareketi açıklıyorsa "aday", açıklamıyorsa ihlal. · *1.4* · *fc:pop, ZN-1*
+- **L-241 · Tek pencere sayısı düzeltme turunu yanıltır** — Zamansal ölçü pencere başına yalnız en kötü oranı yazınca bildirilen 3 kareye karşı aynı tanımla tam tarama 25 tasarlanmamış sıçrama buldu; kök nedenler ayrıydı (raster yolu, kimlik çakışması, süzgeç yüzeyi). Eşik üstü bütün kareler listelenir; düzeltme turu kare listesiyle açılır. · *1.4* · *fc:temporal, RP-4*
+- **L-242 · Tek mutlak eşik yumuşak öncüyü geç sayar** — Mürekkep için kurulmuş görünürlük eşiği (40/255) gölge rampasını ana vuruşla aynı karede ya da hiç "görünür" saydı: gölge 10/255'te çapada başlıyordu. Öncü sınıfına göreli eşik (öğenin tam farkının oranı), referans klipten kalibre. · *1.4* · *ZN-7, M-ONCU*
+- **L-243 · Plan saniyede, render kare ızgarasında** — Plan eşikleri saniyede geçti ama 60 fps ızgarada kısaldı (120 ms → 7 kare = 116,7 ms); yuvarlama yönüne göre bant dışı öncü sayısı birkaç kat değişti. Plan denetimi render ızgarasında, yuvarlama yönü yazılı yapılır. · *1.4* · *M-IZGARA*
+- **L-244 · Hız ölçerleri ayrışınca kapı sayısı tek yöntem** — Aynı hamlede kanca hızı, blok büyüklüğü medyanı ve piksel izleme farklı C1 verdi: medyan paralakslı sahnede iki derinlik kümesi arasında geçip basamak üretti, kanca settle'ı ayrı mikro hamle sayıp küçük tepeye böldü. Kapı sayısı tek tanımdan (piksel izleme, baskın küme ya da LK; settle ana hamlede), diğerleri beklenti. · *1.4* · *ZN-6, M-C*
+- **L-245 · Uzun A/B ölçüsü ilerleme ve kesilme nedeni ister** — Görünür başlangıç A/B kipi uzun animatikte saatler sürdü; ilerleme satırı yoktu ve dış süre kesmesi "kanca yok" diye raporlandı; koşu üç kez "bitmiyor, kök neden yok" diye bırakıldı. Uzun ölçü süresi önceden hesaplanır (olay × pencere × s/kare), arka planda üst sınırla beklenir; kesilme ayrı iletidir. · *1.4* · *ÇK-09, fc:onset*
+
+- **L-249 · Yavaş kuyrukta SAD hız izi gürültülüdür (1.4)** — `motion-test` piksel izi 1 px/kare altındaki hızda gürültülü; settle kuyruğunda sıçrama gibi görünen değer ölçer gürültüsüdür. Yavaş kuyruk tasarım profilinden (`-hiz.json` `design`) ya da LK alt piksel izlemeden (M-C) okunur. · *mekanik testi* · *MEASURE M-C*
+- **L-250 · Katlamada C1 yay hızından okunur (1.4)** — Katlanan yaprağın serbest kenarının ekran izdüşümü dönüş boyunca yön değiştirir (90°'de geri döner); izdüşüm hızından C1 hesaplamak sahte sıçrama verir. C1 menteşe açısının yay hızından ölçülür (`MH.mek.fold(…).plan()`). · *mekanik testi* · *PATTERNS K-56*
 
 ## 3. Kamera / hareket
 
@@ -382,6 +414,7 @@
 - **L-225 · Look-dev kapısına tam kare, kırpım değil** — Tur 2 SaaS look-dev'i reviewer'a ≤ 300 px kırpımlarla gitti ve "GEÇER 3/5" aldı. Aynı yönler tam karede üç çiftte de aynı iskeleti taşıyordu: tam kare gören reviewer 6–8 verdi, `lookdev-diff` 6,4–8,1 ölçtü. Kırpım ayrıntı kanıtıdır, iskelet kanıtı değildir. Look-dev kapısında her yönün kilit karelerinin tamamı verilir. · *eval* · *—*
 - **L-226 · Ortada kahraman önseli gerçek iskelet ortaklığını söndürür** — İlgisiz look-dev düzenlerinin iskelet tabanını düşürmek için rol doluluğu, bütün yönlerin ortalama haritasıyla (önsel) şans düzeltmesine sokuldu ve kareler arası maks alındı. İlgisiz çiftler 0'a indi, ama uzlaşılı "aynı iskelet" çiftleri de indi (E3 A↔C 3,1 → 0,2; S2 B↔C 6,4 → 0,8): önsel, ortadaki kahramanı paylaşan gerçek ortaklığı da şans sayıyor. Sınıf hatası 0 → 2; geri alındı (ortalama, önsel yok, eşik tabanın üstünde 2,2). Az örnekli kalibrasyonda düzeltme katmanı eklemeden önce pozitiflerin nereye kaydığına da bakılır. · *1.1* · *—*
 - **L-227 · World kütüphanesi ve yakınsama** — Benzerlik kuralı (UCUZ #11) iki farklı riski karıştırıyordu: yeni world kurarken önceki projeye ya da hazır bir görünüme kaymak (yakınsama, kusur) ile kullanıcının bilerek seçtiği world'ü sürdürmek (süreklilik, özellik). Kural kütüphaneyle ayrıldı: seçilmiş world'e benzerlik ölçülmez; seçilmemiş world'e ve yeni world kurulurken önceki projeye benzerlik #11'dir. World seçilmiş projede look-dev'in üç yönü palet/malzemede değil yapıda (iskelet, kamera, hareket grameri, ritim) ayrışır. Kütüphaneye giren world'den müşteri malzemesi ayıklanır; aksan rengi gibi markadan ölçülmüş değerler yer tutucu olur. · *1.2* · *—*
+- **L-246 · Ölçüm betiği dosyadan, ajan kapanışında süreç taraması (1.4)** — Ölçüm ajanının stdin'e verdiği `python - <<EOF … || node -e …` zinciri bozuk kuruldu; Python süreci ajan bittikten sonra saatlerce bir çekirdeği kullandı. Betik dosyaya yazılıp dosyadan koşulur (ölçüm/reviewer ajanına yalnız `out/` altında Write); her DUR ve ajan kapanışında başlatılan python/node/ffmpeg/Chromium süreci taranır (PLAYBOOK §2.6). · *proje* · *PLAYBOOK §2.6*
 
 ---
 
@@ -430,6 +463,15 @@ Görsel dile bağlı dersler (malzeme, alet, palet, font, world bandı, dünya i
 | world-37 | dikey kaynak + yatay nesne → 90° | photo-plate | kaynak işleme | — |
 | world-38 | stop-motion kaynakta tekrar kareleri → benzersiz kareler seçilir | photo-plate | kaynak işleme | **core'a yakın; `/motion:promote` adayı** |
 | world-39 | 3B plaka (WebGL, eğik kamera) terk; plaka düz, derinlik katmanla | photo-plate | dil | modelleme yok, ima et (İL-3) |
+| world-40 | düzenleme isteminde konum metinle verildi; nesne içerik alanına girdi | photo-plate | set yöntemi (`SET.md` §10) | yerleşim yer tutucuyla (GENAI §17.2) |
+| world-41 | masa nesnesi ayrı üretilip matte ile yapıştırıldı (kenar yumuşadı, gren kenara ulaşmadı) | photo-plate | set yöntemi (`SET.md` §10) | aynı üretim; zorunlu ayrımda M-KENAR |
+| world-42 | luma eşikli kesim maskesi ince çizgiyi yarı gölgede düşürdü → dikiş | photo-plate | set yöntemi (`SET.md` §10) | maske ışıkla oranlı eşik; M-DIKIS |
+| world-43 | düşen gölge sabit oranda → loş yüzeyde fazla koyu | photo-plate | set yöntemi (`SET.md` §10) | gölge oranı lamba/ortam modelinden |
+| world-44 | fotoğraf sprite'ı kendi lamba düşümünü taşıdı → çift ışık | photo-plate | set yöntemi (`SET.md` §10) | sprite düz alan, ışık tek modelden (ILK-5) |
+| world-45 | plakanın kendi gölgesi dokudan ayrılamadı | photo-plate | set yöntemi (`SET.md` §10) | gölge lamba modelinden çizilir |
+| world-46 | restyle/düzenleme referansı kendi ışık yönünü taşıdı | photo-plate | set yöntemi (`SET.md` §10) | referans ışığı hedef lambayla eşlenir (karartmayla) |
+| world-47 | "1:1" iki ölçek (kaynak ↔ film karesi) farklı sonuç | photo-plate | set yöntemi (`SET.md` §10) | kabul film karesinde; ölçek ölçütte yazılı |
+| world-48 | havuz merkezi kadraj kenarında → lamba yeri setten sete oynadı | photo-plate | set yöntemi (`SET.md` §10) | lamba yeri tek, belirsizlikle; set ölçümü sapma denetimi |
 | tuzak t-11 | gradyanlı 3B eşya "90'lar oyun grafiği" → ima et: silüet + doku + gölge + odak | desk-paper | eşya dili | İL-3 |
 | tuzak t-15 | pano + disk kapalı hacim değil | desk-paper | eşya dili | — |
 | tuzak d-05 | yerel buruşmada iki katman hayalet → tek katman, maske süzgeçte | desk-paper | efekt | (PATTERNS K-49) |
@@ -451,4 +493,4 @@ Görsel dile bağlı dersler (malzeme, alet, palet, font, world bandı, dünya i
 | kullanıcı | logo rengi/ton değerleri | proje | marka değeri | marka rengi teslim edilmiş dosyadan |
 | kullanıcı | logo vektörünü kendimiz kurma kararı + görev tavanı | proje | proje kararı | logo vektörünü raster'dan kurmak |
 
-**Sayım:** 39 world dosyası dersi + 8 tuzak + 7 retro + 5 kullanıcı = **59 world/proje sınıfı kayıt**. Bunlardan 24'ünün dilden bağımsız çekirdeği yukarıda core ders olarak (ya da RULES/PATTERNS'te) ayrıca durur.
+**Sayım:** 48 world dosyası dersi (1.4: +9 photo-plate set yöntemi) + 8 tuzak + 7 retro + 5 kullanıcı = **68 world/proje sınıfı kayıt**. Bunlardan 24'ünün dilden bağımsız çekirdeği yukarıda core ders olarak (ya da RULES/PATTERNS'te) ayrıca durur.
