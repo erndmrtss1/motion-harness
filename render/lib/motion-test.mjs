@@ -59,6 +59,107 @@ html, body { margin: 0; background: #000; }
 `;
 }
 
+// ── hazır mekanik test sahneleri (runtime/motion-mek.jsx, MH.mek) ──────────────
+// motion-render motion-test mek-supurme | mek-katlama | mek-seyahat [--props '<json>']: --props ilkelin seçeneklerine yazılır (ör. {"kind":"out"},
+// {"hinge":"top","angle":96}, {"profile":"quintic"}). Sahne nötr gri + ölçüm dokusu (periyotsuz gürültü PNG'si, SAD izleme için); görünüş değildir.
+// Sayfa tasarım hızını __mtSpeed (süpürme: yüzey · katlama: serbest kenar ortası) ya da __camSpeed (seyahat) ile, planı __mtPlan ile verir;
+// geçiş penceresi __mtGecis (frame-check pop exclude biçimi). Hız tasarım px/kare (@1080, istenen fps).
+export const MEK_TESTS = { 'mek-supurme': 'sweep', 'mek-katlama': 'fold', 'mek-seyahat': 'travel' };
+const MEK_DEF = {
+  sweep: { kind: 'through', box: [-200, -40, 2320, 1160], dir: [1, 0], t: 0.5, lead: 0.07, dur: 1.6, lift: 6, blur: { max: 10, div: 120 } },
+  fold: { box: [960, 270, 700, 540], hinge: 'left', angle: 180, t: 0.45, lead: 0.1, leadLift: 4, dur: 1.8, persp: 2200, thickness: 6 },
+  travel: { from: { x: 900, y: 760 }, to: { x: 2350, y: 1120 }, t: 0.15, visible: 1.5, up: { d: -420, rx: 6 }, settle: { amp: 3, dur: 0.28 }, persp: 2200, peakMax: 25, dof: { k: 0.008, max: 4 }, mb: 'k' },
+};
+// tex: dokunun SAYFA KÖKÜNE göre yolu (harness sayfayı kökte açar: göreli url kök dizinden çözülür)
+export function mekTestJsx({ test, opts = {}, bg = '#808080', tex = 'mt-doku.png', name = 'MOTION_TEST' }) {
+  const kind = MEK_TESTS[test]; if (!kind) throw new Error('bilinmeyen mekanik testi: ' + test + ' (' + Object.keys(MEK_TESTS).join(' | ') + ')');
+  const o = Object.assign({}, MEK_DEF[kind], opts, { frame: [0, 0, 1920, 1080] });
+  const piece = {
+    sweep: `var MT_X = MH.mek.sweep(MT.o);
+MH.mek.hooks.speed('mtSpeed', function (T, dt) { return MT_X.speed(T, dt); });
+MH.mek.hooks.windows('mtGecis', [MT_X.window()]);
+MH.hooks.boxes(function (T) { return [MT_X.boxEntry(T, 'yuzey')]; });
+function MotionTestPiece() {
+  var T = MH.useT().T, q = MT_X.at(T);
+  return <div style={{ position: 'absolute', inset: 0, background: MT.bg }}>
+    {q.swap ? mtSurf({ w: 1920, h: 1080, bx: 431, by: 207, tone: 'rgba(255,255,255,0.22)', marks: 'b' }) : mtSurf({ w: 1920, h: 1080, tone: 'rgba(0,0,0,0.22)', marks: 'a' })}
+    <MHSweep s={MT_X} T={T} shade={{ fn: mtShade, color: '#000' }}>{mtSurf({ w: MT_X.box[2], h: MT_X.box[3], bx: 613, by: 389, tone: 'rgba(255,255,255,0.08)', frame: 10 })}</MHSweep>
+  </div>;
+}`,
+    fold: `var MT_X = MH.mek.fold(MT.o);
+MH.mek.hooks.speed('mtSpeed', function (T, dt) { return MT_X.speed(T, dt); });
+MH.mek.hooks.windows('mtGecis', [MT_X.window()]);
+MH.hooks.boxes(function (T) { return [MT_X.boxEntry(T, 'yaprak')]; });
+function MotionTestPiece() {
+  var T = MH.useT().T, b = MT_X.box;
+  return <div style={{ position: 'absolute', inset: 0, background: MT.bg }}>
+    {mtSurf({ w: 1920, h: 1080, tone: 'rgba(0,0,0,0.18)', marks: 'a' })}
+    <MHFold f={MT_X} T={T} shade={{ fn: mtShade, color: '#000' }} edge="rgb(72,72,72)"
+      front={mtSurf({ w: b[2], h: b[3], bx: 251, by: 97, tone: 'rgba(255,255,255,0.30)', frame: 8 })}
+      back={mtSurf({ w: b[2], h: b[3], bx: 777, by: 512, tone: 'rgba(0,0,0,0.30)', frame: 8 })} />
+  </div>;
+}`,
+    travel: `var MT_X = MH.mek.travel(MT.o);
+MT_X.hook({});
+MH.mek.hooks.speed('mtSpeed', function (T, dt) { return MT_X.speed(T, dt); });
+MH.mek.hooks.windows('mtGecis', [MT_X.window()]);
+function mtTable() {   // dünya düzlemi (dokulu masa) + iki kart (çıkış ve varış)
+  var A = MT.o.from, B = MT.o.to;
+  return <div style={{ position: 'absolute', left: 0, top: 0, width: 3600, height: 2200 }}>
+    {mtSurf({ w: 3600, h: 2200, tone: 'rgba(0,0,0,0.12)', marks: 'w' })}
+    {mtSurf({ x: A.x - 280, y: A.y - 180, w: 560, h: 360, bx: 300, by: 120, tone: 'rgba(255,255,255,0.30)', frame: 8 })}
+    {mtSurf({ x: B.x - 280, y: B.y - 180, w: 560, h: 360, bx: 640, by: 470, tone: 'rgba(255,255,255,0.30)', frame: 8 })}
+  </div>;
+}
+function MotionTestPiece() {
+  // DoF süzgeci hamle boyunca hiç kalkmaz (taban dofFloor px): süzgecin dinlenmede kalkması raster yolunu değiştirir → tek karede keskinlik basamağı
+  var r = MH.useT(), T = r.T, c = MT_X.at(T), v = MH.cam.motion(MT_X.at, T, r.dt, { persp: MT.o.persp }), dof = Math.max(MT_X.dof(T), MT.o.dofFloor == null ? 0.1 : MT.o.dofFloor), mb = MT.o.mb;
+  var cam = <MHCam c={c} persp={MT.o.persp}><div style={{ position: 'absolute', left: 0, top: 0, width: 3600, height: 2200, filter: dof > 0 ? 'blur(' + dof.toFixed(2) + 'px)' : undefined }}>{mtTable()}</div></MHCam>;
+  return <div style={{ position: 'absolute', inset: 0, background: MT.bg }}>
+    {mb === 'off' ? cam : mb === 'core' ? <MHMoBlur v={v} shutter={180} minPx={3} id="mtmb">{cam}</MHMoBlur> : <MHMoBlurK v={v} shutter={180} minPx={3} id="mtmb">{cam}</MHMoBlurK>}
+  </div>;
+}`,
+  }[kind];
+  return `// motion-test tarafından üretildi (elle düzenlenmez): ${test} — MH.mek.${kind} hazır test sahnesi (nötr gri + ölçüm dokusu; görünüş değil)
+var MT = ${JSON.stringify({ test, kind, bg, tex, o })};
+var MT_MARKS = { a: [[180, 160], [760, 620], [1340, 260], [1500, 760]], b: [[320, 700], [900, 240], [1600, 520]], w: [[400, 300], [1500, 500], [2600, 300], [700, 1500], [1900, 1700], [3000, 1300]] };
+function mtSurf(p) {   // dokulu yüzey (opak): gürültü dokusu + ton + isteğe bağlı çerçeve + koyu işaretler (ölçüm için; renk/malzeme değil)
+  return <div style={{ position: 'absolute', left: p.x || 0, top: p.y || 0, width: p.w, height: p.h, overflow: 'hidden', backgroundColor: MT.bg, backgroundImage: 'url(' + MT.tex + ')', backgroundSize: '1024px 1024px', backgroundPosition: (p.bx || 0) + 'px ' + (p.by || 0) + 'px' }}>
+    <div style={{ position: 'absolute', inset: 0, background: p.tone || 'transparent' }} />
+    {(MT_MARKS[p.marks] || []).map(function (q, i) { return <div key={i} style={{ position: 'absolute', left: q[0], top: q[1], width: 140, height: 90, background: 'rgba(20,20,20,0.55)' }} />; })}
+    {p.frame ? <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 0 ' + p.frame + 'px rgba(20,20,20,0.8)' }} /> : null}
+  </div>;
+}
+function mtShade(z) { return { dx: 3 + 0.6 * z, dy: 4 + 0.9 * z, blur: 6 + 0.4 * z, a: 0.35 }; }   // test sahnesi gölgesi (world değeri değil)
+// doku ilk kareden önce çözülsün: harness her karede __fxBakeSettle'ı bekler; ilk çağrı dokuyu bekleyip true döner (kare aynı T'de yeniden çizilir)
+var MT_IMG = new Image(); MT_IMG.src = MT.tex; var MT_DEC = MT_IMG.decode().catch(function () {}), MT_OK = false, MT_BAKE = window.__fxBakeSettle;
+window.__fxBakeSettle = async function () { var first = !MT_OK; await MT_DEC; MT_OK = true; var b = MT_BAKE ? await MT_BAKE() : false; return b || first; };
+${piece}
+window.__mtPlan = function () { var p = MT_X.plan(); return JSON.parse(JSON.stringify(p, function (k, v) { return typeof v === 'number' && !isFinite(v) ? (v > 0 ? 'inf' : '-inf') : v; })); };
+function ${name}(props) {
+  var st = MH.stage(props); MH.setStage(st.w, st.h);
+  return (<CompositionStage width={st.w} height={st.h} bg={MT.bg} scenes={window.OM_SCENES} playback={window.OM_PLAYBACK}>
+    <MHDesignSpace w={1920} h={1080}><MotionTestPiece /></MHDesignSpace></CompositionStage>);
+}
+Object.assign(window, { ${name}: ${name} });
+`;
+}
+// ölçüm dokusu: periyotsuz gri gürültü (deterministik LCG, yumuşatma) — sahnede 1024 px'e büyütülür; döşeme aralığı SAD aramasından büyük (sahte eşleşme yok)
+export async function noisePng(file, { w = 512, h = 512, seed = 7 } = {}) {
+  const b = Buffer.alloc(w * h); let s = (seed * 2654435761) % 4294967296;
+  for (let i = 0; i < b.length; i++) { s = (s * 1664525 + 1013904223) % 4294967296; b[i] = 70 + Math.floor((s / 4294967296) * 120); }
+  await sharp(b, { raw: { width: w, height: h, channels: 1 } }).blur(1.2).png().toFile(file);
+}
+// tasarım hızı dizisi (kanca: px/kare) → pixel profiliyle aynı biçim (grafik serisi) + frame-check velocity tanımıyla C1 (taban 0,05, tepeye göre %5).
+// c1Settle: aynı tarama taban 0,001 ile — oturmanın dönüş yarısı (hız 0'dan geçer) ana hamlenin parçası sayılır (PN-138 önerisi; bilgi)
+export function designProfile(speed, fps) {
+  const v = speed.map((x) => +x || 0), accel = v.map((x, i) => (i ? x - v[i - 1] : 0)), peak = Math.max(0, ...v), S = v.map((s, f) => ({ f, s }));
+  const sum = (c) => ({ jumps: c.viol.length, worstShare: +Math.max(0, ...c.moves.map((m) => m.share)).toFixed(3), moves: c.moves.length });
+  const c1 = c1Scan(S, { maxJump: 0.05, floor: 0.05, minDv: 0.05 }), c1s = c1Scan(S, { maxJump: 0.05, floor: 0.001, minDv: 0.05 }), moving = v.filter((x) => x > 0.2).length;
+  return { fps, frames: v.length, speed: v.map((x) => +x.toFixed(2)), accel: accel.map((x) => +x.toFixed(2)), peak: +peak.toFixed(2), peakAt: v.indexOf(peak),
+    maxAccel: +Math.max(0, ...accel.map(Math.abs)).toFixed(2), movingShare: +(moving / Math.max(1, v.length)).toFixed(3), c1: sum(c1), c1Settle: sum(c1s) };
+}
+
 // ── klip → gri kareler ────────────────────────────────────────────────────────
 export function clipGray(file, { start = 0, dur = 3, fps = 30, w = 960, h = 540 } = {}) {
   const r = spawnSync(ffmpeg, ['-v', 'error', '-ss', String(start), '-t', String(dur), '-i', file, '-vf', 'fps=' + fps + ',scale=' + w + ':' + h + ':flags=area,format=gray', '-f', 'rawvideo', '-'], { maxBuffer: 1 << 30 });
