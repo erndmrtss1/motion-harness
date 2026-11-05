@@ -7,6 +7,8 @@
 //   moves     (tasarım) hamle/shot sayısı (UYARI): kamera hızının tabanı aştığı koşular, shot başına ≤ maxPerShot, isteğe bağlı süre tabanı
 // "Açıklanamayan değişim": ardışık iki karede |ΔY| ≥ tY olan bileşen, ±R pikselde en iyi kaydırmayla (ileri + geri aynı vektör) hâlâ
 // tutmuyorsa yeni içeriktir (belirme) ya da kaybolan içeriktir; hareket eden nesne ve kamera kaydırmayla açıklanır. Saf fonksiyonlar test için dışa açık.
+// 1.4: pop arama sınırı adayı (UYARI, ihlal değil) + searchMax "auto" (PN-122) · onset sınıf eşiği / göreli eşik (PN-148) · A/B ilerleme satırı ve
+// kesilme ≠ "kanca yok" (PN-146).
 import { lumaPlane, readRaw } from '../img.mjs';
 import { withPage } from '../page.mjs';
 import { verdict, result, unmeasured, hookName, pickFrames, frameSource, available, r2, r3, FPS, WIDTH, HEIGHT } from './common.mjs';
@@ -62,20 +64,33 @@ export function components(mask, W, H, { grow = 2, minPx = 1 } = {}) {
 }
 // hareketle açıklama: d ∈ [−R, R]² (önce 2'lik adım, sonra ±1) için ileri cur(p) ↔ prev(p − d) ve geri prev(p) ↔ cur(p + d) tutmayan
 // örnek sayısı en azlanır; en iyi d'de iki yönde de tutmayan piksel "açıklanamayan"dır. Kadraj dışı başvuru tutmayan sayılır (dışarıdan gelen içerik yenidir).
-export function explainShift(prev, cur, W, H, pix, { R = 12, Rmax = null, tY = 12, sample = 2500, subpixel = false } = {}) {
+// 1.4 (PN-122): en iyi d arama yarıçapının sınırındaysa (edge) hareket pencereden hızlı olabilir. edgeProbe: pay > 0,3 iken 2× yarıçapta yoklama
+// araması (sonuç benimsenmez); geniş pencere payı ≤ 0,3 ve yarıdan az ise `edgeExplained` döner (çağıran ihlal değil "aday" sayar). auto: sınırdaki
+// bileşende yarıçap ikiye katlanarak (≤ cap) yeniden aranır ve sonuç benimsenir; kullanılan yarıçap `R`.
+export function explainShift(prev, cur, W, H, pix, { R = 12, Rmax = null, tY = 12, sample = 2500, subpixel = false, edgeProbe = false, auto = false, cap = null } = {}) {
   const n = pix.length, st = Math.max(1, Math.floor(n / sample)), S = [];
   for (let i = 0; i < n; i += st) S.push(pix[i]);
   const fwdBad = (k, dx, dy) => { const x = (k % W) - dx, y = ((k / W) | 0) - dy; return x < 0 || y < 0 || x >= W || y >= H || Math.abs(cur[k] - prev[y * W + x]) >= tY; };
   const bwdBad = (k, dx, dy) => { const x = (k % W) + dx, y = ((k / W) | 0) + dy; return x < 0 || y < 0 || x >= W || y >= H || Math.abs(prev[k] - cur[y * W + x]) >= tY; };
   const cost = (dx, dy) => { let b = 0; for (const k of S) { if (fwdBad(k, dx, dy)) b++; if (bwdBad(k, dx, dy)) b++; } return b; };
-  let best = [0, 0], bc = cost(0, 0);
   // kaba ızgara + yerel incelt; yakın arama (R) yetmezse (pay > 0,3) geniş arama (Rmax, seyrek ızgara) — hızlı kayan sayfa/geçiş
-  const search = (Rs, s) => {
+  const searchAt = (Rs, s, b0, c0) => {
+    let best = b0, bc = c0;
     for (let dy = -Rs; dy <= Rs; dy += s) for (let dx = -Rs; dx <= Rs; dx += s) { const v = cost(dx, dy); if (v < bc) { bc = v; best = [dx, dy]; } }
     for (let h = s >> 1; h >= 1; h >>= 1) { const [cx, cy] = best; for (let dy = cy - h; dy <= cy + h; dy += h) for (let dx = cx - h; dx <= cx + h; dx += h) { if (Math.abs(dx) > Rs || Math.abs(dy) > Rs) continue; const v = cost(dx, dy); if (v < bc) { bc = v; best = [dx, dy]; } } }
+    return { best, bc };
   };
-  search(R, 2);
-  if (Rmax > R && S.length && bc / (2 * S.length) > 0.3) search(Rmax, Math.max(2, Math.round(Rmax / 12)));
+  const stepOf = (Rs) => (Rs === R ? 2 : Math.max(2, Math.round(Rs / 12)));
+  let { best, bc } = searchAt(R, 2, [0, 0], cost(0, 0)), Rs = R;
+  const shareOf = (b) => (S.length ? b / (2 * S.length) : 0), onEdge = (d, r) => Math.max(Math.abs(d[0]), Math.abs(d[1])) >= r - (stepOf(r) > 2 ? stepOf(r) >> 1 : 0);
+  if (Rmax > R && S.length && shareOf(bc) > 0.3) { ({ best, bc } = searchAt(Rmax, stepOf(Rmax), best, bc)); Rs = Rmax; }
+  if (auto && cap > Rs) while (S.length && onEdge(best, Rs) && shareOf(bc) > 0.3 && Rs < cap) { Rs = Math.min(cap, 2 * Rs); ({ best, bc } = searchAt(Rs, stepOf(Rs), best, bc)); }
+  const edge = S.length > 0 && onEdge(best, Rs);
+  let edgeExplained = null;
+  if (edgeProbe && !auto && edge && shareOf(bc) > 0.3) {
+    const R2 = 2 * Rs, p = searchAt(R2, stepOf(R2), best, bc);
+    if (shareOf(p.bc) <= 0.3 && shareOf(p.bc) < shareOf(bc) / 2) edgeExplained = { R: R2, d: p.best, share: Math.round(shareOf(p.bc) * 1000) / 1000, shareAtR: Math.round(shareOf(bc) * 1000) / 1000 };
+  }
   // son sınıflama alt piksel toleranslı: değer, karşı karenin d kaydırmalı 3×3 komşuluğunun [min − tY/2, max + tY/2] aralığındaysa açıklanmış sayılır
   // (yüksek kontrastlı kenarın kesirli kayması tamsayı kaydırmayla tutmaz; aralık testi bunu yutar)
   const h = tY / 2, inRange = (img, v, x, y) => {
@@ -90,7 +105,7 @@ export function explainShift(prev, cur, W, H, pix, { R = 12, Rmax = null, tY = 1
     if (subpixel && (inRange(prev, cur[k], x - bx, y - by) || inRange(cur, prev[k], x + bx, y + by))) continue;
     un.push(k);
   }
-  return { d: best, share: S.length ? bc / (2 * S.length) : 0, unexplained: un };
+  return { d: best, share: shareOf(bc), unexplained: un, R: Rs, edge, edgeExplained };
 }
 // 3×3 aşındırma (kenar dışı komşu yok sayılır)
 function erode(m, W, H) {
@@ -107,7 +122,8 @@ function erode(m, W, H) {
 // uygulanır; ölçüm pikselinde 2·open kalınlığa kadar şeritler (katman kenarının alt piksel kayması, ince çizgi) sayılmaz.
 export function unexplainedComponents(prev, cur, W, H, o = {}) {
   const m = changeMask(prev, cur, W, H, o), comps = components(m, W, H, { grow: o.grow != null ? o.grow : 2, minPx: o.minComp || 1 }), raw = [];
-  for (const c of comps) { const e = explainShift(prev, cur, W, H, c.pix, o); if (e.unexplained.length) raw.push({ changed: c.n, d: e.d, pix: e.unexplained }); }
+  let maxR = 0;   // kullanılan en büyük arama yarıçapı (auto: açıklanan bileşenler dahil)
+  for (const c of comps) { const e = explainShift(prev, cur, W, H, c.pix, o); if (e.R > maxR) maxR = e.R; if (e.unexplained.length) raw.push({ changed: c.n, d: e.d, pix: e.unexplained, R: e.R, edgeExplained: e.edgeExplained }); }
   let keep = null;
   if (o.open > 0 && raw.length) {
     let u = new Uint8Array(W * H); for (const r of raw) for (const k of r.pix) u[k] = 1;
@@ -120,8 +136,9 @@ export function unexplainedComponents(prev, cur, W, H, o = {}) {
     let x0 = W, y0 = H, x1 = -1, y1 = -1;
     for (const k of pix) { const x = k % W, y = (k / W) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     let dsum = 0; for (const k of pix) dsum += cur[k] - prev[k];   // yön: + açılan (koyu içerik gitti / açık içerik geldi), − koyulaşan
-    out.push({ n: pix.length, changed: r.changed, box: [x0, y0, x1, y1], d: r.d, sgn: Math.sign(dsum), pix });
+    out.push({ n: pix.length, changed: r.changed, box: [x0, y0, x1, y1], d: r.d, sgn: Math.sign(dsum), pix, R: r.R, edgeExplained: r.edgeExplained || undefined });
   }
+  out.maxR = maxR;
   return out;
 }
 
@@ -269,19 +286,24 @@ async function pop(c, ctx, data) {
   const step = ctx.step || 1, scale = c.scale || 'fast', tY = c.tY != null ? c.tY : 12, maxShare0 = c.maxShare != null ? c.maxShare : 0.5, maxShare = step > 1 ? maxShare0 + (1 - maxShare0) / 2 : maxShare0;
   const cutShare = c.cutShare != null ? c.cutShare : 0.25, boxShare = c.maxBoxShare != null ? c.maxBoxShare : 0.4;
   const gap = c.gap != null ? c.gap : Math.max(1, Math.round(0.05 * FPS)), declaredCuts = new Set((c.cuts || []).map(Number)), Yof = luminanceReader(src, scale);
-  const grid = new Map(), cuts = new Set(), cand = [], wide = [];
-  let W = 0, H = 0, minPx = 0, margin = 0, R = 0, Rmax = 0, grow = 0, thin = 0;
+  const grid = new Map(), cuts = new Set(), cand = [], wide = [], edgeCand = [];
+  let W = 0, H = 0, minPx = 0, margin = 0, R = 0, Rmax = 0, grow = 0, thin = 0, cap = 0, Rused = 0;
+  const auto = c.searchMax === 'auto';
   for (const f of have) {
     const cur = await Yof(f), prev = await Yof(f - 1); if (!cur || !prev) continue;
     if (!W) {
       W = cur.W; H = cur.H; minPx = Math.max(2, ((c.minPx != null ? c.minPx : 900) * W * H) / (WIDTH * HEIGHT));
       margin = Math.max(2, Math.round(toScale(c.margin != null ? c.margin : 24, W))); R = Math.max(2, Math.round(toScale(c.search != null ? c.search : 48, W))); grow = Math.max(1, Math.round(toScale(c.grow != null ? c.grow : 12, W)));
       // geniş arama yalnız açıkça istenirse (searchMax): uzak kaydırma kaybolan koyu içeriği rastgele eşleşmeyle "açıklayabilir"
-      Rmax = c.searchMax != null ? Math.max(R, Math.round(toScale(c.searchMax, W) * step)) : R;
+      Rmax = c.searchMax != null && !auto ? Math.max(R, Math.round(toScale(c.searchMax, W) * step)) : R;
+      // searchMax "auto" (1.4, PN-122): pencere sınırına dayanan bileşende yarıçap ikiye katlanır (≤ searchCap px @1080, varsayılan 4 × search)
+      cap = auto ? Math.max(R, Math.round(toScale(c.searchCap != null ? c.searchCap : 4 * (c.search != null ? c.search : 48), W) * step)) : 0;
     }
     const p2 = c.stable === false ? null : await Yof(f - 2), nx = c.stable === false ? null : await Yof(f + 1);
-    const comps = unexplainedComponents(prev.Y, cur.Y, W, H, { tY, prev2: p2 && p2.Y, next: nx && nx.Y, grow, R, Rmax, minComp: Math.max(1, Math.round(minPx / 4)), open: c.open || 0, subpixel: !!c.subpixel })
-      .map((x) => ({ n: x.n, box: x.box, d: x.d, sgn: x.sgn }));
+    const uc = unexplainedComponents(prev.Y, cur.Y, W, H, { tY, prev2: p2 && p2.Y, next: nx && nx.Y, grow, R, Rmax, minComp: Math.max(1, Math.round(minPx / 4)), open: c.open || 0, subpixel: !!c.subpixel,
+      edgeProbe: !auto, auto, cap });
+    if (uc.maxR > Rused) Rused = uc.maxR;
+    const comps = uc.map((x) => ({ n: x.n, box: x.box, d: x.d, sgn: x.sgn, R: x.R, edgeX: x.edgeExplained }));
     grid.set(f, comps);
     const tot = comps.reduce((s, x) => s + x.n, 0);
     // geçiş/kesme: karenin büyük kısmı açıklanamıyor (ölçek, sayfa çevirme, kesme) ya da muaf pencere → tek kare ölçüsü dışı, ayrı listelenir
@@ -291,6 +313,9 @@ async function pop(c, ctx, data) {
       if ((x.box[2] - x.box[0] + 1) * (x.box[3] - x.box[1] + 1) >= boxShare * W * H) { wide.push(f); continue; }
       // ince şerit (katman kenarının alt piksel kayması, kesit kenarı): ortalama kalınlık = alan / uzun kenar < minThick px@1080 → aday değil
       if ((x.n / Math.max(x.box[2] - x.box[0] + 1, x.box[3] - x.box[1] + 1)) * (WIDTH / W) < (c.minThick != null ? c.minThick : 6)) { thin++; continue; }
+      // en iyi öteleme pencere sınırında ve 2× pencere hareketi açıklıyor → "aday: hız arama penceresini aşıyor" (ihlal değil; searchMax ile ölçülür)
+      if (x.edgeX) { edgeCand.push({ f, T: r3(f / FPS), box: box1080(x.box, W, H), px: px1080(x.n, W, H), d: x.d, searchPx: Math.round((x.R * WIDTH) / W / step),
+        probe: { searchPx: Math.round((x.edgeX.R * WIDTH) / W / step), d: x.edgeX.d, share: x.edgeX.share, shareAtSearch: x.edgeX.shareAtR }, rule: 'aday: hız arama penceresini aşıyor' }); continue; }
       cand.push({ f, ...x });
     }
   }
@@ -308,9 +333,15 @@ async function pop(c, ctx, data) {
   for (const v of viol) { const k = v.episode.join('-') + '@' + v.box.map((q) => Math.round(q / 120)).join(','); if (!seen.has(k) || seen.get(k).share < v.share) seen.set(k, v); }
   const V = [...seen.values()].sort((a, b) => a.f - b.f);
   top.sort((a, b) => b.share - a.share || b.px - a.px);
-  return verdict(c, ctx, 'tek kare belir/kaybol ' + V.length + (V.length ? ' (' + V.slice(0, 4).map((v) => 'f' + v.f + ' %' + Math.round(v.share * 100)).join(', ') + ')' : '') + ' · aday ' + cand.length + ' · geçiş/kesme ' + (cuts.size + new Set(wide).size) + ' kare · eşik pay ≥ ' + maxShare,
-    { scale, tY, maxShare, maxShareFilm: maxShare0, step, minPx: c.minPx != null ? c.minPx : 900, gap, frames: have.length, excluded: ex.set.size, cuts: [...cuts].filter((f) => !ex.set.has(f)), wide: [...new Set(wide)], thin,
-      candidates: cand.length, top: top.slice(0, 12), missing: missing.length || undefined }, V);
+  const searchPx = c.search != null ? c.search : 48, edgeNote = edgeCand.length ? ' · aday (hız arama penceresini aşıyor) ' + edgeCand.length + ' (' + edgeCand.slice(0, 3).map((e) => 'f' + e.f).join(', ') + '; searchMax ile ölç)' : '';
+  const summary = 'tek kare belir/kaybol ' + V.length + (V.length ? ' (' + V.slice(0, 4).map((v) => 'f' + v.f + ' %' + Math.round(v.share * 100)).join(', ') + ')' : '') + ' · aday ' + cand.length + ' · geçiş/kesme ' + (cuts.size + new Set(wide).size) + ' kare · eşik pay ≥ ' + maxShare + edgeNote
+    + (auto ? ' · arama auto ≤ ' + Math.round((Rused * WIDTH) / W / step) + ' px' : '');
+  const metrics = { scale, tY, maxShare, maxShareFilm: maxShare0, step, minPx: c.minPx != null ? c.minPx : 900, gap, frames: have.length, excluded: ex.set.size, cuts: [...cuts].filter((f) => !ex.set.has(f)), wide: [...new Set(wide)], thin,
+    candidates: cand.length, top: top.slice(0, 12), missing: missing.length || undefined, search: searchPx, searchMax: c.searchMax, searchUsed: Math.round((Rused * WIDTH) / W / step),
+    edgeCandidates: edgeCand.length ? edgeCand.slice(0, 40) : undefined };
+  // sınır adayı tek başına ihlal değildir ama geçti de değildir (UYARI): hareket pencereden hızlı → searchMax (sayı ya da "auto") ile yeniden ölçülür
+  if (!V.length && edgeCand.length) return result(c, 'warn', summary, metrics, edgeCand, { edge: edgeCand.length });
+  return Object.assign(verdict(c, ctx, summary, metrics, V), edgeCand.length ? { edge: edgeCand.length } : {});
 }
 
 // görünür yeni içerik (onset): bölgede tek bir kaydırma (kamera) SAD ile kestirilir; |cur(p) − prev(p − d)| ≥ tY ve değer prev'in
@@ -354,6 +385,24 @@ export function polyMask(polys, W, H, pad = 0) {
   }
   return pad > 0 ? dilate(m, W, H, pad) : m;
 }
+// görünürlük eşiği sınıf haritası (1.4, PN-148): `tY` sayı → tek eşik (önceki davranış) · nesne → { default?: n, <sınıf>: n | { rel: k, min?: n, floor?: n } };
+// olay sınıfı e.class ‖ e.kind. Göreli eşik (yumuşak öncü: gölge, ışık, kılavuz): pencere sonunda bölgedeki |ΔY| ≥ floor piksellerinin ortancası × rel
+// (≥ min). rel referanstan kalibre edilir (world/proje alanı); paket varsayılanı yoktur.
+export function thresholdFor(c, e = {}) {
+  const T = c.tY;
+  if (T == null || typeof T !== 'object') return { tY: T != null ? +T : 40, cls: 'tek' };
+  const k = e.class != null ? e.class : e.kind, has = k != null && T[k] != null, v = has ? T[k] : T.default != null ? T.default : 40, cls = has ? String(k) : 'default';
+  if (typeof v !== 'object') return { tY: +v, cls };
+  if (v.rel == null) return { tY: v.tY != null ? +v.tY : 40, cls };
+  return { rel: +v.rel, min: v.min != null ? +v.min : 2, floor: v.floor != null ? +v.floor : 2, cls };
+}
+// göreli eşik: diffs = bölgedeki |ΔY| (pencere sonu ↔ öncesi / A ↔ B); floor altı sayılmaz → null (bölgede fark yok)
+export function relThreshold(diffs, { rel, min = 2, floor = 2 }) {
+  const a = []; for (const d of diffs) if (d >= floor) a.push(d);
+  if (!a.length) return null;
+  a.sort((p, q) => p - q); const median = a[a.length >> 1];
+  return { tY: Math.max(min, rel * median), median: r2(median), n: a.length };
+}
 const isRef = (v) => typeof v === 'string' && /^(tool|box|kind|glyphs):/.test(v);
 const isAB = (c) => c.hide != null || c.mode === 'ab';
 const needsPage = (c) => isAB(c) || c.events == null || typeof c.events === 'string' || (c.mask || []).length > 0 || (Array.isArray(c.events) && c.events.some((e) => isRef(e.region)));
@@ -376,23 +425,38 @@ function accumulator(W, H, s = W / WIDTH) {
 // A/B kipi (gizleme anahtarı sözleşmesi, PN-99): A = sayfa c.base globalleriyle (ör. alet katmanı gizli), B = A + c.hide globaline olayın
 // hide değeri (öğe çizilmez). Pencerenin her sahne karesi iki sayfadan çizilir; bölgede |Y_A − Y_B| ≥ tY pikselleri birikir → görünür başlangıç.
 // Kare dizini gerekmez (tam çözünürlük, sahne fps'i); alet örtmesi sorunu yoktur (alet iki tarafta da gizli).
-async function onsetAB(c, ctx, events) {
-  const fps = FPS * (ctx.step || 1), tY = c.tY != null ? c.tY : 40, pad = c.regionPad != null ? c.regionPad : 12;
+// st: ilerleme durumu { phase, done, total } — kesilme (zaman aşımı, dış kesme, sayfa çöküşü) raporunda kaçıncı olayda kalındığı yazılır (PN-146)
+async function onsetAB(c, ctx, events, st = {}) {
+  const fps = FPS * (ctx.step || 1), pad = c.regionPad != null ? c.regionPad : 12, say = typeof ctx.progress === 'function' ? ctx.progress : null;
   const base = Object.assign({}, ctx.globals || {}, c.base || {}), plan = [], rows = [];
   for (const e of events) {
     const name = e.name || e.id || e.word || e.ev || 'olay', w = eventWindow(e, c, Math.round(ctx.frames * (ctx.step || 1)), fps);
     const region = Array.isArray(e.region) ? e.region : e.region === 'full' ? [0, 0, WIDTH, HEIGHT] : null, hide = e.hide != null ? e.hide : e.ev || e.id || e.name;
     if (e.skip || !w || !region || hide == null) { rows.push({ name, skip: e.skip || (!w ? 'çapa yok' : !region ? 'bölge yok' : 'hide yok'), boxes: e.names ? e.names.slice(0, 60) : undefined }); continue; }
     const box = [Math.max(0, Math.floor(region[0] - pad)), Math.max(0, Math.floor(region[1] - pad)), Math.min(WIDTH - 1, Math.ceil(region[0] + region[2] + pad)), Math.min(HEIGHT - 1, Math.ceil(region[1] + region[3] + pad))];
-    plan.push({ name, w, box, hide, A: new Map() });
+    plan.push({ name, w, box, hide, A: new Map(), thr: thresholdFor(c, e) });
   }
   const crop = async (png, b) => { const img = await readRaw(png, null), Y = lumaPlane(img), w = b[2] - b[0] + 1, h = b[3] - b[1] + 1, o = new Float32Array(w * h);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) o[y * w + x] = Y[(b[1] + y) * img.W + b[0] + x]; return o; };
+  Object.assign(st, { phase: 'A', done: 0, total: plan.length });
   if (plan.length) {
+    const nA = plan.reduce((s, ev) => s + ev.w.g1 - ev.w.g0 + 1, 0);
+    if (say) say('  onset A/B ' + (c.name || 'onset') + ': A sayfası ' + nA + ' kare · ' + plan.length + ' olay');
     await withPage(ctx.scene, { globals: base, browser: ctx.browser }, async (p, A) => { for (const ev of plan) for (let f = ev.w.g0; f <= ev.w.g1; f++) ev.A.set(f, await crop(await A.shot(f), ev.box)); });
+    st.phase = 'B';
     for (const ev of plan) {
+      if (say) say('  onset A/B ' + (c.name || 'onset') + ': olay ' + (st.done + 1) + '/' + plan.length + ' ' + ev.name);
       await withPage(ctx.scene, { globals: Object.assign({}, base, { [c.hide]: ev.hide }), browser: ctx.browser }, async (p, B) => {
         const bw = ev.box[2] - ev.box[0] + 1, bh = ev.box[3] - ev.box[1] + 1, acc = accumulator(bw, bh, 1);   // kırpım 1080p pikseli
+        // göreli eşik: pencere sonunda A ↔ B bölge farkının ortancası × rel (öğenin tam gelişmiş hâli)
+        let tY = ev.thr.tY, rel = null;
+        if (ev.thr.rel != null) {
+          const Ye = await crop(await B.shot(ev.w.g1), ev.box), Ae = ev.A.get(ev.w.g1), d = new Float32Array(Ae.length);
+          for (let k = 0; k < d.length; k++) d[k] = Math.abs(Ae[k] - Ye[k]);
+          rel = relThreshold(d, ev.thr); tY = rel ? rel.tY : null;
+        }
+        const thrRow = { tY: tY != null ? r2(tY) : null, tYClass: ev.thr.cls, tYRel: ev.thr.rel != null ? Object.assign({ rel: ev.thr.rel }, rel ? { median: rel.median, n: rel.n } : { none: true }) : undefined };
+        if (tY == null) { rows.push(Object.assign({ name: ev.name, anchor: r3(ev.w.anchor), window: [ev.w.g0, ev.w.g1], none: true, why: 'göreli eşik: bölgede fark yok' }, thrRow)); return; }
         let found = null, first = null;
         for (let f = ev.w.g0; f <= ev.w.g1 && !found; f++) {
           const Yb = await crop(await B.shot(f), ev.box), Ya = ev.A.get(f), pix = [];
@@ -401,9 +465,10 @@ async function onsetAB(c, ctx, events) {
           acc.add(pix);
           if (acc.px >= (c.minPx != null ? c.minPx : 12) && acc.ext >= (c.minExtent != null ? c.minExtent : 0)) found = { f, px: acc.px, ext: Math.round(acc.ext) };
         }
-        rows.push(found ? { name: ev.name, anchor: r3(ev.w.anchor), onset: found.f, onsetT: r3(found.f / fps), dFrames: r2(found.f - ev.w.anchor * fps), px: found.px, extent: found.ext, firstDiff: first }
-          : { name: ev.name, anchor: r3(ev.w.anchor), window: [ev.w.g0, ev.w.g1], none: true, firstDiff: first });
+        rows.push(Object.assign(found ? { name: ev.name, anchor: r3(ev.w.anchor), onset: found.f, onsetT: r3(found.f / fps), dFrames: r2(found.f - ev.w.anchor * fps), px: found.px, extent: found.ext, firstDiff: first }
+          : { name: ev.name, anchor: r3(ev.w.anchor), window: [ev.w.g0, ev.w.g1], none: true, firstDiff: first }, thrRow));
       });
+      st.done++;
     }
   }
   return rows;
@@ -441,9 +506,16 @@ async function onsetPrefetch(c, ctx, api) {
   }
   if (isAB(c)) {
     if (!c.hide) return { missing: 'hide (B sayfası için gizleme global adı)' };
-    try { return { ab: await onsetAB(c, ctx, out) }; } catch (e) { return { missing: 'A/B çizimi: ' + e.message.split('\n')[0] }; }
+    // çizim hatası "kanca yok" değildir (PN-146): kesilme ayrı raporlanır, kaçıncı olayda kalındığıyla
+    const st = {};
+    try { return { ab: await onsetAB(c, ctx, out, st) }; } catch (e) { return { abError: e.message.split('\n')[0], phase: st.phase, done: st.done || 0, total: st.total || 0 }; }
   }
   return { events: out };
+}
+// A/B kesilme iletisi: sayfa çöküşü / hedef kapandı / zaman aşımı → dış kesme ya da süre sınırı olası (kanca eksikliği değil)
+export function abErrorText(d) {
+  const crash = /crash|closed|timeout|timed out|disconnected|aborted|kill/i.test(d.abError || '');
+  return 'A/B çizimi kesildi (' + (d.phase === 'A' ? 'A sayfası' : 'olay ' + d.done + '/' + d.total) + '): ' + d.abError + (crash ? ' — zaman aşımı ya da dış kesme olası (kanca eksikliği değil)' : '');
 }
 // piksel kipinde alet çokgeni bölgeye değiyorsa (maskShare ≥ maskWarn) satır "belirsiz"dir: alet çizgiyi örtüp görünür başlangıcı geciktirebilir.
 // Belirsiz ihlaller hata değil UYARI üretir ("A/B ile ölç"); kesin ölçü A/B kipidir (alet iki tarafta da gizli).
@@ -451,18 +523,22 @@ function onsetResult(c, ctx, rows, fps0, tol, meta) {
   const viol = [], maskWarn = c.maskWarn != null ? c.maskWarn : 0.05;
   for (const r of rows) {
     const unsure = meta.mode === 'piksel' && r.maskShare != null && r.maskShare >= maskWarn ? { uncertain: 'alet örtmesi %' + Math.round(r.maskShare * 100) + ' — A/B ile ölç' } : {};
-    if (r.none) viol.push(Object.assign({ T: r.anchor, rule: 'görünür başlangıç yok', name: r.name, window: r.window }, unsure));
+    if (r.none) viol.push(Object.assign({ T: r.anchor, rule: 'görünür başlangıç yok', name: r.name, window: r.window }, r.why ? { why: r.why } : {}, r.tYClass && r.tYClass !== 'tek' ? { tYClass: r.tYClass, tY: r.tY } : {}, unsure));
     else if (r.dFrames != null && (r.dFrames > tol[1] + 1e-6 || r.dFrames < -tol[0] - 1e-6)) viol.push(Object.assign({ f: r.onset, T: r.onsetT, rule: r.dFrames > 0 ? 'geç' : 'erken', name: r.name, dFrames: r.dFrames, tol: [-tol[0], tol[1]] }, unsure));
   }
   const ok = rows.filter((r) => r.dFrames != null);
   if (!ok.length && !rows.some((r) => r.none)) return unmeasured(c, 'ölçülecek olay yok (' + rows.map((r) => r.name + ': ' + r.skip).slice(0, 4).join(' · ') + ')', { rows });
+  // eşik sınıfı notu (yalnız sınıf haritası verilmişse; tek eşikte özet önceki biçimde)
+  const cls = new Map(); for (const r of rows) if (r.tYClass && r.tYClass !== 'tek') { const k = r.tYClass, o = cls.get(k) || { n: 0, tY: [] }; o.n++; if (r.tY != null) o.tY.push(r.tY); cls.set(k, o); }
+  const thrNote = cls.size ? ' · eşik sınıfı ' + [...cls.entries()].map(([k, o]) => k + ' ' + (o.tY.length ? (Math.min(...o.tY) === Math.max(...o.tY) ? o.tY[0] : Math.min(...o.tY) + '–' + Math.max(...o.tY)) : '—') + ' (' + o.n + ')').join(' · ') : '';
   const sure = viol.filter((v) => !v.uncertain), head = meta.mode + ' · ' + ok.length + ' olay · en büyük Δ ' + (ok.length ? Math.max(...ok.map((r) => Math.abs(r.dFrames))) : '—') + ' kare @' + fps0 + ' (tolerans −' + tol[0] + '/+' + tol[1] + ')'
-    + (rows.length > ok.length ? ' · ölçülemedi/yok ' + (rows.length - ok.length) : '');
+    + (rows.length > ok.length ? ' · ölçülemedi/yok ' + (rows.length - ok.length) : '') + thrNote;
   const metrics = Object.assign({}, meta, { fps: fps0, maskWarn: meta.mode === 'piksel' ? maskWarn : undefined, rows });
   if (viol.length && !sure.length) return result(c, 'warn', head + ' · belirsiz ' + viol.length + ' (alet örtmesi; A/B kipiyle ölç)', metrics, viol, { uncertain: viol.length });
   return verdict(c, ctx, head + (viol.length > sure.length ? ' · belirsiz ' + (viol.length - sure.length) : ''), metrics, sure.concat(viol.filter((v) => v.uncertain)));
 }
 async function onset(c, ctx, data) {
+  if (data && data.abError) return unmeasured(c, abErrorText(data), { phase: data.phase, done: data.done, total: data.total });
   if (needsPage(c) && (!data || data.missing)) return unmeasured(c, 'kanca yok (' + ((data && data.missing) || hookName(c.events) || '__events') + ')');
   const fps0 = FPS * (ctx.step || 1), tolEarly = c.earlyFrames != null ? c.earlyFrames : 0, tY = c.tY != null ? c.tY : 40, minPx = c.minPx != null ? c.minPx : 12;
   if (data && data.ab) return onsetResult(c, ctx, data.ab, fps0, [tolEarly, c.tolFrames != null ? c.tolFrames : 1], { mode: 'A/B', tY, minPx, minExtent: c.minExtent != null ? c.minExtent : 0, hide: c.hide, base: c.base });
@@ -479,7 +555,21 @@ async function onset(c, ctx, data) {
     if (!w || !region) { rows.push({ name, skip: !w ? 'çapa yok' : 'bölge yok', boxes: e.names ? e.names.slice(0, 60) : undefined }); continue; }
     // görünür = pencere başından beri biriken yeni içerik ≥ minPx piksel VE uzanımı (dış kutunun uzun kenarı) ≥ minExtent px (@1080):
     // tek mürekkep noktası ya da kenar kırıntısı başlangıç sayılmaz (PN-99: |ΔY| ≥ 40/255, ≥ 12 px)
-    const minExt = c.minExtent != null ? c.minExtent : 12;
+    const minExt = c.minExtent != null ? c.minExtent : 12, thr = thresholdFor(c, e);
+    // göreli eşik (piksel kipi): pencere sonu ↔ pencere öncesi kare farkının bölge ortancası × rel (kaydırma telafisi yok → durağan kamerada)
+    let tYe = thr.tY, rel = null;
+    if (thr.rel != null) {
+      const a = await Yof(w.g0 - 1), b = await Yof(w.g1);
+      if (a && b) {
+        const sx = b.W / WIDTH, sy = b.H / HEIGHT, X0 = Math.max(0, Math.floor((region[0] - pad) * sx)), Y0 = Math.max(0, Math.floor((region[1] - pad) * sy));
+        const X1 = Math.min(b.W - 1, Math.ceil((region[0] + region[2] + pad) * sx)), Y1 = Math.min(b.H - 1, Math.ceil((region[1] + region[3] + pad) * sy)), d = [];
+        for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) d.push(Math.abs(b.Y[y * b.W + x] - a.Y[y * b.W + x]));
+        rel = relThreshold(d, thr);
+      }
+      tYe = rel ? rel.tY : null;
+    }
+    const thrRow = thr.cls === 'tek' ? {} : { tY: tYe != null ? r2(tYe) : null, tYClass: thr.cls, tYRel: thr.rel != null ? Object.assign({ rel: thr.rel }, rel ? { median: rel.median, n: rel.n } : { none: true }) : undefined };
+    if (tYe == null) { rows.push(Object.assign({ name, anchor: r3(w.anchor), window: [w.g0, w.g1], none: true, why: 'göreli eşik: bölgede fark yok' }, thrRow)); continue; }
     let found = null, W = 0, H = 0, peak = 0, peakAt = null, acc = null, maskShare = null;
     for (let g = w.g0; g <= w.g1 && found == null; g++) {
       const cur = await Yof(g), prev = await Yof(g - 1); if (!cur || !prev) continue;
@@ -492,7 +582,7 @@ async function onset(c, ctx, data) {
       const mk = polyMask([...((e.masks || {})[g] || []), ...((e.masks || {})[g - 1] || [])], W, H, Math.max(0, Math.round(mpad * sx)));
       let inR = 0, cov = 0;
       if (mk) for (let k = 0; k < keep.length; k++) if (keep[k]) { inR++; if (mk[k]) { keep[k] = 0; cov++; } }
-      const nc = newContent(prev.Y, cur.Y, W, H, keep, { tY, R: Math.max(1, Math.round(toScale(c.search != null ? c.search : 12, W))) });
+      const nc = newContent(prev.Y, cur.Y, W, H, keep, { tY: tYe, R: Math.max(1, Math.round(toScale(c.search != null ? c.search : 12, W))) });
       if (!acc) acc = accumulator(W, H);
       acc.add(nc.pix);
       const n = acc.px, ext = acc.ext;
@@ -501,8 +591,8 @@ async function onset(c, ctx, data) {
       if (g <= Math.round(w.anchor * FPS) || maskShare == null) maskShare = ms;
       if (n >= minPx && ext >= minExt) found = { g, px: n, ext: Math.round(ext), maskShare: ms };
     }
-    if (!found) { rows.push({ name, anchor: r3(w.anchor), window: [w.g0, w.g1], none: true, peakPx: peak, peakAt, maskShare }); continue; }
-    rows.push({ name, anchor: r3(w.anchor), onset: found.g, onsetT: r3(found.g / FPS), dFrames: r2((found.g / FPS - w.anchor) * fps0), px: found.px, extent: found.ext, maskShare: found.maskShare });
+    if (!found) { rows.push(Object.assign({ name, anchor: r3(w.anchor), window: [w.g0, w.g1], none: true, peakPx: peak, peakAt, maskShare }, thrRow)); continue; }
+    rows.push(Object.assign({ name, anchor: r3(w.anchor), onset: found.g, onsetT: r3(found.g / FPS), dFrames: r2((found.g / FPS - w.anchor) * fps0), px: found.px, extent: found.ext, maskShare: found.maskShare }, thrRow));
   }
   return onsetResult(c, ctx, rows, fps0, [tolEarly, tolLate], { mode: 'piksel', scale, tY, minPx, step: ctx.step || 1 });
 }

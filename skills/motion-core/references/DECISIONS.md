@@ -206,6 +206,39 @@
 - **Geri alma:** politikada boş beyaz liste → üretim komutu her öğeyi reddeder; YOL B geçerli kalır.
 - **Pakette:** `motion-render gen <request> [--cap N] [--dry]` (RULES GEN-8, GEN-3, GEN-4); `motion-render doctor`.
 
+> ADR-026 … ADR-029 (1.4) kaynak projenin ikinci döneminin süreç kararlarından damıtıldı; numaralar paket numarasıdır.
+
+## ADR-026 · Kapı ≠ brief: ana oturum QA, director tek tasarımcı — Kabul (1.4)
+- **Bağlam:**
+  - Kapı listesi director'a brief olarak verildi; bütün kusur kapılarını geçen animatik kullanıcı tarafından anlatı ve kalite yönünden reddedildi.
+  - Kota ve kompozisyon metrikleri hedef olunca tasarım metriğe göre yapıldı (tek yönlü bir renk payı alt sınırı paleti doyurdu).
+  - Araç ölçemediği içerik araca göre kırpıldı; reviewer'ın koordinata bağlı şartı kompozisyon değişince başka nesneyi ölçtü.
+- **Karar:**
+  - Ana oturum kapı ve QA'dır (yapmaz, ölçtürür, karar işler); director sanat yönetmeni brief'iyle çalışan tek tasarımcı-uygulayıcıdır (niyet aynen + film bağlamı + onaylı ilkeller; kapı listesi yok; token tavanı).
+  - Estetik metrik kapı dışıdır (bilgi); her kapı sınıflanır (kusur · uyarı · bilgi · kapı dışı); ölçüsü tanımsız madde GEÇMEZ gerekçesi olamaz.
+  - Ölçüm eşiği yalnız proje sahibi kararıyla değişir; araç kısıtı içeriği şekillendirmez (araç düzeltilir); şart satırı nesne tanımıyla yazılır.
+- **Seçenekler:** kapıyı brief'te hedef olarak vermek (red: metriğe tasarım) · estetik metriği kapı yapmak (red: kullanıcı hükmüyle ters düştü) · **kapı işten sonra QA + kalibre reviewer** (seçilen).
+- **Sonuç:** estetik hüküm proje sahibi + referans kliple kalibre reviewer'da kaldı; kusur kapıları değişmedi.
+- **Pakette:** PLAYBOOK §2.1 (rol sözleşmesi), §3.1, §3.3; `templates/BRIEF-DIRECTOR.md`; `templates/project.md` §3 kapı sınıflaması; reviewer SKILL §8–§9.
+
+## ADR-027 · Verim: kapı sayısı eksilmez, tekrar eksilir (V1–V8) — Kabul (1.4)
+- **Bağlam:** her ara adımda tam tarama, set başına reviewer ve uzun rapor zamanı ölçüme değil ritüele harcattı; bir kapının bütün listesini alan ölçüm ve reviewer ajanları tur sınırına çarpıp devam mesajıyla kapandı.
+- **Karar:** V1 değişim-odaklı ölçüm · V2 tam tarama yalnız kilometre taşında · V3 reviewer faz başına · V4 ölçüm ≤ 3 madde tek tur (reviewer ≤ 3 soru; still ve klip ayrı) · V5 istisna raporu ≤ 40 satır, retro faz sonunda · V6 maskeli bölge üretimi varsayılan · V7 DUR yalnız geri dönüşü pahalı kararda, gerisi bilgi kontağı · V8 kilitli kurallar gevşemez.
+- **Seçenekler:** kapı sayısını azaltmak (red: kusur kaçar) · tek ajana büyük liste (red: tur sınırı) · **değişiklik listesinden kapsam + kilometre taşı + iş sınırı** (seçilen).
+- **Geri alma:** proje `project.md` §3 "QA kapsamı"nda kilometre taşı listesini genişletir; sayılar (≤ 3, ≤ 40) proje değeridir.
+- **Pakette:** PLAYBOOK §3.4, §6 (bilgi kontağı), §7.1; `agents/motion-measure.md`, `agents/motion-reviewer.md`; reviewer SKILL §1.4, §7.2; `/motion:gate --ara`.
+
+## ADR-028 · Belge hijyeni: tek güncel spec, karar tarihi, çelişki commit kapısı — Kabul (1.4)
+- **Bağlam ("md zehirlenmesi"):** spec'te karar metinleri, uygulama notları ve üstü çizili satırlar birikti; arşivlenmiş terimler etkin kural gibi kaldı; aynı kural iki dosyada farklı sayıyla durdu; brief toplamı tavanı aştı ve director yanlış kurala göre çalıştı.
+- **Karar:** `project.md` tek güncel spec; karar metni aynen `docs/KARAR-TARIHI.md` (bağlayıcı küme dışı tarih); CLAUDE.md ≤ 60 satır; brief token tavanı (proje 60k, director 30k varsayılan); `.githooks/pre-commit` → `motion-render celiski-tara` (çıkış 1 → commit yok).
+- **Sonuç:** çelişki commit'ten önce dosya:satır olarak yakalanır; kural tek yerde tanımlanır.
+- **Pakette:** PLAYBOOK §3.5; `templates/KARAR-TARIHI.md`, `templates/CLAUDE.md`, `templates/project.md` §11; `motion-render celiski-tara`; `motion-render init` (`.githooks/`, `docs/celiski.json`).
+
+## ADR-029 · Tam render öncesi hareket kontağı; uzun görev checkpoint'le; tek makine kuralı — Kabul (1.4)
+- **Bağlam:** hamle ve mekanikler ayrı kapılardan geçti, kullanıcı bütün hareketi ilk kez birlikte animatikte görünce kamera dili değişti; bir sistem çökmesi uzun bir görevin ilerlemesini sildi; arka planda unutulan bir ölçüm süreci saatlerce çekirdek tuttu; harness geliştirmesi kurulu klonda yapılınca proje render'ı yarım kodla koşma riskine girdi.
+- **Karar:** tam render'dan önce bütün hamle ve mekanikler referans kliple yan yana tek videoda (`motion-render contact motion`) → "DUR — hareket"; uzun director görevinde her adım commit + `docs/CHECKPOINT-<görev>.md`; kesinti sonrası artefakt + ledger mutabakatı, tanık kare, süreç listesi; her DUR öncesi süreç taraması; aynı anda tek render ve `tools/render-oncesi` denetimi; harness geliştirmesi ayrı klonda.
+- **Pakette:** PLAYBOOK §2.6, §4.5 Adım 6a, §6 (DUR-12, DUR-8); reviewer SKILL §7 (`hareket` kapısı); DOCS-TEMPLATES §3.14.
+
 ---
 
 ## Bu dosyada olmayan kararlar

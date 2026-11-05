@@ -2,7 +2,10 @@
 //   motion-render init <dizin> [--world <kütüphane-ad> | --new] [--profile full|light|live] [--fps 60] [--with-whisper] [--demo] [--no-vendor] [--force] [--dry]
 // Yazılanlar (var olan dosyaya --force olmadan dokunulmaz; tekrar çalıştırmak güvenli):
 //   scenes.json (templates/scenes.json; fps/profil/world/kapı ayarlı, scenes boş) · project.md · CLAUDE.md · docs/<şablonlar>.md
-//   assets/gen/manifest.json (templates/ledger.json) · motion-runtime.js + shared/motion-stage.jsx + shared/motion-core.jsx (render/runtime/)
+//   assets/gen/manifest.json (templates/ledger.json) · motion-runtime.js + shared/motion-stage.jsx + shared/motion-core.jsx (+ shared/motion-mek.jsx varsa) (render/runtime/)
+//   docs/celiski.json (templates/celiski.json; motion-render celiski-tara yapılandırması) · .githooks/pre-commit (templates/githooks/; celiski-tara commit kapısı)
+//   tools/render-oncesi.ps1 + tools/render-oncesi.sh (templates/tools/; render/encode öncesi makine denetimi) · .gitattributes (kanca/betik satır sonları)
+//   Bitişte hooksPath ipucu ("git config core.hooksPath .githooks"); git yapılandırması yalnız okunur, değiştirilmez.
 //   world/: --world <ad> → skills/motion-world/library/<ad>/ (demo.* hariç; origin "library:<ad>"; eski ad fx-lab → focusfx-paper); yoksa world.json iskeleti (band / k1.mask "TANIMLANMADI") + README (look-dev doldurur)
 //   dizinler: checks/ hooks/ script/ assets/gen/{inbox,requests,runs,plates,elements,transitions,storyboard,logos} docs/ fonts/ vendor/ out/{frames,scenes,probe,logs,master,archive,review}
 //   --demo: kütüphane world'ünün demo.dc.html + demo.jsx'i köke, scenes.json'a DEMO sahnesi (smoke bunu kullanır)
@@ -31,13 +34,13 @@ if (has('demo') && !EX) { console.error('--demo yalnız --world <kütüphane-ad>
 const log = { yazildi: [], atlandi: [], dizin: [] };
 const rel = (f) => path.relative(DIR, f).split(path.sep).join('/') || '.';
 function mk(d) { const p = path.join(DIR, d); if (!fs.existsSync(p)) { if (!DRY) fs.mkdirSync(p, { recursive: true }); log.dizin.push(d); } }
-function put(relp, data, why) {
+function put(relp, data, why, mode) {   // mode: çalıştırılabilir dosya (git kancası, .sh) için 0o755
   const p = path.join(DIR, relp);
   if (fs.existsSync(p) && !FORCE) { log.atlandi.push(relp + ' (var)'); return false; }
-  if (!DRY) { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p + '.part', data); fs.renameSync(p + '.part', p); }
+  if (!DRY) { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p + '.part', data); fs.renameSync(p + '.part', p); if (mode) fs.chmodSync(p, mode); }
   log.yazildi.push(relp + (why ? ' — ' + why : '')); return true;
 }
-const cp = (src, relp, why) => (fs.existsSync(src) ? put(relp, fs.readFileSync(src), why) : (log.atlandi.push(relp + ' (kaynak yok: ' + path.relative(PKG, src).split(path.sep).join('/') + ')'), false));
+const cp = (src, relp, why, mode) => (fs.existsSync(src) ? put(relp, fs.readFileSync(src), why, mode) : (log.atlandi.push(relp + ' (kaynak yok: ' + path.relative(PKG, src).split(path.sep).join('/') + ')'), false));
 
 if (!DRY) fs.mkdirSync(DIR, { recursive: true });
 // 1 · dizinler
@@ -47,6 +50,7 @@ for (const d of ['checks', 'hooks', 'script', 'docs', 'fonts', 'vendor', 'shared
 cp(path.join(RUNTIME, 'motion-runtime.js'), 'motion-runtime.js', 'sayfa yükleyici');
 cp(path.join(RUNTIME, 'motion-stage.jsx'), 'shared/motion-stage.jsx', 'saat/seek/kompozisyon');
 cp(path.join(RUNTIME, 'motion-core.jsx'), 'shared/motion-core.jsx', 'stilden bağımsız yardımcılar');
+if (fs.existsSync(path.join(RUNTIME, 'motion-mek.jsx'))) cp(path.join(RUNTIME, 'motion-mek.jsx'), 'shared/motion-mek.jsx', 'hareket mekaniği ilkelleri');   // paket sürümünde yoksa sessizce atlanır
 // 3 · şablonlar
 const tplF = (f) => path.join(TPL, f);
 if (!fs.existsSync(TPL)) log.atlandi.push('templates/ (paket şablon dizini yok)');
@@ -68,9 +72,16 @@ cp(tplF('CLAUDE.md'), 'CLAUDE.md', 'bağlayıcı sıra + daimi kurallar');
 if (fs.existsSync(tplF('ledger.json'))) cp(tplF('ledger.json'), 'assets/gen/manifest.json', 'boş ledger');
 else put('assets/gen/manifest.json', JSON.stringify({ schema: '1.0.0', items: [], ledger: [], lost: [] }, null, 1) + '\n', 'boş ledger');
 if (fs.existsSync(tplF('policy.json'))) cp(tplF('policy.json'), 'assets/gen/policy.json', 'üretken politika (project.md §9 kopyası)');
+if (fs.existsSync(tplF('celiski.json'))) cp(tplF('celiski.json'), 'docs/celiski.json', 'çelişki taraması yapılandırması (motion-render celiski-tara)');
+// şablon alt dizinleri → proje hedefi (githooks/ ve tools/ içindekiler çalıştırılabilir)
+const TDIR = { docs: ['docs', 'şablon', 0], githooks: ['.githooks', 'git kancası (celiski-tara commit kapısı)', 0o755], tools: ['tools', 'proje aracı', 0o755] };
 if (fs.existsSync(TPL)) for (const f of fs.readdirSync(TPL)) {
   const p = tplF(f);
-  if (fs.statSync(p).isDirectory()) { if (f === 'docs') for (const g of fs.readdirSync(p)) cp(path.join(p, g), 'docs/' + g, 'şablon'); continue; }
+  if (fs.statSync(p).isDirectory()) {
+    const m = TDIR[f];
+    if (m) for (const g of fs.readdirSync(p)) { const q = path.join(p, g); if (fs.statSync(q).isFile()) cp(q, m[0] + '/' + g, m[1], m[2] && (f === 'githooks' || g.endsWith('.sh')) ? m[2] : 0); }
+    continue;
+  }
   if (['project.md', 'CLAUDE.md', 'scenes.json', 'ledger.json', 'policy.json', 'README.md'].includes(f) || !f.endsWith('.md')) continue;
   cp(p, 'docs/' + f, 'belge şablonu');
 }
@@ -95,12 +106,21 @@ if (EX) {
   put('world/lessons.md', '# Dersler — ' + name + '\n\n(look-dev ve fazlar boyunca: sorun → ölçü → kural.)\n', 'boş');
 }
 put('.gitignore', 'out/\nvendor/\nfonts/gf/\n.venv/\nnode_modules/\n*.part\n', 'üretilen dosyalar');
+put('.gitattributes', '# satır sonları: kabuk betikleri ve git kancası LF, PowerShell CRLF (Windows autocrlf klonlarında kanca bozulmasın)\n.githooks/* text eol=lf\n*.sh text eol=lf\n*.ps1 text eol=crlf\n', 'satır sonları (kanca ve betikler)');
 
 // 5 · rapor
 const say = (t, a) => { if (a.length) console.log(t + ' (' + a.length + '):\n  ' + a.join('\n  ')); };
 console.log((DRY ? '(dry) ' : '') + 'init ' + DIR + ' · world ' + (WORLD ? 'kütüphane ' + WORLD : 'yeni (look-dev)') + ' · profil ' + PROFILE + ' · ' + FPS + ' fps');
 say('yazıldı', log.yazildi); say('atlandı', log.atlandi); if (log.dizin.length) console.log('dizin: ' + log.dizin.length + ' yeni');
-if (DRY) process.exit(0);
+// commit kapısı ipucu: git yapılandırması yalnız OKUNUR (değiştirilmez); proje depo kökü değilse yol depo köküne göre yazılır
+function hooksHint() {
+  if (!fs.existsSync(path.join(DIR, '.githooks', 'pre-commit')) && !log.yazildi.some((x) => x.startsWith('.githooks/'))) return;
+  const g = (...a) => { const r = spawnSync('git', ['-C', fs.existsSync(DIR) ? DIR : process.cwd(), ...a], { encoding: 'utf8' }); return r.status === 0 ? r.stdout.trim() : null; };
+  const top = g('rev-parse', '--show-toplevel'), want = top ? (path.relative(top, path.join(DIR, '.githooks')).split(path.sep).join('/') || '.githooks') : '.githooks';
+  if (top && g('config', '--get', 'core.hooksPath') === want) { console.log('✓ commit kapısı etkin (core.hooksPath ' + want + ' → celiski-tara)'); return; }
+  console.log('ipucu: çelişki taraması commit kapısı için (bir kez, proje deposunda): git config core.hooksPath ' + want + (top ? '' : '   (önce git init)') + ' — init git yapılandırmasına dokunmaz');
+}
+if (DRY) { hooksHint(); process.exit(0); }
 
 // 6 · whisper (isteğe bağlı)
 let rc = 0;
@@ -124,4 +144,5 @@ if (!has('no-vendor')) {
   } catch (e) { console.error('✗ vendor: ' + e.message + ' — ağ gelince: motion-render vendor --project ' + DIR); rc = rc || 1; }
 }
 console.log((rc ? '✗' : '✓') + ' init · sıradaki: ' + (WORLD ? 'motion-render manifest validate --project ' + DIR : 'look-dev (world.json band / k1.mask)'));
+hooksHint();
 process.exitCode = rc;   // process.exit değil: Windows'ta açık fetch tutamaçlarıyla çıkışta libuv iddiası (async.c) tetiklenebiliyor

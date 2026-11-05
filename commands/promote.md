@@ -18,7 +18,9 @@ Paket dosyaları (`${CLAUDE_PLUGIN_ROOT}/**`) bu komutta **asla düzenlenmez**. 
 
 - `docs/RETRO.md`: "Dersler", "Ters giden (kök neden)", "Sonraki tur için" ve "core aday" etiketli satırlar.
 - `docs/REVIEWER.md`: `Tekrar: #<n> (<birimler>)` satırları ve aynı bulgunun farklı birimlerde dönmesi.
-- `world/lessons.md` ve `project.md` §11 "uygulama notu (yapan)" satırları.
+- `world/lessons.md` ve `docs/KARAR-TARIHI.md` "uygulama notu" satırları (1.4 öncesi projelerde `project.md` §11 "uygulama notu (yapan)").
+- `docs/PAKET-NOTLAR.md` (1.4): durumu "aday" olan paket bulguları (araç yanlış ölçtü / ölçemedi / yanlış sınıfladı). Bunlar core öneri dosyasına
+  "araç düzeltmesi" olarak girer; numara (PN-n) öneri satırında kaynak olarak yazılır, proje içeriği taşınmaz.
 - Faz raporlarındaki `## Katkı` → "Süreç dersi" maddeleri.
 
 `--since` verilmişse yalnız o tarihten ya da fazdan sonraki girişler alınır.

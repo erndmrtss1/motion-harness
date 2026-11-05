@@ -4,6 +4,7 @@
 > Manifest `<P>`: `frames` <N>, `tc` <…>, `slice` <true|false>, `redQuota` <n>, `layer.exit` <s>, `review` <…>, `exceptions` <…>, `chromiumArgs` <…>.
 > Seçim: S<a> <v> · S<b> <v> (yapan + bağımsız reviewer). Kurallar: K1–K8, ön plan, <proje ilkesi>.
 > Bu künye yapanın belgesidir; **reviewer'a verilmez** (yalıtım). Rapor ve teslim belgesi buradan beslenir. Her "giderildi" doğrulama sütunuyla kanıtlanır.
+> Künye yalnız sayı taşır (tablolar; anlatı ve gerekçe rapora da buraya da uzun yazılmaz). Her iş bir **değişiklik listesiyle** açılır (dokunulan katman · ilkel · kamera · plaka); ölçüm kapsamı ondan türer (PLAYBOOK §3.4 V1).
 
 ## Zaman (<ses>, `script/<ad>.words.json`)
 

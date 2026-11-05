@@ -1,4 +1,4 @@
-# PATTERNS — anlatım kalıbı kartları (K-01 … K-54)
+# PATTERNS — anlatım kalıbı kartları (K-01 … K-57)
 
 > **Statü: ilham / uyarı — okunur, kopyalanmaz.**
 > - Kalıp bir **karar kalıbıdır, şablon değildir**. Sahnede kullanılırken önce world'ün kuralları ve SERT kurallar gelir; "Kısıt" satırı uyarlamayı söyler.
@@ -44,6 +44,7 @@
 | iş | kalıplar |
 |---|---|
 | açılış | K-24 ışıkla açılış (kabul) · K-01 varışta geri çekilme (ret) · K-14 noktadan açılan pencere |
+| shot sınırı (kesmesiz) | K-57 seyahat hamlesi (kural) · K-55 kadrajı örten süpürme (kural) · K-56 kalın kâğıt katlama (demo) · K-06 hızda kesme |
 | keşif | K-02 bağlamdan kanıta itiş · K-03 ucu takip et (revize) · K-27 bölge aydınlatma |
 | düşüş / kayıp | K-29 fırlatılan nesne (revize) · K-28 ışıyan büyüme · K-51 olay sonrası iz tutuşu |
 | ret | K-11 örten silme · K-19 kelime değişimi (rack) · K-49 kâğıt buruşturma |
@@ -583,6 +584,76 @@
 - **Risk:** —
 - **A/B durumu:** **ilke**.
 
+## Mekanik (paket ilkelleri, 1.4)
+
+> Bu üç kart referans videolardan değil, FocusFX (kütüphane `focusfx-paper`) ve paketin ilk üretim projesinin ("kaynak proje") ölçümlerinden
+> gelir. Çalışma zamanı ilkeli pakettedir (`render/runtime/motion-mek.jsx` → projede `shared/motion-mek.jsx`, `MH.mek`); görünüş (malzeme,
+> gölge rengi, ışık) world'dendir. Sayılar referans ölçümüdür, varsayılan değildir (`docs/CRAFT-REF.md` §5); proje kendi klibinden ölçer:
+> `motion-render motion-test mek-supurme | mek-katlama | mek-seyahat [--props '<json>'] [--ref <klip>]`.
+
+#### K-55 · Kadrajı örten süpürme (altta set değişimi)
+- **Grup · sıklık:** geçiş · FocusFX 1 geçiş (kâğıt süpürme, K-07 ailesi) · kaynak projede shot sınırı geçişi.
+- **Niyet:** kesmesiz shot sınırı: fiziksel bir yüzey kadrajı süpürür; altındaki ya da arkasından gelen yeni set açığa çıkar.
+- **Mekanik:** ön olay (yüzey kalkar, gölgesi kopar ya da gölge önden gelir) → yönlü süpürme (yamuk hız profili, kadraj dışında hız sürer) + yönlü
+  hareket bulanıklığı. `out`: yüzey kadrajı terk eder · `in`: gelir ve durur · `through`: girer, kadrajı **tam** örter, karşıdan çıkar — set
+  değişimi yalnız tam örtme penceresinde (`swap(T)`).
+- **Sayılar:** referans ölçümü (FocusFX) 620 ms io3, gölge 70 ms önce, yol 2500 px, bulanıklık min(14, |v|/90) px. Referans ölçümü (kaynak proje)
+  660 ms yamuk-kalkış r 0,5 + kadraj dışında hız sürer; io3 tepesinde alttaki kart tek karede %55,7 açığa çıkıyordu → yamukla %25/kare.
+- **Parametreler:** `MH.mek.sweep({box, dir, kind, t, lead, dur, profile, r, carry, lift, shadowLead, pad, blur:{max, div}, swapAt})` +
+  `<MHSweep s T shade={{fn: z => {dx, dy, blur, a}, color}}>yüzey</MHSweep>`. Genel varsayılan: out/in 0,8 s (r 1), through 1,2 s (yamuk r 0,5).
+- **Ölçüm:** frame-check `velocity` (sahne `MH.hooks.boxes` → `s.boxEntry(T)`; görünür ardışık karelerde C1 ≤ %5) · `entryExit` (evre
+  `supurme giris|cikis`) · `pop`: süpürme penceresi tasarlanmış geçiştir → `MH.mek.hooks.windows('gecis', [s.window()])` ve check
+  `exclude: ["$__gecis"]` (CONTRACT §5) · `s.plan()`: tepe, C1, tam örtme `cover {t0, t1}`, `tSwap`. Açığa çıkış hızı = kenar hızı ÷ alttaki
+  nesnenin genişliği (tepe hızda tek kare %50'yi geçmesin).
+- **Kısıt:** set değişimi tam örtme olmadan yapılırsa gizli kesmedir (`plan().warn`). Yüzey sözlükte / planda adlı fiziksel nesnedir.
+- **Risk / tuzak:** io3 tepesi 3 × ortalama: alttaki içerik bir karede açığa çıkar (pop) — yamuk ya da daha uzun süre. Sine rampa C1 için
+  N ≥ π/(2r·0,05) kare. Hızlı süpürmede `motion-test` piksel izi arama penceresini aşabilir (R 160 px @1080): tasarım profiline (`__mtSpeed`) bak.
+- **A/B durumu:** **kural** (kaynak projede kesmesiz geçiş repertuvarı; mekanik onaylı).
+
+#### K-56 · Kalın kâğıt katlama (menteşeli yaprak)
+- **Grup · sıklık:** geçiş / hareket · FocusFX 1 geçiş (yarı saydam yaprak kalkışı) · kaynak projede mekanik demosu.
+- **Niyet:** üstteki yaprak menteşesinden kalkıp katlanır; altındaki ya da arka yüzü yeni bilgidir (K-34'ün perspektifli, kalın kâğıt hâli).
+- **Mekanik:** ön olay (serbest kenar birkaç px kalkar, gölge kopar) → menteşe ekseninde θ 0 → açı (CSS 3B perspektif); ön yüz göz düzleminde
+  (`thEye`) kaybolur, arka yüz görünür; kalınlık şeritleri; zemin izi + yüksekliğe bağlı gölge kaydı. Kıvrım / ışık / alan derinliği zarfları
+  world'ün (`lf` ile).
+- **Sayılar:** referans ölçümü (FocusFX) 0 → 96°, 1650 ms io3, perspektif 2200, kıvrım ≤ 9 px, ışık a ≤ 0,16, DoF ≤ 8,6 px. Referans ölçümü
+  (kaynak proje) aynı + 3 kare ön olay (alt kenar 4 px); perspektif 1000'de alt kenar 2 karede kadrajı geçti.
+- **Parametreler:** `MH.mek.fold({box, hinge, angle, t, lead, leadLift, dur, profile, settle, persp, origin, thickness, shadowK})` +
+  `<MHFold f T front back edge shade blur flat/>` (yüzler children / render prop). Genel varsayılan 180°, 1,8 s hermite; persp ZORUNLU.
+- **Ölçüm:** `f.plan()` (yay hızı C1, izdüşüm tepesi) · frame-check `velocity` (`f.boxEntry(T)` poly) · `entryExit` · yüz değişimi karesi `thEye`.
+- **Kısıt:** katlanan yaprak düz katmanla aynı 3B bağlamdaysa kesişir; yaprak kendi perspektif kabında (`flat` varsayılan) ya da kamera
+  bağlamında (`flat={false}`) tek kalır.
+- **Risk / tuzak:** serbest kenarın ekran izi perspektifte yön değiştirir (kameraya kalkarken dışa, sonra karşıya): izdüşüm hızı 0'a yaklaşır,
+  kutu merkezinden ölçen `velocity` ayrı koşular görebilir — C1'i yay hızından (`plan().c1`) oku. Yüze `filter` verilirse yüz düzleşir; DoF
+  bulanıklığı yüzlere ayrı verilir (bileşen `blur`). Kısa perspektif + uzun yaprak: kenar `persp`'e yaklaşınca ölçek patlar.
+- **A/B durumu:** **demo** (mekanik onaylı; A/B yok).
+
+#### K-57 · Seyahat hamlesi (crane-up → travel → crane-down)
+- **Grup · sıklık:** kamera / geçiş · FocusFX shot sınırı kamera taşımaları (12/43 hamle) · kaynak projede geçiş omurgası kararı.
+- **Niyet:** büyük tek dünyada bir bölgeden ötekine: kamera yükselir (masa yumuşar), üstünden ilerler, yeni bölgeye iner (kahraman netleşir).
+- **Mekanik:** tek sürekli C1 yol: yükseklik (dolly `d` + tilt `rx`) yukarı ve aşağı pencerelerde, x/y travel penceresinde; pencereler
+  örtüşür, hız evreler arasında 0'a düşmez (tek hamle). Varışta settle varış hızıyla eklenir (konum ve hız sürekli), sonra tutuş + drift.
+  Alan derinliği yükseklikten (`dof(T)`); hareket bulanıklığı `MH.cam.motion` → `MHMoBlur` / `MHMoBlurK`.
+- **Sayılar:** referans kararı (kaynak proje) görünür 1,5–2,5 s, tepe ≤ 25 px/kare @60 (FocusFX en büyük 32,6; medyan 8,4), settle 0,28 s;
+  kural C: tepe 8–14, görünür ≥ 1,0 s. İki anahtarlı Hermite'de ivme/tepe 4/N (%5 için N ≥ 80 kare); quintic 3,08/N (N ≥ 62).
+- **Parametreler:** `MH.mek.travel({from, to, t, dur | visible, profile, up:{d, rx}, windows, settle:{amp, dur}, peakMax, fit:'dur', persp,
+  drift, dof:{k, max, focus}, raster})` → `at(T)` (`<MHCam c>`), `hook({dur})` (`__camSpeed`), `plan()`; art arda hamleler `MH.mek.chain`.
+- **Ölçüm:** MEASURE M-C (kural C) ve M-SEYAHAT: frame-check `velocity` (`__camSpeed`, C1 ≤ %5 tepe) · `moves` (hamle/shot; taban W·0,02/fps)
+  · `plan()` tepe, `visible` (%10–90), `c1` (ana hamle) ve `c1Fc` (bugünkü frame-check tanımı) · `motion-test mek-seyahat --fps 60` (piksel +
+  tasarım hızı). Dinlenme basamağı M-ZS.
+- **Kısıt:** gizli kamera hamlesi yok: konum/ölçek yalnız görünür hamleyle değişir (tam örten süpürme altındaki set değişimi hariç, K-55).
+  Ardışık zıt yönlü hamleler arasında tutuş. Yol ve süre birlikte planlanır: tepe = 1,5·yol/N (hermite) → tavan aşılırsa `fit:'dur'` ya da yol kısalır.
+- **Risk / tuzak:** (1) settle'ın dönüş yarısı tabanın (0,05 px/kare) altına inip ayrı "mikro hamle" sayılır → bugünkü `velocity` onu kendi
+  küçük tepesine göre ölçer (%20–30) — `plan().c1Fc` ve uyarı; araç tanımı düzeltilene dek check'te `floor` settle tepesinin üstünde (PN-138).
+  (2) Dinlenmede tamsayı öteleme / `rotate(0deg)`: kamera durduğu karede katman eksene hizalı raster yoluna geçer, tek karede keskinlik
+  basamağı (PN-120, PN-137) → `raster: true` (rx/rz hiç tam 0 yazılmaz) ya da dinlenme konumu tamsayı değil. (3) `MHMoBlur` örnek ötelemesi
+  `feOffset`'te tamsayıya yuvarlanır; L/2 = x,5'te örnekler asimetrik → tek karede ≈ 0,2 px kayma, C1 basamağı (PN-119) → `MHMoBlurK`
+  (tamsayı cihaz pikseli + kutu çekirdeği + eşikte rampa). (4) Alan derinliği süzgeci (`filter: blur`) dinlenmede kalkarsa raster yolu
+  değişir → hamle boyunca taban değer. (5) Yarı saydam kamera içeriğinde MoBlur "over" bileşimi kaplamayı iki katına çıkarır (karartma) —
+  kamera katmanı opak zemin taşır. (6) Ara anahtarlı monoton kübikte hız çukuru oluşur (Fritsch–Carlson teğetleri sekantı aşmaz): seyahat tek
+  hamledir, ara anahtar yok.
+- **A/B durumu:** **kural** (kaynak projede geçiş omurgası kararı; A/B yok — ölçü sınıfı M-SEYAHAT).
+
 ---
 
 ## Özet sayım
@@ -597,4 +668,5 @@
 | kompozisyon | 10 | 0 | 0 | 0 | 0 | 0 | 1 | 3 | 6 |
 | malzeme | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 |
 | ritim | 5 | 0 | 0 | 0 | 0 | 1 | 0 | 3 | 1 |
-| **toplam** | **54** | **4** | **3** | **1** | **1** | **1** | **3** | **7** | **34** |
+| mekanik (1.4) | 3 | 0 | 0 | 0 | 0 | 1 | 2 | 0 | 0 |
+| **toplam** | **57** | **4** | **3** | **1** | **1** | **2** | **5** | **7** | **34** |

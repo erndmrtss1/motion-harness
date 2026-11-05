@@ -38,6 +38,36 @@
     "light": { "x": 0.5, "y": 0.435, "r": 0.443, "a": 0.05 }, "falloff": [0.22, 0.28], "vignette": [0.28, 0.35], "grain": 0.04, "open": 0.4
   },
   "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 },
+  "set": {
+    "note": "(1.4) set yöntemi şablonu — SET.md. Set başına değerler set.json'da; burada world sabitleri. null = ölçülmedi (uydurulmaz; look-dev'de projenin referans plakalarından). Araçlar bu bloğu okumaz (belge + ölçüm alanı).",
+    "method": "set üretilir, içerik çizilir",
+    "layers": [
+      { "name": "arka", "z": 0, "carries": "zemin, uzak nesneler, lamba düşümü; içerik alanı boş" },
+      { "name": "orta", "carries": "içerik yüzeyi + masa nesneleri (zeminle aynı üretimde)" },
+      { "name": "on", "carries": "kameraya yakın nesne kenarı; derinlik ve DoF plakadan" }
+    ],
+    "lamp": { "single": true, "P": null, "h": null, "whitePoint": null, "cctK": null, "uncertaintyPx": null, "note": "film boyunca tek lamba yeri; her set.json lamp bloğuna aynen; ana oturum yazar, director değiştirmez" },
+    "lens": { "heightPx": null, "principalPoint": null, "pxPerMm": null, "dofSigmaRefPx": null, "dofZRefPx": null, "note": "fiziksel paralaks ve DoF bu objektiften (SET.md §3); camera.parallax yalnız set kaydı olmayan tek plakalı sahnede" },
+    "lightRead": { "dirTopShare": 0.03, "blockPx": 12, "satMax": 0.40, "blockFlatMax": 0.25, "centerBrightShare": 0.05, "edgeDarkShare": 0.15, "note": "ışık okuma yöntem parametreleri (SET.md §4) — referans ölçümü (kaynak proje)" },
+    "match": { "mode": "darken", "gainMax": 1, "note": "ışık eklenmez: eşleme kazancı ≤ 1, hiçbir kanal parlatılmaz" },
+    "shadow": { "model": "ambient", "ambient": null, "note": "düşen gölge o_c(x) = min(1, ortam_c / L_c(x)); ortam ışık eşleme öncesi kaynak plakanın düşen gölge çekirdeğinden; temas/AO ayrı" },
+    "accept": { "sizeTol": 0.10, "posTolPx": 20, "overlapMax": 0, "attemptsMax": 3, "note": "set plakası kabulü (SET.md §7) — referans ölçümü (kaynak proje); proje project.md §6'da yeniden yazar" }
+  },
+  "edge": {
+    "note": "(1.4) nesne kenarı kuralı (motion-world references/ILKEL.md §3–§5; ölçüm MEASURE M-KENAR · M-DIKIS · M-ASKIDA) — değerler referans ölçümü (kaynak proje); projenin plakasıyla yeniden ölçülür. Araçlar bu bloğu okumaz.",
+    "matteMaxPx": 1,
+    "haloMax": 2,
+    "grainRatio": [0.667, 1.5],
+    "upscaleMax": 1.25,
+    "contactGapPx": 0,
+    "seam": { "rowsMax": 2, "lumaMax": 10 },
+    "bodyClass": {
+      "flat": { "matteMaxPx": 1 },
+      "round": { "haloRel": 0.2, "terminatorRel": 0.2, "ref": "nesnenin onaylı kaynak plakası" },
+      "nested": "yalnız silüet (nesne ↔ yüzey sınırı)"
+    },
+    "contact": { "bandMin": 0.06, "shadowMin": 0.03, "note": "M-ASKIDA göreli eşikleri (temas bandı / gölge düşüşü, yüzey referansına göre)" }
+  },
   "primitives": [],
   "lessons": "lessons.md"
 }

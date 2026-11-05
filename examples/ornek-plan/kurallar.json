@@ -1,0 +1,10 @@
+{
+  "_not": "Örnek kural dosyası (--rules). Değerler örnektir; proje kendi world.json `plan` bloğunu kullanır. Alet ekran hızı px/kare @1080.",
+  "syncFrames": 1,
+  "minEntryS": 0.4,
+  "toolGapS": 0.2,
+  "toolMaxPx": 57,
+  "maxGapS": 3,
+  "densityS": 2.5,
+  "boundaryS": 0.5
+}

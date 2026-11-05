@@ -20,6 +20,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 - **Güncelleme:** `git pull`, sonra `install.ps1`'i yeniden çalıştırın. Kurulu plugin eskiyse "güncellendi a → b", değilse "güncel" der.
   Ardından Claude Code'u yeniden başlatın.
 - macOS / Linux: `bash install.sh`.
+- **Kurulu klon yalnız sürüm alır.** `motion-render`'ın koştuğu bu klasörde dal değiştirmeyin, dosya düzenlemeyin; pakete katkı ayrı bir klonda ya da
+  worktree'de yapılır. Projeler render öncesi bu klonun beklenen tabanda ve temiz olduğunu `tools/render-oncesi` ile denetler (1.4).
 
 Kurulumu Claude Code içinden denetlemek için boş bir klasörde: `/motion:doctor` (✗ varsa `/motion:setup`).
 
@@ -30,11 +32,13 @@ Kurulumu Claude Code içinden denetlemek için boş bir klasörde: `/motion:doct
 3. `START.md'yi oku, /motion:init` yazın. Kısa bir mülakat gelir: konu, süre, ses, dil, profil, world, üretken bütçe, teslim.
    Brief dosyanızın başında ön bilgi (frontmatter) varsa soru sormaz (alanlar `commands/init.md`).
 4. **World kararı** (bkz. §4): yeni look-dev ya da kütüphaneden bir world.
-5. Kurulum raporunu okuyun (**DUR — kurulum**): varsayılanla doldurulan alanları ve açık kararları cevaplayın.
+5. Kurulum raporunu okuyun (**DUR — kurulum**): varsayılanla doldurulan alanları ve açık kararları cevaplayın. Proje bir git deposuysa çelişki
+   taraması commit kapısı kuruludur (`git config core.hooksPath .githooks`; değilse depo açınca bu komutu bir kez çalıştırın).
 6. Ses varsa `/motion:faz audio`: transkript, vuruş haritası, shot listesi önerisi. Shot sınırlarını onaylayın.
 7. `/motion:faz lookdev`: üç yön, ölçümler, taze reviewer kapısı. **Bir yön seçin.**
 8. `/motion:faz lexicon`: shot başına nesne sözlüğü. Onaylayın.
-9. `/motion:faz P1` (sonra P2 …): varyant → animatik → kapı → tam render → QC → teslim kapısı. İlk perdenin animatiğini siz onaylarsınız.
+9. `/motion:faz P1` (sonra P2 …): varyant → animatik → kapı → hareket kontağı → tam render → QC → teslim kapısı. İlk perdenin animatiğini ve
+   **hareket kontağını** (bütün kamera hamleleri ve mekanikler referans kliple yan yana tek videoda; "DUR — hareket") siz onaylarsınız.
 10. `/motion:master`: tek sürekli encode, loudness, arşiv, teslim belgesi, master kapısı. Bitince `/motion:promote` ile dersleri taşıyın;
     world'ü kütüphaneye almak isterseniz `/motion:promote --library <ad>`.
 
@@ -47,6 +51,10 @@ Kurulumu Claude Code içinden denetlemek için boş bir klasörde: `/motion:doct
 - **Eşikler:** full ≥ 7/8 · light ≥ 6/8 · live ≥ 7/8 (§0.6 zevk maddeleri). UCUZ işaretlerinden biri varsa birim geri döner.
 - **Tek düzeltme turu:** GEÇMEZ → bir düzeltme turu → yeni reviewer → yine GEÇMEZ ise **DUR**, render yok; kontak ve nedenler size gelir.
 - Look-dev kapısında `motion-render lookdev-diff` yönlerin iskeletini ve paletini ölçer; uyarı veren çift için reviewer gerekçe yazmak zorundadır.
+- **1.4 — DUR yalnız geri dönüşü pahalı kararda.** Ara sonuçlar size **bilgi kontağı** olarak gelir: dosya gönderilir, akış sürer; müdahale ederseniz
+  durulur. Reviewer kilometre taşında açılır (still ve klip ayrı reviewer, referans klip yan yana); ara adımda yalnız değişen katman ölçülür.
+  Raporlar kısa istisna biçimindedir (geçenler tek satır; yalnız sapma, açık karar, "kredi yüzünden" satırı ve bütçe açılır).
+- **Kararlarınız** aynen `docs/KARAR-TARIHI.md`'ye, güncel özü `project.md`'ye yazılır; `project.md` her zaman yalnız bugünkü kuralı taşır.
 
 ## 4. World: kütüphaneden seç ya da yenisini kur
 
@@ -73,6 +81,8 @@ Demosu için: `motion-render init <klasör> --world focusfx-paper --demo`.
 | soru | dosya |
 |---|---|
 | Akış, fazlar, rapor biçimi | `skills/motion-core/references/PLAYBOOK.md` |
+| Roller, verim (V1–V8), belge hijyeni (1.4) | PLAYBOOK §2.1, §2.6, §3.3–§3.5 |
+| Çelişki taraması, render öncesi denetim, hareket kontağı (1.4) | `motion-render celiski-tara`, `tools/render-oncesi.ps1` / `.sh`, `motion-render contact motion` |
 | Kurallar (SERT / VARSAYILAN) | `skills/motion-core/references/RULES.md` |
 | Ölçüm, qc, frame-check | `skills/motion-core/references/MEASURE.md` |
 | Reviewer neye bakar, KARAR biçimi | `skills/motion-reviewer/SKILL.md` |

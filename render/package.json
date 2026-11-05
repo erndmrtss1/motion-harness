@@ -1,10 +1,10 @@
 {
   "name": "@motion/harness",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "motion-harness render/ölçüm araçları: HTML/CSS 3B sahneleri Playwright/Chromium ile kare kare render, QC, frame-check, master, arşiv.",
   "type": "module",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bin": { "motion-render": "bin/motion-render.mjs" },
   "engines": { "node": ">=20" },
   "files": ["bin", "cmd", "lib", "py", "runtime", "CONTRACT.md", "BEKLENEN-SAPMA.md", "requirements.txt"],

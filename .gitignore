@@ -1,11 +1,60 @@
-# motion-harness
+# motion-harness — depoya GİRMEYENLER (herkese açık depo; 1.4)
+# Proje çıktıları, kanıt, gizli anahtarlar, ledger/manifest, plakalar, kareler/klipler ve kişisel sahne kayıtları hiçbir zaman izlenmez.
+# Paket yalnız süreç + kod + belge + world kodu taşır; görsel/ses malzemesi taşımaz (HK-37). İstisna gerekiyorsa `!yol` ile açıkça ekleyin.
+
+# çıktı ve kanıt
+out/
 evidence/
+*.log
+*.part
+*.part.*
+
+# gizli bilgiler
 .env
 .env.*
 !.env.example
+*.local.*
+
+# bağımlılıklar ve araç önbellekleri
 node_modules/
-out/
-*.log
+.venv/
+__pycache__/
+.claude/worktrees/
+
+# proje malzemesi (bir proje klasörü yanlışlıkla depo köküne açılırsa): plakalar, üretken varlıklar, ledger/manifest, kişisel sahneler
+/assets/
+/materials/
+/plates/
+/frames/
+/scenes/
+/scenes.json
+/project.md
+/ledger.json
+**/assets/gen/manifest.json
+**/assets/gen/runs/
+**/ledger.local.json
+
+# medya: referans kareleri, klipler, ses (paket medya taşımaz)
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.tif
+*.tiff
+*.exr
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.zip
+
+# işletim sistemi
 .DS_Store
 Thumbs.db
-*.local.*

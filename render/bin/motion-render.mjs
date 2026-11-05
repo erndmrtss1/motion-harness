@@ -20,11 +20,23 @@ const cmd = argv.shift();
 function list() {
   return fs.readdirSync(CMD_DIR).filter((f) => f.endsWith('.mjs')).map((f) => f.slice(0, -4)).sort();
 }
+// komut dosyasının ilk açıklama satırı ('// motion-render <ad> — …') → tek satırlık tanım (genel yardım listesi)
+function desc(name) {
+  const first = fs.readFileSync(path.join(CMD_DIR, name + '.mjs'), 'utf8').split('\n').find((l) => l.startsWith('//')) || '';
+  const d = (/—\s*(.*)$/.exec(first) || [0, ''])[1].trim();
+  return d.length > 104 ? d.slice(0, 103) + '…' : d;
+}
 if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
-  console.log('motion-render <komut> [--project <dizin>] …\nkomutlar: ' + list().concat(Object.keys(ALIAS)).sort().join(' ') +
-    '\nayrıntı: render/CONTRACT.md §6');
+  const names = list(), w = Math.max(...names.map((n) => n.length)) + 2;
+  console.log(['motion-render <komut> [--project <dizin>] … · motion-render <komut> --help (kullanım) · --version · --where (kurulu klonun kökü)', 'komutlar:',
+    ...names.map((n) => '  ' + n.padEnd(w) + desc(n)),
+    'takma adlar: ' + Object.entries(ALIAS).map(([a, m]) => a + ' = ' + m + (a === 'probe' ? ' --frame N' : '')).join(' · ') + ' · qc k1|k6 = k1|k6',
+    'alt komutlar: contact sheet|storyboard|clips|seq|motion · qc film · imgdiff stale · manifest sync|validate · ingest review|scan|lost|refund · gen upscale|req',
+    'ayrıntı: render/CONTRACT.md §6'].join('\n'));
   process.exit(cmd ? 0 : 2);
 }
+// --where: paketin koştuğu klonun kökü (render/ dizininin üstü); tools/render-oncesi.* kurulu klonu buradan bulur
+if (cmd === '--where') { console.log(path.resolve(HERE, '..', '..')); process.exit(0); }
 if (cmd === '--version' || cmd === '-v') {
   const pkg = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'package.json'), 'utf8'));
   console.log(pkg.name + ' ' + pkg.version);
@@ -47,6 +59,7 @@ if (own.includes('--help') || own.includes('-h')) {
 }
 // Süreçler arası ağır iş kilidi (MOTION_RENDER_LOCK=<dizin yolu>): birden çok oturum aynı makinede render/ölçüm yaparken
 // CPU'yu sırayla kullanır. mkdir atomiktir; sahibi ölmüşse kilit bayat sayılır. Alt süreçler MOTION_LOCK_HELD ile devralır.
+// contact bütün alt komutlarıyla ağırdır (contact motion: hamle kesitleri + profil + encode); celiski-tara hafiftir (kilit beklemez).
 const HEAVY = new Set(['render', 'lookdev-diff', 'motion-test', 'probe', 'ss2', 'run', 'qc', 'frame-check', 'fc', 'ours', 'k1', 'k6', 'grade', 'encode', 'expo-post', 'master', 'arsiv', 'live', 'smoke', 'contact']);
 if (process.env.MOTION_RENDER_LOCK && !process.env.MOTION_LOCK_HELD && HEAVY.has(cmd)) {
   const lock = path.resolve(process.env.MOTION_RENDER_LOCK), owner = path.join(lock, 'owner.json');

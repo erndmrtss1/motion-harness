@@ -1,8 +1,8 @@
 # <PROJE> — proje katmanı
 
-> Bu dosya projeye özgü katmandır.
+> Bu dosya projeye özgü katmandır ve **tek güncel spec**tir (PLAYBOOK §3.5).
 > - Çelişkide paketin **VARSAYILAN** kurallarının önündedir; **SERT** kuralların (ölçülenler) önünde değildir.
-> - Kararlar tarihli ve kaynaklı yazılır: "kullanıcı" ya da "uygulama notu (yapan)".
+> - Kullanıcı karar metni aynen ve tarihli `docs/KARAR-TARIHI.md`'dedir; burada yalnız bugün geçerli öz durur (§11 tablosu). Değişen satırın eski metni karar tarihine taşınır; burada üstü çizili satır ya da silinti notu kalmaz.
 > - **KAPALI KARAR** etiketli madde bir daha sorulmaz.
 > - Doldurma: `/motion:init` mülakatı. `<…>` yer tutucudur; boş kalan alan "açık karar"dır.
 
@@ -47,7 +47,23 @@
 ## 3. Kalite çıtası
 
 - **§0.6 zevk kapısı:** ≥ <7>/8. Profil varsayılanı full 7 · light 6 · live 7; proje yükseltebilir, düşüremez. Eşiğin altında render yok.
-- **UCUZ taraması:** reviewer her kapıda 11 maddeyi tarar; biri VAR ise birim geri döner. Projeye özgü ek maddeler:
+- **İş akışı** (PLAYBOOK §2.1): ana oturum kapı ve QA'dır; director tek tasarımcı-uygulayıcıdır. Director görev brief'i yalnız `docs/BRIEF-DIRECTOR.md` (≤ 30k token; estetik ölçüt yalnız onun §1'i). Proje brief'i = bu dosya + `docs/SOZLUK.md` + `docs/CRAFT-REF.md` + `world/world.json` + `CLAUDE.md` ≤ 60k token (aşarsa en büyük dosya kısaltılır). Tavanlar `docs/celiski.json`'dadır; `motion-render celiski-tara` ölçer. Kapılar işten sonra QA'dır.
+- **Kapı sınıflaması** (PLAYBOOK §3.3): her kapı bir sınıftadır; tabloda olmayan kapı raporda bir sınıfa yazılır, sınıflanmamış kapı uygulanmaz. **Ölçüsü tanımsız madde GEÇMEZ gerekçesi olamaz**: yöntem bu dosyada ya da `world/world.json`'da yazılı değilse bulgu açık karar olur. Ölçüm eşiği yalnız proje sahibi kararıyla değişir.
+
+  | sınıf | kapılar | etki |
+  |---|---|---|
+  | **kusur** (ölçüt dışı → GEÇMEZ) | <SERT kurallar · içerik doğruluğu · okunurluk · zanaat kapısı (RULES ZN) · hareket kuralı (MEASURE M-C) …> | tek düzeltme turu |
+  | **uyarı** (raporda sayı) | <K3 · olay yoğunluğu · kota ölçütleri (RULES §0.8) …> | GEÇMEZ üretmez; DUR'da görülür |
+  | **bilgi** | <ölçüsü bilgi olarak tutulan ölçüler> | kapı değil |
+  | **kapı dışı** | kompozisyon ve doluluk metrikleri (ızgara, grup sayısı, kahraman oranı, içerik payı, kalite paritesi …) · reviewer'ın sayısal estetik şartı | estetik hüküm proje sahibi + referansla kalibre reviewer |
+
+- **QA kapsamı** (PLAYBOOK §3.4, V1/V2/V3): ara adımda değişiklik listesinden türeyen ölçüm (dokunulmayan katman yeniden ölçülmez) + doğruluk (<içerik doğruluğu · okunurluk · aksan kotası>) + qc; reviewer yok, bilgi kontağı. **Kilometre taşında** tam tarama: frame-check bildirilen bütün tipler · hareket kuralı ve vuruş/zanaat · canlılık · taze reviewer (faz başına; referans klip yan yana; still ve klip ayrı; iş başına ≤ 3 soru). Bağımsız ölçüm iş başına ≤ 3 madde, tek tur. Rapor istisna biçiminde ≤ 40 satır.
+
+  | kilometre taşı | kapı türü | DUR (geri dönüşü pahalı) |
+  |---|---|---|
+  | <look-dev seçimi · sözlük · ilkel kütüphanesi · storyboard · animatik · hareket kontağı · perde tam render · master> | <lookdev · … · hareket · teslim · master> | <evet / bilgi kontağı> |
+
+- **UCUZ taraması:** reviewer her kapıda 12 maddeyi (#1–#11, #17 askıda nesne) tarar; biri VAR ise birim geri döner. Projeye özgü ek maddeler:
 
   | # | işaret | neden |
   |---|---|---|
@@ -58,6 +74,8 @@
   | klip | neyin referansı | §0.6 maddeleri | not |
   |---|---|---|---|
   | <out/ref/….mp4 · kütüphane world demosu> | <hareket zanaatı · çizim · geçiş · kamera …> | <4, 5, 6 …> | <kaynak, süre> |
+
+  Reviewer'a referans klip birimle **yan yana** verilir (klip kapısında `motion-render contact motion`). Projenin sabit reviewer soruları (varsa, aynen sorulur; ≤ 3 sorunun içinde): <…>.
 
 - **OURS tabanı:** hold ≤ 0.6 · hareketli ≥ 0.4 (ölçü hedefleri §10; kota UYARI sınıfıdır, RULES §0.8).
 - **Tipografi zanaatı:**
@@ -96,6 +114,9 @@ Değerler `world/world.json`'dandır. Burada yalnız projeye özgü sapma ve aks
 - `world/world.json` sürümü: <0.1.0>. Zorunlu alanlar: `band`, `k1.mask`.
 - Bant: <[lo, hi]> — onaylı görünümden ölçüldü. Sayı görünüme uyar.
 - Dersler `world/lessons.md`; seçim gerekçesi `world/DECISIONS.md`.
+- **Set yöntemi** (varsa; photo-plate world'ünün `SET.md` belgesi, 1.4): set üretilir, içerik çizilir; `set.json` tek kaynak. **Lamba:** film boyunca tek yer
+  <x, y, yükseklik> = world `set.lamp` = her `set.json` `lamp` (ana oturum yazar, director değiştirmez). **Plaka kabulü:** malzeme + kenar
+  (M-KENAR, gövde sınıfı) + yerleşim + yer/boy ± <tolerans> + dikiş (M-DIKIS) + askıda (M-ASKIDA); düzeltme maskeli bölgeyle (GENAI §17), deneme ≤ 3.
 
 ## 7. Malzeme ve lisans
 
@@ -124,7 +145,7 @@ Malzeme **yol olarak** bağlanır (`materials/`); kopyalanmaz, taşınmaz, silin
 
 ## 9. Üretken varlık
 
-Bu bölümün makine kopyası `assets/gen/policy.json`'dur (GENAI.md). İkisi birlikte değişir.
+Bu bölümün makine kopyası `assets/gen/` altındaki `policy.json`'dur (GENAI.md; ilk üretimden önce yazılır). İkisi birlikte değişir.
 
 | kural | değer |
 |---|---|
@@ -134,6 +155,8 @@ Bu bölümün makine kopyası `assets/gen/policy.json`'dur (GENAI.md). İkisi bi
 | model beyaz / kara liste | <…> (ajan değiştiremez; liste dışı = kullanıcı onayı) |
 | önce pilot · önce taslak · önce ucuz | evet |
 | sapma durdurma | tahmin ↔ gerçek > %10 → dur |
+| rapor satırı (zorunlu) | "kredi yüzünden yapılmadı / kabul edildi": boşsa "yok"; **doluysa DUR** (satır kabul mekanizması değildir) |
+| plaka düzeltme | maskeli bölge üretimi varsayılan (yer tutucu + ölçek referansı); tam plaka yalnız ışık/kompozisyon değişince; deneme ≤ <3>, sonra yöntem değişir |
 | varyant | shot başına ≤ 2; onaysız 3. varyant yok |
 | klip süresi | ≤ <s>; donma ve ileri-geri yasak |
 | içerik kuralı | üretken klip cümleyi anlatmaz, tek başına kare olmaz, motor katmanının altında kalır |
@@ -156,27 +179,18 @@ Bu bölümün makine kopyası `assets/gen/policy.json`'dur (GENAI.md). İkisi bi
 
 ## 11. Faz kararları
 
-Her faz iki alt bölüm açar. Kullanıcı kararı aynen yazılır; uygulama notu yapanındır.
+Kullanıcı karar metinleri (aynen, tarihli) ve uygulama notları `docs/KARAR-TARIHI.md`'dedir. Yeni karar önce oraya, güncel özü bu dosyanın ilgili bölümüne ve aşağıdaki tabloya (PLAYBOOK §3.5). Tabloda yalnız bugün bağlayıcı kararlar durur; yerini başka karara bırakan satır karar tarihine taşınır. **KAPALI KARAR** bir daha sorulmaz.
 
-### 11.F0 — F0 kararları (kullanıcı, <YYYY-AA-GG>)
+| id | tarih | öz | durum |
+|---|---|---|---|
+| 11.F0 #<n> | <YYYY-AA-GG> | <kararın tek satırlık özü; etkilediği § (ör. §3, §6)> | <KAPALI KARAR \| açık \| ŞARTLI> |
 
-| # | karar |
-|---|---|
-| 1 | <…> |
-| DUR | <ne teslim edilir> |
+<!-- Sonraki satırlar: | 11.<faz>-karar-<k> | <tarih> | <öz> | KAPALI KARAR | — metin aynen docs/KARAR-TARIHI.md "### 11.<faz>-karar-<k>" -->
 
-### 11.F0a — F0 uygulama (yapan)
-
-| konu | uygulama |
-|---|---|
-| | |
-
-<!-- Sonraki fazlar: ### 11.F<n> — <kapsam> (kullanıcı, tarih) · ### 11.F<n>a — uygulama -->
-<!-- KAPALI KARAR örneği: | 3 | <karar> — **KAPALI KARAR** (F<n>) | -->
 
 ## 12. Borç kütüğü
 
-YAPMA maddeleri, kapsam dışı bulgular ve borca devredilen açık kararlar buraya yazılır.
+YAPMA maddeleri, kapsam dışı bulgular ve borca devredilen açık kararlar buraya yazılır. Paket aracı yüzünden bekleyen borçta koşul "harness eklediğinde" olur, satır paket bulgusunun numarasını taşır (`docs/PAKET-NOTLAR.md`) ve o zamana dek kullanılan proje ayarını ya da bağımsız ölçümü yazar; içerik araca göre ertelenmez (PLAYBOOK §3.3). Kapanan satır karar tarihine taşınır (sonuç cümlesiyle).
 
 | borç | kaynak (faz, bulgu) | neden ertelendi | ne zaman / koşul | durum (borç \| kabul \| çözüldü (F<n>) \| kapandı) |
 |---|---|---|---|---|

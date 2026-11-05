@@ -1,6 +1,7 @@
 // lib/fc/pixel.mjs — Katman A: piksel / zaman tipleri (render sonrası; kare dizini ya da mp4). Yöntemler A3 §2'deki kaynak
 // betiklerle aynı (ölçü yolu, eşik, oran tanımı); dosya:satır göndermeleri yorumlarda.
 //   luma · black · temporal · ramp · seam · identical · edgeDark · accentLocation · accentColor · sharpness · stroke · motion · overlapPx
+//   1.4: temporal eşik üstü bütün kareleri listeler (PN-136) · sharpness varsayılan çifti aksansız sahnede ölçmez, bölge sınıf + kutusunu yazar (PN-121)
 import fs from 'node:fs';
 import path from 'node:path';
 import { OUT, SCENES, sceneById, readTimeline } from '../project.mjs';
@@ -183,7 +184,7 @@ async function temporal(c, ctx, data) {
     if (have.length < 2) return unmeasured(c, 'ardışık kare yok' + missNote(missing));
     windows.push({ name: 'aralık', frames: have, missing });
   }
-  const out = [];
+  const out = []; let overTotal = 0;
   for (const w of windows) {
     const s = await temporalSeries(c, ctx, w.frames.filter((f) => f >= 0 && f < ctx.frames), src, metric, camSpeed);
     const o = { name: w.name, frames: [w.frames[0], w.frames[w.frames.length - 1]] };
@@ -192,13 +193,15 @@ async function temporal(c, ctx, data) {
     else {
       Object.assign(o, { worstRatio: r2(s.worst), at: s.at, maxMedian: r2(s.maxMedian), d: s.d.length <= 600 ? s.d : undefined, Y: s.Y && s.Y.length <= 600 ? s.Y : undefined });
       if (w.seam != null) { const k = w.seam - w.frames[0] - 1; o.seam = { d: s.d[k], ratio: s.q[k] != null ? r2(s.q[k]) : null }; }
-      if (s.worst > maxRatio) viol.push({ f: s.at, rule: 'sıçrama oranı', window: w.name, v: r2(s.worst), max: maxRatio });
+      // 1.4 (PN-136): penceredeki eşik üstü BÜTÜN kareler ihlal satırıdır (yalnız en kötüsü değil); sayı pencere satırında ve özette
+      const over = []; s.q.forEach((q, i) => { if (q != null && q > maxRatio) over.push({ f: s.frames[i + 1], rule: 'sıçrama oranı', window: w.name, v: r2(q), max: maxRatio }); });
+      o.over = over.length; overTotal += over.length; viol.push(...over);
       s.hits.forEach((h) => viol.push(h));
     }
     out.push(o);
   }
   const head = metric === 'edgeEnergy' ? 'en büyük |r−1| ' + Math.max(...out.map((o) => o.maxJump)) : metric === 'globalExposure' ? 'kutu dışı ΔY en kötü ' + out.map((o) => o.worstOutsideDY).join(' / ')
-    : 'en kötü oran ' + Math.max(...out.map((o) => o.worstRatio)) + ' (≤ ' + maxRatio + ')';
+    : 'en kötü oran ' + Math.max(...out.map((o) => o.worstRatio)) + ' (≤ ' + maxRatio + ')' + (overTotal ? ' · ' + overTotal + ' kare > eşik' : '');
   return verdict(c, ctx, metric + ' · ' + src.kind + ' · ' + head + (windows.length > 1 ? ' · ' + windows.length + ' pencere' : ''),
     { metric, src: src.kind, windows: out, sampled: windows.length === 1 ? windows[0].frames : undefined }, viol);
 }
@@ -439,20 +442,31 @@ function regionFor(img, spec, ref, classes) {
   for (let y = Math.max(0, lim[1]); y <= Math.min(H - 1, lim[3]); y++) for (let x = Math.max(0, lim[0]); x <= Math.min(W - 1, lim[2]); x++) if (ok(x, y)) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   return n ? { x0, y0, x1, y1, n } : null;
 }
+// 1.4 (PN-121): `regions` verilmemişse varsayılan red ↔ darkNeutral çifti yalnız sahnede aksan olabilecekken kullanılır — sahne `redQuota` 0 ise
+// ya da a bölgesinin sınıf pikseli `minRegionPx` (varsayılan 200, ölçülen kare pikseli) altındaysa "ölçülemedi: bölge tanımı gerekli" (aksan olmayan sıcak
+// bölgeyi eşleyip içerikten bağımsız geçti/ölçülemedi vermesin). Özet satırı ölçülen bölgelerin sınıfını ve kutusunu yazar.
+const clsLabel = (spec) => (typeof spec === 'string' ? spec : typeof spec.cls === 'string' ? spec.cls : spec.cls ? spec.cls.name || 'satır içi' : spec.name || 'satır içi');
 async function sharpness(c, ctx) {
+  const defaulted = !c.regions;
+  if (defaulted && ctx.scene && ctx.scene.redQuota === 0) return unmeasured(c, 'bölge tanımı gerekli (sahne aksan kotası 0; varsayılan red ↔ darkNeutral çifti kullanılmaz → regions)');
   const S = await frameSet(c, ctx); if (S.error) return unmeasured(c, S.error);
   const regs = c.regions || { a: { cls: 'red' }, b: { cls: 'darkNeutral', below: 'a' } }, metric = [].concat(c.metric || 'edge1090')[0], rows = [], viol = [];
+  const minA = c.minRegionPx != null ? c.minRegionPx : defaulted ? 200 : 0, keys = Object.keys(regs);
+  let lowA = 0;
   for (const f of S.have) {
     const img = await S.src.read(f, null), got = {};
     for (const [k, spec] of Object.entries(regs)) { const ref = spec.below ? got[spec.below] && got[spec.below].box : null; const b = regionFor(img, spec, ref, ctx.W.classes); got[k] = b ? Object.assign({ box: b }, sharpMeasure(img, b)) : null; }
-    const keys = Object.keys(regs), A = got[keys[0]], B = got[keys[1]], row = { f };
-    keys.forEach((k) => { row[k] = got[k] ? { region: got[k].region, edge1090: got[k].edge1090, lapVarNorm: got[k].lapVarNorm, contrast: got[k].contrast, edges: got[k].edges } : null; });
+    if (minA && got[keys[0]] && got[keys[0]].box.n < minA) { lowA++; got[keys[0]] = null; if (regs[keys[1]] && regs[keys[1]].below === keys[0]) got[keys[1]] = null; }
+    const A = got[keys[0]], B = got[keys[1]], row = { f };
+    keys.forEach((k) => { row[k] = got[k] ? { cls: clsLabel(regs[k]), region: got[k].region, px: got[k].box.n, edge1090: got[k].edge1090, lapVarNorm: got[k].lapVarNorm, contrast: got[k].contrast, edges: got[k].edges } : null; });
     if (A && B && A[metric] != null && B[metric] != null) { row.ratio = r3(A[metric] / B[metric]); if (c.ratio && (row.ratio < c.ratio[0] || row.ratio > c.ratio[1])) viol.push({ f, rule: 'keskinlik oranı', metric, v: row.ratio, range: c.ratio }); }
     rows.push(row);
   }
   const rat = rows.filter((r) => r.ratio != null);
-  if (!rat.length) return unmeasured(c, 'bölgeler bulunamadı', { rows });
-  return verdict(c, ctx, metric + ' oranı ' + rat.map((r) => r.ratio).join(' / ') + (c.ratio ? ' ([' + c.ratio.join(', ') + '])' : ''), { metric, rows, sampled: S.have }, viol);
+  if (!rat.length) return unmeasured(c, defaulted && lowA ? 'bölge tanımı gerekli (red sınıfı < ' + minA + ' px, ' + lowA + ' kare; varsayılan çift ölçülmez → regions)' : 'bölgeler bulunamadı', { rows, minRegionPx: minA || undefined });
+  const r0 = rat[0], where = keys.map((k) => k + ' ' + (r0[k] ? r0[k].cls + ' [' + r0[k].region.join(',') + ']' : '—')).join(' · ');
+  return verdict(c, ctx, metric + ' oranı ' + rat.map((r) => r.ratio).join(' / ') + (c.ratio ? ' ([' + c.ratio.join(', ') + '])' : '') + ' · bölge ' + where + (defaulted ? ' (varsayılan çift)' : ''),
+    { metric, regions: Object.fromEntries(keys.map((k) => [k, clsLabel(regs[k])])), defaultPair: defaulted || undefined, minRegionPx: minA || undefined, rows, sampled: S.have }, viol);
 }
 
 // ── 11 stroke ── sledge.mjs:4-12 (sütun başı %50 kaplama üst/alt, 2× → 1080p kutu), colf.js (FWHM), caph.js (mürekkep satırları), trace.js (süreklilik kırığı)

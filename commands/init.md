@@ -1,5 +1,5 @@
 ---
-description: Yeni motion projesi kurar (F0). Ön bilgili (frontmatter) bir brief dosyası verildiyse ya da klasörde varsa soru sormadan kurar (headless); yoksa kısa bir AskUserQuestion mülakatı yapar. Ardından motion-render init çalıştırır, project.md §1–§10, scenes.json, CLAUDE.md, ledger ve docs/ şablonlarını doldurur ve DUR ile biter.
+description: Yeni motion projesi kurar (F0). Ön bilgili (frontmatter) bir brief dosyası verildiyse ya da klasörde varsa soru sormadan kurar (headless); yoksa kısa bir AskUserQuestion mülakatı yapar. Ardından motion-render init çalıştırır, project.md §1–§11, scenes.json, CLAUDE.md, ledger ve docs/ şablonlarını (karar tarihi dahil) doldurur; çelişki taraması commit kapısını (.githooks, core.hooksPath) ve render öncesi makine denetimini (tools/render-oncesi) kurar ve DUR ile biter.
 argument-hint: "[brief.md] [hedef-dizin] [--profile full|light|live] [--world lookdev|<kütüphane-ad>]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
@@ -104,6 +104,20 @@ motion-render vendor scripts                                         # React/Rea
 - Kullanıcı malzemesi (ses, logo, görsel) **yol olarak** bağlanır. Kopyalanmaz, taşınmaz, silinmez.
 - Her malzeme için §7'ye şunlar yazılır: boyut, süre/fps, zemin, filigran, lisans notu. Lisans bilinmiyorsa açık karar olur.
 
+**1.4 ile `motion-render init`'in ayrıca kopyaladıkları** (PLAYBOOK §2.6, §3.5):
+
+| dosya | iş |
+|---|---|
+| `.githooks/pre-commit` | çelişki taraması commit kapısı: `motion-render celiski-tara` bulgu verirse ya da brief tavanı aşılırsa commit yok |
+| `docs/celiski.json` | bağlayıcı belge kümesi, brief listeleri ve token tavanları (varsayılan proje brief'i 60k, director brief'i 30k; proje değiştirebilir) |
+| `tools/render-oncesi.ps1` + `tools/render-oncesi.sh` | render/encode öncesi makine denetimi: kurulu harness klonu beklenen tabanda ve temiz mi, başka Playwright Chromium / ffmpeg süreci var mı; çıkış 1 → render yok |
+| `docs/KARAR-TARIHI.md` · `docs/BRIEF-DIRECTOR.md` · `docs/PAKET-NOTLAR.md` | karar tarihi (karar metni aynen) · director görev brief'i (sanat yönetmeni brief'i) · paket bulguları (şablonlardan) |
+
+- **hooksPath.** Hedef bir git deposuysa (`git rev-parse --is-inside-work-tree` başarılı) proje kökünde bir kez `git config core.hooksPath .githooks` çalıştır ve
+  `INIT.md`'ye yaz. Depo değilse git deposu açmazsın; `INIT.md`'ye "depo açılınca: `git config core.hooksPath .githooks`" notu düşülür.
+- `render-oncesi`'nin beklenen tabanı kurulu harness klonunun şu anki commit'idir; harness geliştirmesi kurulu klonda yapılmaz (ayrı klon ya da worktree).
+- Kurulumdan sonra `motion-render celiski-tara` bir kez koşturulur; şablonlardan gelen yer tutucular bulgu vermemelidir (bulgu varsa INIT.md'de açık karar).
+
 ## 4. Doldur
 
 `motion-render init` şablonları `${CLAUDE_PLUGIN_ROOT}/templates/` klasöründen kopyalar. Sen yalnız brief'ten gelen değerleri yazarsın; **değer uydurmazsın**.
@@ -113,7 +127,7 @@ motion-render vendor scripts                                         # React/Rea
 | `project.md` §0 | öncelik notu (şablon) + teslim biçimi |
 | §1 | brief, **aynen**, tarihli |
 | §2 | kimlik okuması iskeleti; metin kuralı (cevaptan ya da "look-dev'de"); "ses yönetir" satırı |
-| §3 | kalite çıtası: profil eşiği (full ≥ 7/8 · light ≥ 6/8 · live ≥ 7/8; proje yükseltebilir); UCUZ 11 + "ek maddeler: yok" |
+| §3 | kalite çıtası: profil eşiği (full ≥ 7/8 · light ≥ 6/8 · live ≥ 7/8; proje yükseltebilir); UCUZ 12 (#1–#11, #17) + "ek maddeler: yok" (proje maddeleri #12–#16, #18…) |
 | §4 | palet / yazı / aksan: "world seçilince" (aksan hakkı cevaptan) |
 | §5 | yasaklar ve ilkeler (aynen) |
 | §6 | world: `lookdev` (Önerilen yol) ya da kütüphaneden `<ad>` + seçim kaydı (tarih, kullanıcı cümlesi) |
@@ -121,10 +135,11 @@ motion-render vendor scripts                                         # React/Rea
 | §8 | ses ve metin: kaynak, dil, TTS/kayıt, kelime dosyaları yeri |
 | §9 | üretken varlık: bütçe (kredi; 0 ise "üretim yok"), politika dosyası yolu (GENAI.md) |
 | §10 | ölçü hedefleri: profil varsayılanları, `MEASURE.md`'den kopya; proje değeri yok |
+| §11 | karar tablosu (id · tarih · öz · durum): F0 kararlarının özü; kullanıcı metni aynen `docs/KARAR-TARIHI.md` "### 11.F0" altına |
 | `scenes.json` | `fps`, `width`, `height`, `profile`, `world`, `audio` (yol ya da `null`), `animatic`, `gate.taste` (= profil eşiği) |
-| `CLAUDE.md` | proje adı; bağlayıcı sıra (CLAUDE.md → project.md → scenes.json → world/ → motion-core); daimi kurallar (şablondan) |
+| `CLAUDE.md` | proje adı; bağlayıcı sıra (CLAUDE.md → project.md → scenes.json → world/ → motion-core); daimi kurallar (şablondan). **≤ 60 satır** kalır: komut listesi ve uzun kural metni ayrı belgeye |
 | `assets/gen/manifest.json` | boş ledger: `items: []`, `ledger: []`, `lost: []`. Bütçe §9 ile aynı |
-| `docs/` | `REVIEWER.md` (başlık), `RETRO.md`, `INIT.md` (kurulum raporu) · `out/RENDER_REPORT.md` |
+| `docs/` | `REVIEWER.md` (başlık), `RETRO.md`, `KARAR-TARIHI.md` (F0 kararları aynen), `INIT.md` (kurulum raporu) · `out/RENDER_REPORT.md` |
 
 `scenes` dizisi boş kalır; birimler `/motion:faz P<n>`'de eklenir.
 
@@ -135,12 +150,13 @@ World kütüphaneden seçildiyse `world/` o world'ün dosyalarıyla dolar (`orig
 ```bash
 motion-render manifest validate
 motion-render doctor            # bakiye yalnız okunur
+motion-render celiski-tara      # bağlayıcı küme çelişkisi + brief tavanı (1.4); çıkış 0 beklenir
 ```
 
 ## 6. Rapor ve DUR
 
 `docs/INIT.md` dosyasını yaz ve aynı özeti kullanıcıya ver. Rapor PLAYBOOK §7 biçimindedir ve kısa tutulur. Bölümler:
-- yazılan dosyalar tablosu
+- yazılan dosyalar tablosu (1.4 kopyaları dahil: `.githooks/pre-commit`, `docs/celiski.json`, `tools/render-oncesi.*`; hooksPath durumu)
 - bağlanan malzeme
 - varsayılanla doldurulan alanlar
 - açık kararlar (numaralı, öneri + etki)

@@ -72,6 +72,9 @@ Senin çıktını yapan (motion-director) ve kullanıcı okur. Reviewer yalnız 
   - `prompt`: istem; yoksa `gen` öğeyi "istem yok" diye atlar.
   - `refs`: storyboard ya da referans kare yolları (dizi); `start`: başlangıç karesi.
   - `accept`: ölçülebilir kabul ölçütü (doluluk, ton aralığı, yasaklar, süre).
+  - 1.4 plaka düzenlemesi: `method` (bölge · iki aşama · tam plaka), `place` (yer tutucu + ölçek referansı), `mask`, `attempt` (≤ 3) ve
+    `accept` yer/boy toleransı alanları GENAI §17.3'tedir; istem GENAI §18.1 negatif listesine uyar (seri/stüdyo/sanatçı/marka/referans proje
+    adı yok; malzeme, ışık, lens tarifi).
 
 ### `sozluk`: shot başına nesne sözlüğü taslağı
 

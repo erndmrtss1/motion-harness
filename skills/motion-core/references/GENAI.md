@@ -9,7 +9,8 @@
 > - `motion-measure`: klip tarama ve logo ölçümleri.
 >
 > (D1-04: eski `asset-scout` / `asset-gen` ajanları emekli; işlevleri `motion-research` ve `motion-director`a geçti.)
-> **Kural kimlikleri** RULES.md'dedir (§15 GEN-1…GEN-9, DUR-2/5/8, ML-2). Bu belge onların prosedürüdür; eşleme §17'de.
+> **Kural kimlikleri** RULES.md'dedir (§15 GEN-1…GEN-9, DUR-2/5/8, ML-2). Bu belge onların prosedürüdür; eşleme §19'da.
+> **1.4:** plaka düzenleme — maskeli bölge üretimi (§17) ve istem kalıpları (§18); set plakası kabulü §9.4 + motion-world `library/photo-plate/SET.md` §7.
 
 ---
 
@@ -74,11 +75,14 @@ higgsfield auth login          # tarayıcıda OAuth; girişi kullanıcı kendisi
 ## CLI eşlemesi
 | katalog id | CLI job | dikkat |
 ## Gereken modeller
-| # | id | ad | tür | liste (beyaz · kara · araç · liste dışı) | girdi rolleri | süre | çözünürlük | en-boy | not |
+| # | id | ad | tür | liste (beyaz · kara · araç · liste dışı) | girdi rolleri | süre | çözünürlük | en-boy | çıktı boyu (px) | seed | maske girdisi | not |
 ## Kara liste
 | kara liste | katalog id'leri |
 ## Notlar   (ses varsayılanı, seed var/yok, platform fiyat farkları)
 ```
+
+- (1.4) **çıktı boyu** gerçek üretimden (yan dosya `w`/`h`) yazılır, katalog çözünürlük adından değil: hedef plakaya büyütme oranı buradan hesaplanır
+  (§17.5). **seed** `var | yok` ve **maske girdisi** `var | yok | belgesiz` modelin parametre listesinden (tek katalog okuması; §18.5).
 
 `KREDI.md` tablosu: `model | CLI job | ayar | tahmin | gerçek (bakiye farkı) | tarih | not`.
 
@@ -209,6 +213,13 @@ higgsfield auth login          # tarayıcıda OAuth; girişi kullanıcı kendisi
 | `prompt` | istem; brief, marka ya da müşteri metni içermez |
 | `refs`, `start` | referans görüntü / başlangıç karesi (proje içi yol) |
 | `trim` | `[a, b]` s; ingest kırpar |
+| `method` (1.4) | plaka düzenleme yöntemi: `region` (maskeli bölge, varsayılan) · `two-stage` · `full` (§17.1) |
+| `place` (1.4) | `{object, center, sizeMm, sizePx}` — nesne hedefi; yer tutucu referansıyla aynı tek kaynak (§17.2) |
+| `mask` (1.4) | bölge maskesi dosyası; yalnız modelin belgelenmiş maske parametresi varsa (§17.3) |
+| `attempt` (1.4) | `<n>/3` — aynı yöntemle deneme sayacı (§17.8) |
+| `accept.set` (1.4) | set plakası kabul kümesi (kenar · yerleşim + yer/boy toleransı · bölge dışı · dikiş · askıda); `ingest-kapi` okumaz, bağımsız ölçüm okur (§17.4) |
+
+`gen` 1.4 alanlarını okumaz (belge + kabul alanıdır); `params`'ı CLI'ye bayrak olarak geçirir — bilinmeyen parametre işi reddettirebilir (§18.5).
 
 ## 8. Akış ve DUR noktaları
 
@@ -297,6 +308,7 @@ göz notu (yazı/el/logo 0). Gölge, ışık yönü, renk payı ve kompozisyon p
 | **A klibi** (pilot/final) | kare kare: 1 s aralık, tam çözünürlük + hareketli bölge haritası; §9.3 listesi temiz; temiz süre ≥ shot penceresi; bağımsız reviewer kararı. **Kontaktan kabul yok.** |
 | **B plakası** | **normalize** (kontrast gerilmiş) görüntüde yazı, parmak, desen, yabancı nesne yok. Görünür kenarda plakanın kendi koyu bandı yok (varsa görünür kenarda kırpılır). Palet world bandında. Küçük kontakta kabul yok. |
 | **türetilmiş plaka** (anahtar kareden restyle) | **iki yönlü** ölçü: vektör → plaka p90 ≤ 6 px [ÖRNEK] **ve** ters yön ("bant içi fazla" çizgi). Model geometriyi korur, çizgiyi korumaz (çift çizgi, eklenmiş nesne). Eksene paralel uzun koşular ızgara olarak ayrı sayılır. **Bayatlık bekçisi:** kaynak geometri değişince plaka bayatlar. p95 küçük değişikliği kaçırdı; ölçü "değişen pay"dır. |
+| **set plakası** (1.4) | malzeme (`ingest-kapi`, yüzey bölgesinde onaylı referansla parite) **+** nesne kenarı (M-KENAR, gövde sınıfıyla; ham plaka ve kesim çıktısı aynı ızgarada) **+** yerleşim (içerik/metin örtmesi 0, karar noktası açık) **+** yer/boy (set kaydındaki gerçek ölçü ± tolerans) **+** maskeli bölgede bölge dışı değişmedi ve dikiş (M-DIKIS) **+** askıda (M-ASKIDA). Kabul kümesi örneği motion-world `library/photo-plate/SET.md` §7; düzenleme §17. Işık yönü ve sıcaklık bilgi. |
 | **logo büyütme** | §11.2 |
 | **logo vektörü** | §11.3 |
 | **her dış varlık** | dosya türü taraması önce, ölçü sonra. Ölçer kontrol dosyasıyla kalibre edilir (§14). |
@@ -454,6 +466,10 @@ Her üretken çıktı, her dış varlık ve **her ölçer** bağımsız, ölçü
 | varyant adı (`-v1`) sürüm sonekiyle çakıştı | id kaynağın adından; sürüm deseni tam kalıp |
 | servis "nsfw" döndü (0 kredi, yanlış pozitif) | istem nötr "doku çalışması" diliyle yeniden yazılır |
 | iş çıktısız döndü ama kredi kesildi | `lost[]` + iade kontrolü (§10) |
+| (1.4) düzenleme isteminde konum metinle verildi; nesne iki turda da içerik alanına girdi | yerleşim düz gri yer tutucuyla (§17.2) |
+| (1.4) çok referanslı "ekle" nesneyi yerinde tuttu ama sahneyi baştan kurdu | bölge dışı NCC ölçülür; yer/boy iyi olsa da ret (§17.4–§17.5) |
+| (1.4) kılavuzdaki işaretli şerit bölge sanıldı, nesne kesildi | işaret değil maske (§17.6) |
+| (1.4) düz doku istemi çıktı süzgecinde reddedildi (0 kredi) | bağlamlı istem + kırpım (§18.2) |
 
 Araçların iddiasına güvenilmez: tamamlandı mesajı, tahmin, "kabul" çıktısı. Her biri dosyadan, bakiyeden ya da kareden doğrulanır.
 
@@ -492,7 +508,153 @@ Araçların iddiasına güvenilmez: tamamlandı mesajı, tahmin, "kabul" çıkt�
   - `review` yalnız kabul notunu yazar.
 - `ingest scan`: kare kare kanıt. Karar insanda/reviewer'dadır.
 
-## 17. RULES eşlemesi
+## 17. Plaka düzenleme: maskeli bölge üretimi (1.4)
+
+> Kaynak: kaynak projenin set plakası düzeltmeleri (nesne ekleme, yer/boy ve kenar düzeltme). Sayılar **referans ölçümü (kaynak proje)**; eşikler
+> world `edge` / `set.accept` ve `project.md` §6'dadır. Set yöntemi: motion-world `library/photo-plate/SET.md`; ilkel ve kenar kuralları:
+> motion-world `references/ILKEL.md`.
+
+### 17.1 Yöntem seçimi
+
+| değişiklik | yöntem (`method`) | koşul |
+|---|---|---|
+| nesne ekleme / düzeltme / kaldırma; plakanın kalanı onaylı | **maskeli bölge üretimi — varsayılan** (`region`) | yer tutucu + ölçek referansı zorunlu (§17.2); plakanın kalanı sabit |
+| nesnenin yeri ya da boyu bölge üretiminde tutmuyor | **iki aşamalı** (`two-stage`, §17.7) | önce nesnesiz plaka kabulü |
+| ışık modeli ya da kompozisyon değişiyor | **tam plaka** (`full`) | yalnız bu durumda; referans zinciriyle (photo-plate SET-4) |
+| aynı yöntemle 3 deneme, kabul 0 | **yöntem değişir** — açık karar | §17.8 |
+
+Bölge üretimi plakanın onaylı ışığını, geometrisini ve dokusunu korur; kabul yalnız bölgede ve sınırında ölçülür. Tam plaka önceki kabulün bütün
+ölçülerini (ışık, yerleşim, kenar, kayıt) baştan açar.
+
+### 17.2 Yer tutucu + ölçek referansı (zorunlu)
+
+- **Düzenlemede metinle konum tarifi tutmaz** ("sağ-alt köşede", "kâğıdın yanında"). Referans ölçümü (kaynak proje): metinle iki tur × 3 adayda
+  nesneler içerik alanına girdi; yer tutucu referansla tek üretimde üç nesne yer tutucunun yerinde ve boyunda geldi (daire uydurma: merkez
+  ±14 px, yarıçap ±4 px), yüzey geometrisi değişmedi (gradyan NCC kayması 0 px).
+- **Yer tutucu referans kalıbı (2 ref):** **ref 1** = onaylı plaka + üstüne **düz gri yer tutucu şekil** (hedef konum ve taban izi; boy = gerçek ölçü
+  mm × px/mm; kenarı hafif yumuşak, σ ≈ 2 px; nötr gri, yüzey lumasından ayrılır) · **ref 2** = **temiz** onaylı plaka (ışık ve set). Yer tutucu nesne
+  değildir; model onu gerçek nesneyle değiştirir; render'a girmez (RULES K4).
+- **Ölçek referansı (ref 3, zorunlu):** aynı nesnenin onaylı/temiz bir kırpımı, kendi yüzeyiyle, hedef boya ölçeklenmiş. Nesnenin onaylı görüntüsü
+  henüz yoksa (ilk üretim) ölçek referansı yer tutucunun gerçek ölçüden çizilmiş boyudur ve istemde ölçü cm/mm ile yazılır (§18.3).
+- Yer tutucuyu proje aracı üretir (onaylı plaka + şekil listesi → `assets/gen/refs/<set>-yer.png`); şekil listesi istek öğesinin `place` alanıyla
+  aynıdır (tek kaynak).
+- **Kılavuz temizliği ön koşulu:** kılavuzdaki her kusur (eski nesne kalıntısı, kopya kenar, işaret çizgisi, kolaj dikişi) çıktıya taşınır → kılavuz
+  önce temizlenir ve 4×'te denetlenir (referans ölçümü (kaynak proje): kılavuzdaki halka kusuru çıktıda kaldı).
+
+### 17.3 İstek alanları
+
+§7 şemasına `method` · `place` · `mask` · `attempt` · `accept.set` eklenir. Maske girdisi yalnız modelin CLI'de **belgelenmiş** parametresiyse
+`params` altında verilir; belgesizse maske görüntüsü referansa çevrilmez (işaret değil, §17.6), yer tutucu kalıbı kullanılır.
+
+```json
+{
+  "id": "g-<set>-arka-ekle-a",
+  "type": "plate",
+  "role": "B",
+  "method": "region",
+  "attempt": "1/3",
+  "model": "<beyaz listeden katalog-id>",
+  "refs": ["assets/gen/refs/<set>-yer.png", "assets/gen/refs/<set>-temiz.png", "assets/gen/refs/<nesne>-olcek.png"],
+  "place": { "object": "<nesne>", "center": null, "sizeMm": [null, null], "sizePx": null },
+  "prompt": "<ekle: nesnenin malzeme ve ışık tarifi, gerçek ölçüsü; konum yok — konum yer tutucuda>",
+  "accept": {
+    "regions": [],
+    "set": {
+      "placement": { "posTolPx": null, "sizeTol": null, "overlapMax": 0 },
+      "outsideMask": { "shiftMaxPx": 0, "nccMin": null },
+      "edge": { "objects": ["<nesne>"], "bodyClass": "flat" },
+      "seam": "world edge.seam",
+      "contact": "world edge.contact"
+    }
+  }
+}
+```
+
+### 17.4 Kabul (bölge üretimi)
+
+| ölçü | yöntem | eşik |
+|---|---|---|
+| bölge dışı değişmedi | temiz plaka ↔ çıktı, maske dışında gradyan NCC kayması + piksel farkı | kayma 0 px; fark ≈ 0 — **sahneyi baştan kurma** burada görünür |
+| yer · boy | nesne silüeti (fark maskesi ya da daire uydurma) ↔ `place` | ± `posTolPx` · ± `sizeTol` (world `set.accept`; proje yeniden yazar) |
+| dikiş | M-DIKIS, maske sınırında | world `edge.seam` |
+| kenar | M-KENAR, gövde sınıfıyla | world `edge` |
+| askıda | M-ASKIDA | world `edge.contact` |
+| yerleşim | içerik/metin örtmesi; karar noktası | 0; açık |
+| çıktı boyu | üretim boyu → hedef plaka boyu | büyütme ≤ `edge.upscaleMax` |
+
+- Nesne kadraj ortasına kayar ya da büyürse **ret**; sayaç artar.
+- Ret nedeni sözlüğü (§9.4'e ek): `YER` · `BOY` · `SAHNE` (bölge dışı değişti) · `DİKİŞ` · `KENAR` · `ASKIDA` · `KILAVUZ` (kılavuz kusuru taşındı) · `BÜYÜTME`.
+
+### 17.5 Model ↔ yöntem ayrışması
+
+Model, referans sayısı, kılavuz türü (yer tutucu ↔ kolaj) ve çıktı boyu **birlikte değişen değişkenlerdir**: denemede biri değişir, diğerleri sabit
+kalır (A/B). Bir modelin bir yöntemde tuttuğu şey başka yöntemde tutmayabilir.
+
+| durum | gözlem (referans ölçümü (kaynak proje)) | ders |
+|---|---|---|
+| çok referans (kılavuz + kimlik) | nesne yerinde ve boyunda (merkez +2,5 px, r ×1,003) ama sahne baştan kuruldu (bölge dışı NCC 0,12; kadraja yabancı nesne) | bölge dışı NCC her denemede ölçülür; düşükse ret — yer/boy iyi olsa da |
+| tek referans | sahne korundu (≤ 5,7 px) ama nesne (−102, −133) px kaydı | sahnenin korunması yerin kanıtı değil; yer/boy ayrı ölçü |
+| çıktı boyu ≠ hedef plaka | 1920×1440 · 1920×1088 çıktı → hedef plakaya ×1,25–1,43 büyütme | çıktı boyu ve en-boy katalogda (§3); büyütme > `edge.upscaleMax` ise model bu plaka için uygun değil |
+
+`gen --dry` çıktı boyunu ve hedefe büyütme oranını yazmaz (1.4): katalogdaki çıktı boyundan elle hesaplanır ve istek notuna yazılır.
+
+### 17.6 İşaret değil maske
+
+Kılavuza çizilen renkli işaret (şerit, çerçeve, ok, kopya kenar) modelin gözünde içeriktir: nesneyi keser, kopyalar ya da işaretin rengini taşır
+(referans ölçümü (kaynak proje): işaretli kopya şerit bölge sanıldı, nesne kesildi). Bölge **maskeyle** verilir (model maske alıyorsa) ya da **yer
+tutucunun kendisi bölgedir**; işaret çizgisi referansa girmez.
+
+### 17.7 İki aşamalı yöntem
+
+1. **Nesnesiz plaka:** aynı set, aynı lamba; nesnenin yeri boş yüzey (referans = onaylı plaka; istem "aynı masa, nesnesiz"). Kabul: malzeme +
+   bölge dışı NCC + ışık (bilgi).
+2. **"Ekle":** ref 1 = nesnesiz plaka + düz gri yer tutucu · ref 2 = nesnesiz plaka · ref 3 = ölçek referansı → §17.4 kabulü.
+
+Nesnesiz plaka sonradan da işe yarar: derinlik ayrımında ve gölge kesiminde nesnenin arkasındaki **gerçek dolgu**dur (photo-plate `SET.md` §2).
+
+### 17.8 Deneme sınırı ve açık karar
+
+- Aynı yöntemle **deneme ≤ 3** (`attempt`). Üçte kabul 0 → **yöntem değişir** (bölge → iki aşamalı → tam plaka ya da nesne değişimi) ve **açık karar**
+  olarak raporlanır: `| deneme | yöntem | model | ref | yer | boy | NCC (dışı) | dikiş | kenar | kredi | sonuç |`.
+- Aynı yöntemle 4. deneme yok. Bütçe kuralları (§15) ve ledger aynen; "kredi yüzünden kabul edildi" yoktur.
+- Referans ölçümü (kaynak proje): sınırdan önce bir düzeltme 4 denemede, bir başkası 6 denemede kabul 0 verdi — kaynak sorunu yöntemdeydi, denemede değil.
+
+## 18. İstem kalıpları (1.4)
+
+### 18.1 Negatif liste (kimlik taşıyan ad yok)
+
+- İstemde **seri, stüdyo, sanatçı, marka, ürün ya da referans projenin adı yok.** Kimlik taşıyan ad çıktıya o kimliğin görünümünü (palet, iskelet,
+  nesne dili) taşır: UCUZ #11 riski, lisans ve benzerlik riski; müşteri adı ve marka paket dışıdır (HK-37).
+- Yerine **malzeme, ışık ve lens tarifi:** yüzey ("mat, lifli kâğıt; yırtık kenar"), ışık ("tek nokta ışık, alçak açı, bir yandan; havuz konuda"),
+  lens ("tepe kamera, normal açı, odak yüzeyde, ön plan bulanık"), ölçü ("Ø 8 cm"). Örnekler kalıptır; değerler projenin look-dev'inden.
+- Negatif liste istek dosyasının `rules` alanına yazılır ve istem yazılırken denetlenir. Model olumsuz istemi güvenilir izlemez (§6): kabul taramasında yine aranır.
+
+### 18.2 Düz doku istemi süzgeç reddi → bağlam + kırpım
+
+Düz kâğıt/karton/kumaş doku istemleri bazı modellerin çıktı süzgecinde yanlış pozitifle reddedilir (referans ölçümü (kaynak proje): 6 iş, 0 kredi).
+**Bağlamlı istem** — yüzey gerçek bir sahnede ("masada duran kâğıt, kenarda masa şeridi") — geçer; bağlam şeridi ingest sonrası **kırpılır** (kırpım
+kutusu yan dosyada). §14'teki "nötr doku çalışması" kalıbından önce denenir.
+
+### 18.3 Işık ve geometri istemde, kabul ölçümde
+
+- Işık yönü, yüksekliği, sıcaklığı ve gölge yönü ("gölge kenarın ALTINDA") istemde yazılır; kabulde ölçülür (istem güvence değil).
+- **Referans görüntü ışığı da taşır:** referansın ışık yönü hedef lambayla aynı olmalı; değilse referans önce karartmayla eşlenir (photo-plate `SET.md` §4).
+- Nesne boyu sıfatla değil gerçek ölçüyle (cm/mm) ve yer tutucuyla verilir; konum yalnız yer tutucuyla (§17.2).
+
+### 18.4 İstemsiz araç modelleri
+
+- Arka plan kaldırıcı, büyütücü gibi **araç** modelleri istem almaz, tek referans görüntü alır; politikada `tools` altında durur (§4).
+- `gen` bugün (1.4) yalnız `whitelist`'e bakar ve her öğede istem ister: araç `gen` yolundan çağrılamaz. O zamana dek yerel kesim/anahtar (0 kredi,
+  proje aracı) ya da YOL B (§13); ledger kaydı yine yazılır (0 kredilik).
+- Araç çıktısı da varlıktır: ingest + kabul. Alfa = 4 kanal **ve** en küçük alfa < 255 (opak RGBA "alfa" sayılmaz; kesim kararı ölçümle).
+
+### 18.5 Seed parametresi olmayan modeller
+
+- Bazı görüntü modelleri seed almaz (parametre listesi tek katalog okumasında, §3). Seed yoksa tutarlılık yalnız `refs` ile kurulur (photo-plate
+  SET-4); `params.seed` yazılmaz — `gen` bilinmeyen parametreyi CLI'ye bayrak olarak geçirir, iş reddedilebilir.
+- Seed yokluğu aynı çıktının yeniden üretimini imkânsız kılar: kabul edilen çıktı hash'li varlıktır (§0, §9.1); "aynısını tekrar üret" planı yapılmaz.
+
+## 19. RULES eşlemesi
 
 Bu belge kural tanımlamaz; RULES.md kurallarının **prosedürüdür**. Kural kimlikleri RULES.md'dedir; LESSONS.md de onlara bağlanır. RULES'ta ayrı kimliği olmayan prosedür maddeleri bölüm numarasıyla anılır (ör. "GENAI §10").
 
@@ -510,8 +672,10 @@ Bu belge kural tanımlamaz; RULES.md kurallarının **prosedürüdür**. Kural k
 | DUR-2 · DUR-5 · DUR-8 | bütçe · YOL B · dış varlık ön koşulu | §8, §11.1, §13 |
 | ML-2 (M-LOGO) | logo vektör değilse DUR-8; kabul ölçüleri; bağımsız denetçi | §11 |
 | RV-3 (M-REV, M-SELF) | bağımsız ölçüm; ölçer kalibre edilir | §9.4, §11.3, §14 |
-| K4 | yer tutucu render'a girmez | §6 |
+| K4 | yer tutucu render'a girmez (düzenleme yer tutucusu dahil) | §6, §17.2 |
 | UCUZ-8 · UCUZ-9 | stok görünümlü klip · yapay zekâ artefaktı | §6, §9.3 |
+| UCUZ-11 | kimlik taşıyan ad istemde yok (seçilmemiş world'e / referansa benzerlik) | §18.1 |
+| UCUZ #17 (1.4) | askıda nesne (plaka nesnesi değil ya da a–f bozuk) | §9.4, §17.4 |
 
 RULES'ta ayrı kimliği olmayan prosedür maddeleri:
 
@@ -527,3 +691,7 @@ RULES'ta ayrı kimliği olmayan prosedür maddeleri:
 | türetilmiş varlıkta bayatlık bekçisi | §9.4 |
 | üretken klip cümleyi anlatmaz, tek başına kare olmaz | §0, §6 |
 | film sonu kredi/sn + A/B/C oranı + varlık tablosu | §12 |
+| (1.4) maskeli bölge üretimi varsayılan; tam plaka yalnız ışık/kompozisyon değişince; yer tutucu + ölçek referansı zorunlu; deneme ≤ 3 → yöntem değişir (açık karar) | §17.1, §17.2, §17.8 |
+| (1.4) set plakası kabulü: malzeme + kenar + yerleşim + yer/boy + bölge dışı + dikiş + askıda | §9.4, §17.4; photo-plate `SET.md` §7 |
+| (1.4) model ↔ yöntem ayrışması; işaret değil maske; iki aşamalı yöntem; kılavuz temizliği | §17.5, §17.6, §17.7, §17.2 |
+| (1.4) negatif liste; düz doku bağlam + kırpım; istemsiz araç modelleri; seed yok → refs | §18 |

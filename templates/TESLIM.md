@@ -12,7 +12,7 @@
 | `out/master/<FILM>_v<N>.mp4` | H.264 High yuv420p, BT.709 tv · CRF 16 preset slow · AAC-LC 48 kHz (hedef 320k) | <kare> · <s> · <MB> · video <kb/s> · AAC <kb/s> · ses **<LUFS> / <dBTP>** |
 | `out/master/<FILM>_v<N>-loudness.json` | ses ölçümleri | kaynak <LUFS / dBTP> → doğrusal <dB> (sınırlayıcı yok) · LRA <…> · ölçüm kuyruk dahil |
 | `out/archive/<FILM>_v<N>/` | perde arşivi: FFV1 kayıpsız kareler · perde mp4'leri · künyeler · `ARSIV.json` · önceki manifest | PNG <GB> → FFV1 <GB> · framemd5 bit-exact: **<n>/<n> evet** · yeni: <perdeler>; bağlanan: <perdeler> |
-| `out/probe/<FILM>-qc.json` · `<FILM>-ours.json` · `<FILM>-fc.json` | bütün film QC, OURS, son-12-kare (frame-check `temporal`) json'ları | §5 |
+| `out/probe/<FILM>-qc.json` · `<FILM>-ours.json` · `<FILM>-fc-only-*.json` | bütün film QC, OURS, son-12-kare ve master denetimi (frame-check `--only temporal` · `loudness` · `temporal+identical+accentColor`; 1.4: her `--only` koşusu ayrı dosya) json'ları | §5 |
 | `out/master/<FILM>_v<N-1>.*` · `out/archive/<FILM>_v<N-1>/` | önceki sürüm | v<N> ile ortak: <aralık> ProRes'te bit-aynı |
 | `out/scenes/<FILM>-onizleme-ses.mp4` | önizleme (`ses preview`; perde mp4'lerinin kopyası) — **master değil** | <kare> |
 
@@ -77,12 +77,12 @@ Yeniden çizilen aralıklar (render süresi): <perde a–b (dk) · …>. Kalan: 
 
 ## 6. Bilinen borçlar
 
-`project.md` §12 ile eştir. Kapananların üstü çizilir.
+`project.md` §12 ile eştir. Kapanan borç durum sütununda "KAPANDI (F<n>)" ile yazılır; satır üstü çizilmez (belge hijyeni, PLAYBOOK §3.5).
 
 | borç | durum | neden ertelendi / ne zaman |
 |---|---|---|
 | <…> | <…> | <…> |
-| ~~<kapanan borç>~~ | **KAPANDI (F<n>)** — <nasıl> | — |
+| <kapanan borç> | **KAPANDI (F<n>)** — <nasıl> | — |
 
 ## 7. Varlık notu
 

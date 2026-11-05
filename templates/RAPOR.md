@@ -1,20 +1,43 @@
 <!--
-Faz sonu raporu şablonu (PLAYBOOK §7). Rapor ana oturumun faz sonu mesajıdır; aynı metin docs/F<n>-RAPOR.md olarak kaydedilir.
+Rapor şablonu (PLAYBOOK §7). Rapor ana oturumun mesajıdır; aynı metin docs/F<n>-RAPOR.md sonuna eklenir. İki biçim vardır:
 
-Bölüm sırası sabittir. Koşullu bölümler (← işaretli) gerekmiyorsa yazılmaz; sıraları değişmez.
+A) İSTİSNA RAPORU (1.4 varsayılanı, V5) — her ara DUR, kapı sonucu, bilgi kontağı, kurtarma. ≤ 40 satır (proje project.md §3'te değiştirebilir).
+   Geçen madde tek satır; yalnız sapma, açık karar, "kredi yüzünden" satırı ve ledger açılır. Retro / dersler / paket bulgusu burada yazılmaz.
+B) KAPANIŞ RAPORU — faz kapanışı (perde teslimi, master, look-dev / sözlük / ilkel fazının sonu). 45–80 satır, 1–3 tablo.
 
-Kurallar:
-- `## Katkı` her raporda vardır. 1–3 katkı yazılır; A/B'siz katkı "deneme" etiketi alır. Katkı yoksa "katkı yok".
-- KAPALI KARAR listelenmez. Rapordan önce project.md ve scenes.json'da "KAPALI KARAR" aranır; önceki açık kararlar kopyalanmaz, yeniden doğrulanır.
-- Sayılar birimli (px, /255, ΔE2000, LUFS, dBTP, kare, s, px/kare, %), yollar göreli yazılır.
-- Reviewer kararı docs/REVIEWER.md ile aynıdır. Yapanın puanı farklıysa fark yazılır.
-- Ölçü: 3–5,5 bin karakter, 45–80 satır, 1–3 tablo.
-- Ara DUR raporu: başlık `# F<n> · DUR <k>: <konu>`; sonra "Senden gerekenler" ve "DUR sırasında yapılanlar".
+Ortak kurallar:
+- "Kredi yüzünden yapılmadı / kabul edildi" satırı zorunlu; boşsa "yok"; doluysa DUR (satır kabul mekanizması değildir).
+- Bağlayıcı bir sayıdan ya da maddeden sapma açık kararlarda İLK sırada. KAPALI KARAR listelenmez (project.md, scenes.json'da "KAPALI KARAR" ara; önceki açık kararları kopyalama, yeniden doğrula).
+- Sayılar birimli (px, /255, ΔE2000, LUFS, dBTP, kare, s, px/kare, %), yollar göreli. Künye yalnız sayı taşır; rapor künyeyi kopyalamaz.
+- Reviewer kararı docs/REVIEWER.md ile aynıdır (still ve klip ayrı satır). Yapanın puanı farklıysa fark yazılır.
+- Ölçüsü tanımsız ya da sınıflanmamış madde "bilgi" olarak yazılır; GEÇMEZ gerekçesi olamaz.
 -->
+
+<!-- ===================== A) İSTİSNA RAPORU ===================== -->
+
+# F<n> · <kapsam>: <tek satır sonuç — KARAR (still x/5 · klip y/8)> [— DUR: <neden>] — <YYYY-AA-GG>
+
+| madde | sayı | eşik | |
+|---|---|---|---|
+| <geçen madde> | <ölçülen, birimli · yöntem (araç / measure / reviewer)> | <ölçüt + kaynak §> | ✓ |
+| <araç tanımı ayrışması> | <sayı; araç ↔ proje ölçüsü farkı (PN-n)> | — | ✓ / açık |
+
+**Sapma (açık karar, proje sahibi):**
+1. **<konu>** — <sayı, kare>. Seçenek (a) <…> · (b) <…>. Öneri (<a>). Etki: <aralık, süre, kredi>.
+
+**Kredi:** <k> (bakiye <önce> → <sonra>). **Kredi yüzünden yapılmadı / kabul edildi:** yok.
+**Ledger:** <değişmedi | match ✓ | lost n>. Katkı: <tek satır | yok>.
+
+Kanıt: `out/review/<kapı-id>/` · `out/measure/<iş>/` · <teslim dosyası>
+
+**DUR — <nokta>: <beklenen kararlar>.** Cevaptan sonra: <sıra>.
+<!-- ya da: **Bilgi kontağı — <gönderilen dosyalar>; akış sürüyor: <sonraki adım>.** (kullanıcı müdahale ederse durulur) -->
+
+<!-- ===================== B) KAPANIŞ RAPORU ===================== -->
 
 # F<n>[-X] · <kapsam>: <tek satır sonuç — "teslim" | "kapıda kaldı, render yok" | "DUR <k>: <neden>">
 
-<Sonuç paragrafı, 2–4 cümle. Ne bitti. Bağımsız reviewer kararı **<TESLİM GEÇER | GEÇER | ŞARTLI GEÇER | GEÇMEZ>** (§0.6 <x>/8, UCUZ <geçer | sınırda #…>). İlk turda engel varsa ne olduğu ve nasıl kapandığı. Kredi <k>, bakiye <önce> → <sonra>.>
+<Sonuç paragrafı, 2–4 cümle. Ne bitti. Bağımsız reviewer kararı **<TESLİM GEÇER | GEÇER | ŞARTLI GEÇER | GEÇMEZ>** (§0.6 <x>/8, UCUZ <geçer | sınırda #…>). İlk turda engel varsa ne olduğu ve nasıl kapandığı. Kredi <k>, bakiye <önce> → <sonra>. Kredi yüzünden yapılmadı / kabul edildi: yok.>
 
 **Teslim dosyaları:**  <!-- ← yalnız teslim/master fazlarında -->
 - [<FILM>_v<N>.mov](out/master/<FILM>_v<N>.mov) — ProRes 422 HQ, 10-bit, 1080p<fps>, <kare> kare, <s> s.
@@ -29,6 +52,7 @@ Kurallar:
 | QC | hata <0> · <n/n> kare · fade <…> · parlaklık bandı <ort. %, world bandı> |
 | K1 (kahraman) | <x/x> · <display metin px> |
 | K3 / OURS | <shot oranları> · OURS <x> · kamera tepe <px/kare>, basamak 0 |
+| Hareket kontağı | <"DUR — hareket" cevabı · kural C (M-C) sayıları> |
 | Aksan / istisnalar | <n/quota> aralık · konum taraması: izinli kutular dışında 0 · ton ΔE2000 <…> |
 | Devir / dikiş | <değer>/255 (ölçüt <durağan ≤ 2 \| hareketli ≤ 1.1 × komşu>) |
 | Son kare / iniş | <ham 0 / mp4 0 · en kötü fark/komşu ≤ 1.5> |
@@ -52,7 +76,7 @@ Fazın türüne göre: "Teşhis: neden …?" (sayıyla neden, denenen hipotezler
 **Brief'ten sapmalar:**  <!-- ← varsa; her biri neden + sayı + reviewer kabul etti mi -->
 - **<konu>:** <brief <x> → uygulanan <y>; neden; reviewer <kabul etti / etmedi>>
 
-## Açık kararlar  <!-- ← yoksa yazılmaz -->
+## Açık kararlar  <!-- ← yoksa yazılmaz; bağlayıcı sapma ilk sırada -->
 
 1. **<konu>:** <durum + sayı>. Öneri: <…>. Etki: <yeniden render aralığı, süre, kredi>.
 2. **<konu>:** <…>. Borç olarak mı kalsın?
@@ -68,7 +92,7 @@ Fazın türüne göre: "Teşhis: neden …?" (sayıyla neden, denenen hipotezler
 - **Videolar:** `out/scenes/<id>.mp4`, `out/scenes/<id>-ses.mp4`, animatik `<…>`, birleşik ön izleme `<…>`
 - **Kontak ve QC:** `out/probe/<id>-contact.png`, `out/probe/<id>-qc.json`, `out/probe/<id>-fc.json`
 - **Kod:** `<p>.jsx` (yeni), `<…>` (değişen; paylaşılan bileşen varsayılanı eski çıktıyı verir)
-- **Belgeler:** `project.md` §<N> / §<N>a · `docs/KUNYE-P<n>.md` · `docs/REVIEWER.md` · `out/RENDER_REPORT.md` · `docs/RETRO.md` · `world/lessons.md` (F<n> dersleri)
+- **Belgeler:** `project.md` §<N> · `docs/KARAR-TARIHI.md` · `docs/KUNYE-P<n>.md` · `docs/REVIEWER.md` · `out/RENDER_REPORT.md` · `docs/RETRO.md` · `docs/PAKET-NOTLAR.md` · `world/lessons.md` (F<n> dersleri)
 
 ## Katkı
 

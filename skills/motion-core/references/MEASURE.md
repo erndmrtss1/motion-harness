@@ -15,6 +15,7 @@
 5. **Tek sınıf kaydı.** Renk sınıflandırıcıları yalnız `world.json` → `classes`'ta; kontroller sınıfı adla çağırır (AK-9).
 6. **Ölçüm aracının kendi hatası ölçülür** (§7, M-SELF): aynı içerikte araç ≈ 0,995 benzerlik / ≈ 0 fark vermiyorsa sonuç kullanılmaz.
 7. **Reviewer ve motion-measure kendi yöntemiyle ölçer** (RV-3, M-REV); yapanın sayısı referans değildir.
+8. **Eşik kararla değişir, araç içerikle değil (1.4).** Ölçüm eşiği (`checks` alanı, araç varsayılanı, world ölçü alanı) yalnız proje sahibi kararıyla değişir; aşım ölçümle açık karar olur. Araç bir içeriği ölçemiyor ya da yanlış sınıflıyorsa araç düzeltilir (proje ayarı ya da paket notu); içerik araca göre kırpılmaz, ertelenmez (RULES ÇK-17, ÇK-18). Aynı ölçüde kaynaklar ayrışırsa yöntem tekleşir: aynı kare aralığı, aynı özellik noktası, kapıda tek sayı (M-C).
 
 ---
 
@@ -61,7 +62,8 @@ Kadraj parlak bölgesi: luma > %30 (77/255), 480×270, 3×3 kapanış, 8-komşu 
 | `probe <id> --frame N [--frames a,b] [--eval JS] [--bench N]` | PNG (`--out`, varsayılan `out/probe/<id>-f<N>.png`; `--frames` ekleri `<out>-fNNNN.png`) · stdout `eval → <JSON>` · `out/logs/<id>.probe.log` | tek kare, sayfada değerlendirme, kare süresi ölçümü; sahnenin render log'una dokunmaz |
 | `qc <id> [--mp4 auto] [--frames-dir D]` | `out/probe/<id>-qc.json` ✓ | 16 kontrol (§3); kare başı `luma`, `bright`, aksan dizileri; HATA → çıkış 3 |
 | `qc film [--probe D] [--ids …]` · `qc film --rehearsal` · `qc film --cuts <id> [--at f,…]` | `out/probe/_film-qc.json` + `_film-grade-sheet.png` · `out/probe/grade-rehearsal/` · `out/probe/<id>-cuts.png` + `<id>-whole.json` | sahne başına 3 grade'li kare; ortalama, siyah/beyaz noktası (%0,5/%99,5 persentil), bölüm ışık arkı, aksan px · grade provası · kesme ±0,5 s şeritleri (fark > 6/255 sıçrama adayı; aksan aralıkları, `redAllowed`/`redQuota` → çıkış 3) |
-| `frame-check <id> [--only …] [--cand c.json] [--sheet]` | `out/probe/<id>-fc.json` ✓ (+ `--sheet` → `out/probe/fc/<id>-<ad>.png`) | bildirilen tipler (§4); error → çıkış 3 |
+| `frame-check <id> [--only …] [--cand c.json] [--sheet]` | `out/probe/<id>-fc.json` ✓ (+ `--sheet` → `out/probe/fc/<id>-<ad>.png`) · (1.4) `--only` koşusu `--out` yoksa `out/probe/<id>-fc-only-<t1+t2>.json` (tam kaydın üstüne yazmaz) | bildirilen tipler (§4); error → çıkış 3 |
+| `plan-check <events.json> [--rules r.json] [--fps N [--round ceil\|round\|floor]] [--out yol.json]` | (1.4) `--out` yoksa `out/probe/plan-check-<olay dosyası adı>.{json,md}` | olay planı (render yok): kusur çıkış 3, kota UYARI; world `plan` blokları (`entry` · `beats` · `leads` · `moves`) yalnız tanımlıysa; `--fps` M-IZGARA |
 | `ours <id> [--step N] [--no-cam] [--dir D]` | `out/probe/<id>-ours.json` | M-OURS, M-K3 |
 | `k1 <id> [--frames …]` · `k1 contrast <id> <etiket> f1,f2,…` | `out/probe/<id>-k1.json` · `out/probe/pc-<id>/<etiket>-f<N>.png` | M-K1 · render öncesi kontrast probe'u (M-KONT) |
 | `k6 <id> [--at …]` | `out/probe/<id>-k6.json` | K6 bileşen sayımı (`[data-c]` + `[data-fx]`) |
@@ -127,7 +129,8 @@ motion-render frame-check <id> [--only tip|ad,…] [--frames-dir D] [--mp4 auto|
 - **Ölçüm yolu** `scale`: `qc` · `fast` · `half` · `nearest` · `edge` · `full` (§1.2); tipin varsayılanı tabloda.
 - **Değer başvuruları:** `"$__<kanca>"` = sahne kancası (`"$__redExclude"`, `"$__events"`, `"$__holds"`, `"$__camSpeed"`, `"$__shots"`). `"$world.<yol>"` / `"$scene.<alan>"` yalnız `luma.band` ve `toolPath.maxPx`'te çözülür; diğer alanlarda başvuru yazılmaz — alan verilmezse varsayılan zaten world'dendir.
 - **Birimler:** kare seçimi ve pencere parametreleri **kare** (`step`, `window`, `n`, `runMax`, `bridge`, `last.n`, `tolFrames`); ses parametreleri **saniye** (`tol`, `win`, `max`, `hop`, `from`, `dur`, `tail.from`) ya da ms (`minMs`); konum px 1080p (`region` [x, y, w, h]; `box`/`allow` [x0, y0, x1, y1]); luma % (`band`, `min`, `max`, `darkShare.below`); fark ve renk kanalı 0–255 (`tol`, `staticMax`, `maxDelta`). px/kare eşikleri proje fps'inde uygulanır (ölçeklenmez).
-- **Kanca yoksa** ilgili kontrol "ölçülemedi" UYARI verir (hata değil). Kare/mp4 yoksa da "ölçülemedi". Bilinmeyen tip `skip`.
+- **Kanca yoksa** ilgili kontrol "ölçülemedi" UYARI verir (hata değil). Kare/mp4 yoksa da "ölçülemedi". Bilinmeyen tip `skip`. Çizim kesilmesi (sayfa çöküşü, zaman aşımı, dış kesme) "kanca yok" yazılmaz, ayrı iletiyle raporlanır (1.4; `onset` A/B).
+- **`--only` (1.4):** süzülmüş koşu `--out` verilmedikçe `out/probe/<id>-fc-only-<t1+t2>.json`'a yazar (rapora `only` alanı); kapının tam kaydı (`<id>-fc.json`) yalnız süzgeçsiz koşuyla değişir. Uzun tipler (A/B `onset`) ilerleme satırını stderr'e yazar (`olay i/N`); stdout `--json` için temiz kalır.
 - **Çıktı:** her kontrol için `type`, `name`, `severity`, `status` (`pass` | `fail` | `warn` = ölçülemedi ya da tümü incelendi | `skip`), `summary`, `metrics`, `violations` (ilk `maxViolations`), `violationCount`, (varsa) `evidence`. Rapor: `summary` sayıları, `hooks` (yüklenen/eksik), `sources`, `candidates` (`--cand`), `exit`.
 - **Katmanlar:** A = piksel/zaman (render sonrası, 13 tip) · B = tasarım zamanı izdüşüm (render yok, 4 tip) · C = ses/tipografi (3 tip) · D = zanaat kapısı (1.3; hareket kalitesi kusurları, 5 tip: `pop`, `onset` piksel · `velocity`, `entryExit`, `moves` tasarım).
 
@@ -192,6 +195,8 @@ Kural: DV-3, K8 (tek kare değişim), BAS-3, IŞ-9, SS-1, UCUZ-9. Kanca: `__camS
 | `src` | `frames` | `mp4` · `master`: Y düzlemi `w`×`h` (varsayılan 960×540 `area`; `meanY` 480×270) |
 | `scale` · `channels` | `fast` (`edgeEnergy` → `edge`, `globalExposure` → `half`) · gri | kare dizini ölçüm yolu · `rgb` \| `luma` |
 | `camSpeed` | `"$__camSpeed"` | `dup` kancası |
+
+**Tam liste (1.4):** `mad`/`meanY` oranında penceredeki eşik üstü **bütün** kareler ayrı ihlal satırıdır (yalnız en kötüsü değil); özet "n kare > eşik", pencere satırında `over`. Bir düzeltme turu tek sayıyla değil kare listesiyle açılır: aynı pencerede ayrı kök nedenli birden çok sıçrama olabilir (raster yolu, kimlik çakışması, süzgeç yüzeyi — LESSONS §1.5). `review.temporal` aralıkları kare başına uygulanır.
 
 ```json
 {"type":"temporal","at":"actBoundaries","window":12,"src":"mp4","metric":"mad","maxRatio":1.5,"floor":0.02}
@@ -308,8 +313,11 @@ Kural: SS-2, SS-3, KD-16. Kanca: yok. World: `classes`. Yöntem: M-SX. Önem: `w
 | `regions` | `{a: {cls: "red"}, b: {cls: "darkNeutral", below: "a"}}` | iki bölge; bölge başına `cls` (sınıf), `box` [x0, y0, x1, y1], `below: "<bölge>"` (o bölgenin altı, ± 80 px), `band: k` (altındaki k. koyu satır bandı) |
 | `metric` | `edge1090` | `edge1090` (%10–90 kenar genişliği medyanı, px) · `lapVarNorm` (Laplace varyansı / kontrast²); dizi verilirse ilki oranlanır, ikisi de raporlanır |
 | `ratio` | — | [alt, üst] a/b oranı (ör. [0,9, 1,1] = ±%10) |
+| `minRegionPx` | varsayılan çiftte 200 · açık `regions`'ta 0 | a bölgesinin en az sınıf pikseli (ölçülen kare pikseli); altı = bölge bulunamadı |
 
 Mutlak kenar sınırı (`supersample.edgeMaxPx`) bu tipte denetlenmez: satırdaki `edge1090` raporlanır, karar M-SX'e göre verilir.
+
+**Varsayılan çift (1.4):** `regions` verilmemişse red ↔ darkNeutral çifti yalnız sahnede aksan olabilecekken ölçülür. Sahne `redQuota` 0 ise ya da a bölgesinin `red` pikseli `minRegionPx` altındaysa sonuç **"ölçülemedi: bölge tanımı gerekli"** olur: aksansız karede `red` sınıfı sıcak bir zemini (ahşap, talaş) eşleyip içerikten bağımsız "geçti" ya da ışık değişince "bölgeler bulunamadı" verebiliyordu. Özet satırı ölçülen bölgenin sınıfını ve kutusunu yazar (`bölge a <sınıf> [x0,y0,x1,y1] · b …`, kare pikseli; varsayılan çiftte "(varsayılan çift)"); `metrics.regions` sınıf adları, satırlarda `cls` ve `px`. Kapıda bölgeler her zaman açık yazılır (okunacak metin ↔ komşu mürekkep gibi aynı karttaki kahramanlar).
 
 ```json
 {"type":"sharpness","frames":[1300],"regions":{"a":{"cls":"brandMark"},"b":{"cls":"darkNeutral","below":"a"}},"metric":["edge1090","lapVarNorm"],"ratio":[0.9,1.1]}
@@ -515,7 +523,7 @@ Kural: ZN-1, K8, HAT. Kanca: yalnız `exclude` kanca başvurusuysa. World: —. 
 | `maxShare` | 0,5 | film karesi eşiği; `--step N ≥ 2` animatikte `p + (1 − p)/2` (0,75) — bir animatik karesi N film karesini kapsar |
 | `tY` · `scale` | 12 (/255) · `fast` (480×270) | değişim eşiği (krem üstü krem kart gibi düşük kontrast için düşük) · ölçüm yolu |
 | `minPx` · `minThick` | 900 px² · 6 px (@1080) | aday alanı · ortalama kalınlık (alan ÷ uzun kenar); altı = katman kenarının alt piksel kayması, ince şerit |
-| `search` · `searchMax` | 48 px · — | hareketle açıklama arama yarıçapı (@1080) · geniş arama yalnız açıkça verilirse (uzak kaydırma kaybolan koyu içeriği rastgele "açıklayabilir") |
+| `search` · `searchMax` · `searchCap` | 48 px · — · 4 × `search` | hareketle açıklama arama yarıçapı (@1080) · geniş arama yalnız açıkça verilirse (uzak kaydırma kaybolan koyu içeriği rastgele "açıklayabilir"); (1.4) `"auto"` = sınıra dayanan bileşende yarıçap ikiye katlanır, en çok `searchCap` |
 | `grow` · `margin` · `gap` | 12 px · 24 px · round(0,05·fps) kare | bileşen birleştirme · bölüm kutusu payı · bölüm boşluğu |
 | `stable` | true | basamak pikseli: değişimden önceki ve sonraki kare çiftinde kararlı (< tY/2); sürekli kayan doku elenir |
 | `cutShare` · `maxBoxShare` | 0,25 · 0,4 | karenin ≥ payı açıklanamıyorsa (kesme, ölçek, sayfa çevirme) ya da bileşen kutusu karenin ≥ payıysa → geçiş, aday değil (listelenir) |
@@ -523,6 +531,10 @@ Kural: ZN-1, K8, HAT. Kanca: yalnız `exclude` kanca başvurusuysa. World: —. 
 | `cuts` · `polarity` | — · true | elle kesme kareleri · bölüme yalnız aynı yönlü değişim (kaybolan yazının üstünden hemen kayan sayfa ayrı olaydır) |
 
 Bilinen sınır: düz renkli öğe silinerek açılırken ilk şerit kenar kaydırmasıyla kısmen açıklanır, payı büyük çıkabilir; dokulu yüzeyde sorun yok. Rapor: ihlal başına `f`, `T`, `box` (@1080), `px`, `share`, `episode`, `d` (en iyi kaydırma); `metrics.top` en yüksek paylı 12 aday, `cuts`/`wide` geçiş kareleri.
+
+**Arama sınırı adayı (1.4).** En iyi öteleme arama yarıçapının sınırındaysa ve bileşen açıklanmamışsa (pay > 0,3) 2× yarıçapta bir **yoklama araması** yapılır (sonuç benimsenmez). Geniş pencere hareketi açıklıyorsa (pay ≤ 0,3 ve yarıdan az) aday ihlal değil **"aday: hız arama penceresini aşıyor"** satırıdır (`metrics.edgeCandidates`: `f`, `box`, `d`, `searchPx`, `probe`); başka ihlal yoksa kontrol `warn` verir (geçti değildir) → `searchMax` (sayı ya da `"auto"`) ile yeniden ölçülür. Gerçek tek kare belirmede geniş pencere de açıklayamaz, ihlal kalır. Bilinen nedeni: hızlı ve ölçek değiştiren nesne (düşen, büyüyen kart) varsayılan 48 px'i aşar; aynı nesnede hız eşiğinde tek karede kapanan hareket bulanıklığı gerçek pop'tur ve geniş pencerede de kalır. `"auto"` kullanılan en büyük yarıçapı `metrics.searchUsed` (px @1080) ve özette yazar.
+
+Bilinen açık: tek yönlü ilerleme (yazım cephesinin tek harfi, yumuşak gölge cephesi tek karede `minPx`'i aşıp geri dönmeden sürer) bölüm payında tek kare görünebilir; olay bölgesi ve süresiyle "yazım/iniş" ayrımı sonraki sürümdedir — o zamana dek `exclude` ya da `review.pop` kaydıyla, kare şeridi kanıtıyla.
 
 ```json
 {"type":"pop","exclude":["$__gecis"]}
@@ -542,7 +554,7 @@ Kural: ZN-5, ÇEN-1 (ölçü = olayın ilk **görünür** karesi). Kanca: `__eve
 | `region` | — | `[x, y, w, h]` @1080 · `"box:<ad>"` (`*` sonda = önek) · `"kind:<tür>"` · `"full"` |
 | `pre` · `post` | A/B 0,1 / 0,5 s · piksel 0,5 / 1,0 s | çapa çevresindeki pencere |
 | `tolFrames` · `earlyFrames` | 1 · 0 | geç toleransı (sahne karesi; `--step N`'de + N − 1) · erken toleransı (ÇEN-1: önce gelmez) |
-| `tY` · `minPx` · `minExtent` | 40 · 12 px · A/B 0 / piksel 12 px | PN-99 görünürlük eşiği; uzanım = birikimin dış kutusunun uzun kenarı (tek mürekkep noktası ya da kenar kırıntısı başlangıç sayılmaz) |
+| `tY` · `minPx` · `minExtent` | 40 · 12 px · A/B 0 / piksel 12 px | görünürlük eşiği (mürekkep/nesne); uzanım = birikimin dış kutusunun uzun kenarı (tek mürekkep noktası ya da kenar kırıntısı başlangıç sayılmaz). (1.4) `tY` sınıf haritası olabilir: `{default: n, <sınıf>: n \| {rel, min?, floor?}}` — aşağıda |
 | `base` · `hide` | — | A/B: A sayfasının global'leri · B'de olayın `hide` değerinin yazılacağı global adı |
 | `mask` · `maskPad` · `maskWarn` | — · 0 · 0,05 | piksel kipi alet çokgenleri · genişletme · belirsizlik eşiği |
 | `regionAt` · `regionMode` · `regionPad` | post · `dynamic` · 12 px | statik bölge anı (çapa + s) · `static` = `regionAt` anındaki dış kutu |
@@ -550,6 +562,14 @@ Kural: ZN-5, ÇEN-1 (ölçü = olayın ilk **görünür** karesi). Kanca: `__eve
 ```json
 {"type":"onset","base":{"OLC_ALETSIZ":1},"hide":"OLC_GIZLE","events":[{"name":"halka","at":27.263,"region":"box:dip-halka*","hide":"dip-halka"}]}
 ```
+
+**Sınıf eşiği (1.4, M-ONCU).** `tY` sayıysa bugünkü tek eşik aynen (özet ve satırlar önceki biçimde). Harita verilirse olay sınıfı `class` ‖ `kind` ile seçilir; eşleşme yoksa `default` (‖ 40). Değer sayı = mutlak |ΔY| eşiği; `{rel: k, min: 2, floor: 2}` = **göreli eşik**: pencere sonunda öğenin tam gelişmiş farkı (A/B: \|Y_A − Y_B\| kare `g1`; piksel: kare `g1` ↔ pencere öncesi `g0 − 1`, kaydırma telafisi yok → durağan kamerada) içinde `floor` üstü piksellerin ortancası × k, en az `min`. Bölgede fark yoksa satır "görünür başlangıç yok (göreli eşik: bölgede fark yok)". Satırlarda `tY` (çözülen), `tYClass`, `tYRel` (`rel`, `median`, `n`); özette "eşik sınıfı <sınıf> <eşik> (n)". k projede referans kliplerden kalibre edilir (M-ONCU); paket değer vermez.
+
+```json
+{"type":"onset","base":{"OLC_ALETSIZ":1},"hide":"OLC_GIZLE","events":"$__events","tY":{"default":40,"golge":{"rel":0.3},"isik":{"rel":0.3},"kilavuz":{"rel":0.5}}}
+```
+
+**A/B süresi ve kesilme (1.4).** A/B kipi A sayfasını pencerelerin toplamı kadar, her olay için B sayfasını ayrıca çizer: uzun filmde saatler sürebilir (kare × olay × ~s/kare). İlerleme satırı stderr'e (`A sayfası N kare · M olay`, `olay i/M <ad>`). Çizim kesilirse sonuç "ölçülemedi: A/B çizimi kesildi (olay i/M): <ileti>" — çöküş/kapanma/zaman aşımı iletisinde "zaman aşımı ya da dış kesme olası (kanca eksikliği değil)" eki; "kanca yok" yalnız kanca eksikliğidir. Uzun koşu arka planda başlar, üst sınırla beklenir (ÇK-09); süre `olay sayısı × pencere karesi × s/kare` ile önceden hesaplanır.
 
 #### fc:velocity (23) — C1 hız sürekliliği
 Kural: ZN-2, BAS-1, KM-5. Kanca: `__camSpeed`, `__shots` (shot sınırında dizi bölünür), `__tools`, isteğe bağlı `__boxes`. Önem: `error`.
@@ -563,6 +583,8 @@ Hamle = hız > `floor` koşusu; hamle başına tepe. Ardışık iki kare arası 
 | `visibleOnly` | true | araç/kutu: iki kare de kadrajda |
 
 inOutSine bir hamlede ilk adım ≈ tepe × π/N: %5 için hamle ≥ ≈ 63 kare @60 (1,05 s). Kısa rampalar (0,25 s) bu ölçüye takılır — kural bilinçli olarak sıkıdır (hız sıçraması = kusur).
+
+**Bilinen fark (1.4).** Hamle = taban üstü koşu olduğundan ana yol bitip hız tabana inince **settle** ayrı bir "mikro hamle" olur ve C1 kendi küçük tepesine bölünür (pay ≈ 1 sahte sıçrama). Kural C'nin tanımında (M-C) settle ana hamlenin parçasıdır ve C1 ana hamlenin tepesine göre alınır; iki ölçü ayrışırsa kapı sayısı M-C'nin piksel izlemesidir (ölçüm tekleştirme), `velocity` satırı bilgi olarak yazılır ya da settle karelerine `review.velocity` kaydı düşülür.
 
 #### fc:entryExit (24) — giriş/çıkış süresi
 Kural: ZN-3. Kanca: `__tools` (evre adları), `__boxes` (`boxes` başvurusuyla seçilen; `vis` 0..1 görünür pay önerilir). Önem: `error`.
@@ -731,6 +753,111 @@ Hamle = shot içinde kamera hızı ≥ `floor` koşusu (aradaki < `mergeSec` bo�
 - Önce kendi aracının öz-hatasını sınar (M-SELF): aynı içerikte ≈ 0,995 / fark ≈ 0.
 - Ölçüm ağırlıklı kapılar (marka varlığı, K1, S× kenar, ses kayması) bağımsız ölçüm olmadan geçmez.
 
+### 1.4 ölçüleri: hareket, vuruş, nesne, zaman-saflık
+
+Aşağıdaki ölçülerin eşikleri **world/proje alanıdır** (çoğu `world.json` `plan` bloğunda — `plan-check` bu bloğu okur; diğerleri motion-measure ve reviewer'ın okuduğu ölçü tanımıdır, araç okumaz). "[referans ölçümü (kaynak proje)]" etiketli sayılar bir projede ölçülmüş değerdir: başlangıç önerisidir, paket varsayılanı değildir; yeni projede kalite referansından yeniden ölçülür. Her ölçünün sonucu sayı + yöntem + kanıt (tablo, JSON, kırpım) biçimindedir (M-REV).
+
+### M-C · kural C: kamera hamlesi, piksel izleme (1.4)
+Kural: ZN-6. Eşikler world `plan.moves` (`peak` [alt, üst] px/kare, `visibleS` [alt, üst], `maxJump`, `settleS`; sınıf başına `classes`). [referans ölçümü (kaynak proje): tepe 8–14 px/kare @60, görünür süre ≥ 1,0 s, C1 ≤ %5, varışta settle 0,28 s.]
+- **Kaynak:** ölçülen kare dizini (animatik ya da render). Kanca/DOM (`__camSpeed`, plan) yalnız **beklentidir**; kapı sayısı pikselden.
+- **İzleme** (ardışık kare çifti başına tek kamera hareketi, iki kabul edilen yöntem): (a) **LK alt piksel** — sağlam (Tukey IRLS) Lucas–Kanade, ≥ 3 seviye piramit, model u = t + ds·(x − c) (**öteleme + ölçek**), bütün kare; ekran-sabit katmanlar (lyric, süpürme) sağlam ağırlıkla dışlanır, ağırlıklı alan payı raporda. (b) **Baskın küme vektörü** — dokulu bloklarda alt piksel blok eşleme; her vektörün ± ε içindeki blok sayısı, en kalabalık kümenin ortalaması = kamera (zemin düzlemi) hızı; paralaks katmanları (yükseltilmiş kart, ön plan) ayrı kümede kalır. Blok vektörü **büyüklüklerinin medyanı kullanılmaz**: iki derinlik kümesi arasında geçiş yapıp hız serisini basamaklandırır.
+- **Birim:** px/kare @1080, proje fps'inde (merkez noktası; ölçek hamlesinde köşe tepesi ayrı sütun) · görünür süre s · C1 oran.
+- **Hamle** = hız > taban koşusu (taban = hamle dışı ölçülen hız tabanının p95'i; raporda). **Tepe** = hamlede en büyük hız (3 kare ortalamalı seri; ham seri raporda). **Görünür süre** = kümülatif yolun %10 → %90 arası (ara değerli kare ÷ fps). **C1** = ardışık |Δv| en büyüğü ÷ **ana hamlenin** tepesi — kalkış, varış ve **settle ana hamleye dahildir** (ayrı mikro hamle sayılmaz). **Settle** = varıştan sonra hızın tabana inişine dek süre + ters yön tepesi. Sürüklenme (tepe alt bandın altında uzun koşu) ve sert varış (settle'sız dinlenme) ayrı satır.
+- **Kalibrasyon (M-SELF):** ölçülen karenin bilinen kayma/ölçekle sentetik kopyası + ekran-sabit yama → hata (px @1080, ölçek) raporda; tek kare hız belirsizliği ve hamle dışı hız tabanı (p50, p95). Tepe ↔ eşik marjı kalibrasyon hatasından küçükse sonuç "sınırda" yazılır.
+- **Ölçüm tekleştirme:** yapan, motion-measure ve reviewer aynı ölçüde ayrışırsa yöntem tekleşir: aynı kare aralığı, aynı özellik noktası (merkez ya da köşe), aynı izleme; kapıda **tek sayı**, yöntem raporda. `fc:velocity`/`fc:camera` (kanca) ve `plan-check` `moves` (plan) beklentidir.
+- **Kanıt:** kare başı t/ds JSON · hız profili (SVG; bant çizgileri, %10/%90 işaretleri) · kalibrasyon JSON · hamle tablosu `hamle · kareler (görünür %10–90) · tepe (köşe) · görünür s · yol px (plan) · ters tepe · sürüklenme · sonuç`.
+- **Plan karşılığı** (`plan-check` `moves`, render yok): uçları tutuşlu tek hamle kare kare örneklenir. Kübik Hermite: tepe ≈ 1,5·L/N, C1 ≈ 4/N, görünür ≈ 0,61·N kare; beşinci derece: tepe ≈ 1,875·L/N, C1 ≈ 3,08/N, görünür ≈ 0,51·N (L yol px, N kare). C1 ≤ %5 kübikte N ≥ 80 ister; o sürede tepe ≥ p için yol ≥ p·N/1,5 — kısa yol + kısa süre kural C ile çelişir, çözüm yolu uzatmak (ya da profil) storyboard'dan önce görülür. Aşma/settle fizibiliteye girmez.
+
+### M-SEYAHAT · seyahat hamlesi (1.4)
+Kural: ZN-6 (sınıf). Yüzeyden yüzeye geçiş hamlesi: **crane-up → travel → crane-down** (yüksel · taşı · in) tek sürekli hamle. Görünür süre bandı ve tepe tavanı **sınıfa göre** world alanıdır (`plan.moves.classes.<sınıf>`: `visibleS: [alt, üst]`, `peak: [null, tavan]`; hamle `class`). [referans ölçümü (kaynak proje): görünür 1,5–2,5 s, tepe ≤ 25 px/kare @60.] Ölçüm M-C ile aynı yöntem: evreler ölçek kanalından (ds, crane) ve öteleme kanalından (t, travel) ayrı okunur; tepe, görünür süre ve C1 bütün seyahat üzerinden. Sürüklenme ve sert varış GEÇMEZ. Kanıt M-C tablosunda `sınıf` sütunuyla.
+
+### M-CANLI · tutuş canlılığı, doku-normalize (1.4)
+Kural: Z6, UCUZ-7. Tutuşta "nefes mi sallantı mı" sorusunu dokudan bağımsız sayıya çevirir (dokulu yüzey aynı hareketle daha çok fark üretir).
+- **ham** = eylem sonrası son 15 kare @30 (60 fps'te 30 kare, 2 kare adımla) ardışık kare ortalama mutlak luma farkı (/255, bütün kare) medyanı;
+- **G** = aynı karelerde Sobel gradyan büyüklüğü ortalaması (gri) medyanı;
+- **normalize** = (ham / G) ÷ (ham / G)_referans; referans = projenin onaylı tutuş penceresi (world `motion.liveness.ref`: `{dir, frames: [a, b]}`, @30 eşdeğeri 15 kare);
+- **bant** normalize değere uygulanır, world'den (`motion.liveness.band`); ham bilgi. [referans ölçümü (kaynak proje): bant 0,3–1,9.]
+- Kanıt: pencere başına `ham · G · ham/G · normalize · en düşük fark · bant · sonuç` + referans satırı; öz-denetim: referansın kendisi normalize = 1.
+
+### M-VURUS · vuruş ağırlığı (1.4)
+Kural: ZN-7 (KAPI), ZN-3, ÇEN-1.
+- **Vuruş başlangıcı** = olayın ilk görünür karesi (fc:onset; planda olay `t`). **Öncü (ön olay)** = vuruşun fiziksel öncüsü (düşen gölge, ışık, kör baskı kılavuzu …): **ayrı vuruş değildir**, vuruş sayımına girmez (planda `of: <vuruş id>` + `class`).
+- **Öncülük** = vuruş başlangıcı − öncü başlangıcı (ms; kare ızgarasında kare farkı, M-IZGARA); sınıf başına bant `plan.leads.<sınıf>: [min, max]` (ms). [referans ölçümü (kaynak proje): gölge 60–70 ms, ışık 120–150 ms, kılavuz ≈ 420 ms.]
+- **Eşzamanlılık ve aralık:** aynı anda (ızgarada aynı kare) ≤ `plan.beats.maxConcurrent` vuruş başlangıcı; ardışık başlangıçlar arası ≥ `plan.beats.minGapMs`. [referans: ≤ 1 · ≥ 120 ms.] Çakışmada ses çapalı olay (a0) ve shot sınırı kaymaz; nesne vuruşu kayar.
+- **Giriş süresi sınıf başına:** `plan.entry.<sınıf>: {in, out}` (s) — ZN-3'ün sınıflı hâli; tutuş penceresi (vuruştan sonraki vuruşun öncüsünün başına dek) world/proje alanı.
+- **Muafiyet sınıfı** (yalnız proje sahibi kararıyla, olay başına): (a) perdenin/filmin ilk vuruşu (öncesinde kadraj yok); (b) fiziksel öncüsü olmayan olay türü (ışıksız kadraj dışı giriş, sesle gelen yazı); (c) öncüsü anlatıyı değiştirmeden kurulamayan olay — sayıyla gösterilir (ör. ışık yönü gölgeyi örtünün altına düşürüyor). **Kayıt:** plan olayında `exempt: true` + gerekçe alanı; `project.md` faz kararında `olay · sınıf · gerekçe · karar`; ölçüde `review.onset: [[a, b, "muaf: <karar>"]]`. plan-check muafları `beats.exempt`'te listeler; muaf olmayan eksik öncü kusurdur.
+- **Ölçüm:** plan → `plan-check` (`beats`, `leads`, `entry`; `--fps`); render → fc:onset A/B (vuruş ve öncü ayrı olay, öncü göreli eşikle — M-ONCU), öncülük = iki satırın `onset` kare farkı; giriş fc:entryExit (sınıf başına bildirim).
+- **Kanıt:** `vuruş · başlangıç kare · öncü sınıfı · öncü kare · öncülük kare/ms · bant · önceki başlangıçtan aralık · durum`.
+
+### M-ONCU · yumuşak öncü görünürlük eşiği (1.4)
+Kural: ZN-5, ZN-7. Mürekkep/nesne için kurulan tek mutlak eşik (|ΔY| ≥ 40/255, ≥ 12 px) yumuşak öncüyü **geç** sayar: gölge rampası çapada düşük farkla başlar, mutlak eşiği ana vuruşla aynı karede geçer ya da hiç geçmez → öncülük 0 ya da "yok" ölçülür. **Yöntem:** fc:onset `tY` sınıf haritasında öncü sınıflarına göreli eşik `{rel: k}` — eşik = öğenin tam gelişmiş farkının (pencere sonu) bölge ortancası × k (MEASURE §4 fc:onset). **Kalibrasyon:** k, projenin kalite referansı kliplerinde aynı ölçüyle (A/B, aynı pencere) öncülüğü referansta ölçülen değere getirecek biçimde seçilir; yöntem + sayı `project.md` ölçü tanımına proje sahibi onayıyla yazılır; o zamana dek mutlak eşik. Raporda eşik sınıfı ve çözülen eşik (satır `tYClass`, `tY`).
+
+### M-LYRIC · lyric yazımı pikselden (1.4)
+Kural: ÇEN-1, ZN-3, ZN-7. Kelime başına; ölçüm kutusu = kelimenin mürekkep kutusu + pay (komşu kelimenin kuyruğu/aksanı kutuya girerse kutu daraltılır, raporda):
+- **ilk mürekkep karesi** = fc:onset yöntemiyle (tercihen A/B: kelime gizli ↔ açık, mürekkep eşiği) ilk görünür kare; a0 → ilk mürekkep ≤ 1 kare (ÇEN-1);
+- **son mürekkep karesi** = kutudaki mürekkep pikseli sayısının son değerinin ≥ %98'ine ulaştığı ilk kare (yazım cephesi bitti);
+- **yazım süresi** = son − ilk (kare ÷ fps); alt sınır ve ekran süresine oranı world/proje alanı (`plan.entry.lyric.in`, ekran payı ölçü tanımında). [referans ölçümü (kaynak proje): ≥ 0,34 s/kelime · ≤ ekran süresinin %60'ı.] Plan tarafı kare ızgarasında (M-IZGARA; 0,34 s @60 → 21 kare, ilk kare ⌈a0·fps⌉).
+- Kanıt: `kelime · a0 · ilk · son · kare · s · ekran payı · durum` + kelime başına kare şeridi (ilk − 1 … son + 1).
+
+### M-IZGARA · kare ızgarası (1.4)
+Kural: ÇEN-1, ZN-3, ZN-7. Plan saniyededir, render kare ızgarasındadır: ms eşiği ızgaraya düşünce kısalır (120 ms @60 = 7,2 kare; 7 kare = 116,7 ms). `plan-check --fps N [--round ceil|round|floor]`:
+- **olay anı → ilk görünür kare:** `ceil` (varsayılan) ⌈t·fps − 10⁻⁶⌉ (t anında başlayan öğenin ilk çizildiği kare) · `floor` ⌊t·fps + 10⁻⁶⌋ (kare-kesin olay, MT-3) · `round`;
+- **eşik → kare:** alt sınır (≥) yukarı ⌈s·fps − 10⁻⁶⌉ (0,12 s → 8 · 0,34 s → 21 kare @60), üst sınır (≤) aşağı ⌊s·fps + 10⁻⁶⌋; [alt, üst] bandı kareye çevrilince boşsa (alt > üst: bant bir kareden dar) "öncülük bandı kare ızgarasında boş" kusuru;
+- **aralık, öncülük, evre süresi, hamle karesi** ilk görünür kare farkından; senkron = kare(t) − kare(a0) ∈ [0, `syncFrames`];
+- kota (boş pencere, yoğunluk, kapsam, sınır vuruşu) saniyede kalır.
+- **Yuvarlama yönü sonucu değiştirir** (aynı plan ceil/round/floor ile farklı sayıda bant dışı öncü verir): yön raporda (`grid: {fps, round, thresholds: [{name, s, frames, dir}]}` + .md başı satırı) ve render ölçüsüyle (fc:onset ilk görünür kare) aynı tanım seçilir.
+
+### M-AKSAN · aksan sayımı: world sınıfı ve plaka dışı (1.4)
+Kural: AK-3, AK-4, AK-5, AK-9.
+- **Sınıf world'dedir** (`world.classes`); qc, fc ve `manifest validate` aynı kaydı okur — sahne `accent` sınıfı world'de açıkça yazılır. Fotoğraf/ışıkla gölgelenmiş aksan (iplik, boya) sabit RGB eşiğinin altına düşebilir (gölgede sinyal azalınca kenar karışımı ikincil sınıfa kayar; hareket bulanıklığı bir aralığı ikiye böler): world sınıfı gölgelenme aralığını kapsayacak biçimde **ölçülerek** yazılır — aksan çekirdek piksellerinin tamamı sınıfta, plaka paletinde yanlış pozitif 0.
+- **ΔE2000 tabanlı sınıf seçeneği:** hedef renge ΔE2000 ≤ e, C* ≥ c, ton açısı [h0, h1] — gölgelenmeye RGB eşiğinden dayanıklı; değerler world'de.
+- **Yeniden aydınlatılmış aksan rengi (AK-5):** ham ΔE2000 yanında en iyi çarpımsal kazanç k sonrası ΔE ve Δh° ayrı sütun (k aralığı yapılandırılır); eşik ham ΔE'de kalır, gölgedeki parça bileşimi sayıyla açık karar olur (eşik değişmez).
+- **Plaka dışı (A/B):** plakanın (fotoğraf zemini) kendi pikseli aksan sayılmaz. B = aynı kare yalnız plaka (içerik katmanı `opacity` 0, ataların dönüşüm/süzgeci aynen; `visibility` yolu süzgeçli gizli atada kareyi siyah bırakabilir). A'da sınıfta olan piksel \|A − B\|∞ ≤ tol ise plaka pikselidir, sayımdan düşer; içerik aksanı plakanın üstüne düşse de değeri B'den ayrışır, sayımda kalır. Sonra standart `fc:accentLocation` (izinli kutular, kota, `maxOutsidePx` aynen) düzeltilmiş kareyle: eşik değişmez, değişen yalnız sayılan pikselin kaynağıdır.
+- Kanıt: kare başı `sınıf px (A) · plaka px · kalan · izinli kutu dışı` + plaka ayrımı kırpımı.
+
+### M-ZS · zaman-saflık (1.4)
+Kural: MT-11, MT-1, RH-5.
+- **Kök neden:** Chromium kalıcı DOM düğümlerinde boya/raster önbelleğini yeniden kullanır. Seek render'ında bir karenin çıktısı **önceki karelere** bağlı olabilir: hareket sırasında (süzgeç, hareket bulanıklığı açık) çizilmiş bir kare, sonraki durgun karelerde aynı düğümün rasterini değiştirir → ortadan başlayan render ile tam render aynı karede farklı çıkar (küçük ama sıfır değil: ort. ≈ 0,01–0,03/255, p99 1/255, kenarlarda birkaç /255). JS durumu yoktur; MT-1 kodda sağlansa da çıktı geçmişe bağlıdır. Küçük sabit dönme ve "görünmez boya geçersizlemesi" farkı küçültür, sıfırlamaz.
+- **Çözüm:** içerik ağacı her karede **taze** kurulur (sahne içerik kökünün React anahtarı kare başı değişir); görüntüler **gösterim boyutunda** çizilir. Süre maliyeti ölçülür (kare süresi önce/sonra).
+- **Tanık kare protokolü:** (1) tam render (kare 0'dan) ↔ (2) ortadan başlayan render (hareket sonrası durgun bir kareden) → tanık karelerde `imgdiff` 0 (bit-aynı); (3) kısmi render öncesi ve sonrası aynı tanıklar; (4) fark varsa probe dizileriyle geçmiş daraltılır (yalnız kare 0 → N · hamle içi kare → N · kamera duruşta). Tanıklar: her hamlenin varış sonrası 2 karesi + her shot/perde sınırı.
+- Kanıt: `tanık kare · başlangıç karesi · ort · p99 · maks /255 · sonuç`.
+
+### M-PROBE · probe belirsizliği (1.4)
+- Tek kare probe **geçmişsizdir** (sayfa o kareye doğrudan seek eder): zaman-saflık hatasını (M-ZS) göstermez. Probe ↔ render farkında sıra: M-ZS → asenkron kaynak (RH-10) → bayatlık (M-STALE).
+- `--eval` sayfada **bir kez** değerlendirilir (kare başı değil); kare başı değer için `--frames` + kanca ya da frame-check.
+- `--scale` bellek sınırı: büyük ölçekte (ör. 4×) büyük süzgeçli/karışımlı katmanlar raster belleğini aşıp **sessizce** eksik çizilebilir (karenin bir kısmı siyah, süzgeç uygulanmamış) → büyük ölçekli çekimde siyah alan / süzgeç eksikliği denetlenir; olmazsa döşemeli çekim ya da 1× karenin en yakın komşu büyütmesi (yalnız görsel kanıt, ölçü değil).
+- Probe sayısı render kararını vermez; probe ↔ render farkı raporda ayrı satırdır.
+
+### M-KENAR · nesne kenarı (1.4)
+Kural: NK-1. Ayrı üretilip matte ile yapıştırılmış ya da yerel düzenlemeyle eklenmiş nesnenin kenarını (yumuşatma, greni kesilmiş kenar, sınır çizgisi) yakalar.
+- **Profil:** silüete dik ışınlar; **4× kırpımda** ölçülür (alt piksel), **@1×** bildirilir; doğrusal Y.
+- **Matte genişliği:** w_matte = √(w² − w_taban² − w_optik²); w = %10 → %90 geçiş genişliği; **w_taban** = aynı yoldan (kırpım, ölçek, kodlama) geçen keskin sentetik kenarın w'si (ölçüm yolunun kendi bulanıklığı, M-SELF); **w_optik** = nesnenin kendi odak bulanıklığı (nesne içi kenarlardan aynı yöntemle).
+- **Hale** = dış 0–6 px bant ↔ 12–36 px bant medyan farkı (/255).
+- **Gren sürekliliği** = yüksek geçiren (σ ≈ 1,5 px) varyans oranı, kenar bandı (4–10 px; 0–6 px bandı kenar sızıntısı taşır) ↔ uzak bant (12–36 px); ≈ 1 beklenir.
+- **Büyütme oranı** = nesnenin üretim çözünürlüğünden ekran boyuna büyütmesi. **Gölge temas boşluğu** (px) = nesne tabanı ile temas gölgesi arasındaki açık şerit.
+- **Gövde sınıfı:** **düz** kenar → w_matte sınırı uygulanır; **yuvarlak** gövde (silindir, pah) → kenar dışı hale (kenardan birkaç px dışarıdaki luma tümseği) ve terminatör (ışıktan gölgeye düşüş) genişliği **kaynak plakaya göre ±%20** — mutlak eşik yok; kaynak = nesnenin onaylı kaynak plakası; gren yine oranla.
+- **İç içe kenarlı nesne** (çerçeve, cam, parlama): yalnız **silüet** (nesne ↔ yüzey sınırı) ölçülür; nesne düzeyi silüetin 2–4 px içi medyanı, kontrastı düşük profil dışlanır; w_optik iç kenardan.
+- **Kenar kaydı:** nesne başına **lamba tarafı + gölge tarafı**; taraf başına 6 başlangıç noktasının medyanı; taraf **≥ 10 ışınla** geçerli (altı "ölçülemedi"); dış bant komşu nesneye/gölgeye değerse 12…(açıklık − 2) px; gren ölçütü kâğıda bakan lamba tarafında, gölge tarafı bilgi; plaka kabulü ham plakada ve ekrandaki kesim çıktısında aynı ızgarayla.
+- **Eşikler** world alanı (`world.edge`: `matteMaxPx`, `haloMax`, `grainRatio`, `upscaleMax`, `contactGapPx`, `bodyClass`; örnek `library/photo-plate/world.json`). [referans ölçümü (kaynak proje): w_matte ≤ 1 px @1× · hale ≤ 2/255 · gren 1/1,5…1,5 · büyütme ≤ ×1,25 · temas boşluğu 0 px; w_taban ≈ 1,6 px.]
+- Kanıt: nesne × taraf tablosu `w · w_taban · w_optik · w_matte · hale · gren · büyütme · temas · ışın` + 4× kırpım sayfası.
+
+### M-ASKIDA · temas bandı, askıda nesne (1.4)
+Kural: UCUZ-17, NK-2.
+- Girdi: nesne silüeti (dikdörtgen, daire ya da alfa + dönüşüm; `__boxes` `kind: obj` ya da proje listesi) ve gölge yönü (lamba modeli ya da fotoğrafın ışığı).
+- Gölge tarafında silüet kenarından dışarı **L(d)** profili, d = 1…24 px (doğrusal Y, ışın medyanı).
+- **Temas bandı** = (L_ref − min L(1…2)) / L_ref · **gölge** = (L_ref − ort. L(3…6)) / L_ref · L_ref = d 20–24 ortalaması (gölgenin ötesi, aynı yüzey). **Göreli eşik** (koyu yüzeyde /255 farkı küçük kalır; yüzey parlaklığına bölünür); eşikler world (`world.edge.contact`: `bandMin`, `shadowMin`). [referans ölçümü (kaynak proje): temas ≥ %6 · gölge ≥ %3.]
+- **Askıda** = temas bandı yok **ya da** gölge yok.
+- Kenar ötesinde yüzey değişirse (kâğıt → masa; L_ref bandı ile 1–6 bandı farklı yüzeyde) **"ölçülemedi"**.
+- Kanıt: nesne başına `temas % · gölge % · L_ref · yüzey · sonuç` + profil kırpımı.
+
+### M-DIKIS · maskeli bölge dikişi (1.4)
+Kural: NK-1 (yerel düzenleme kabulü). Maskeli bölge üretiminde (nesne ekleme/düzeltme; plakanın kalanı sabit) maske sınırı boyunca dik profil, üretilmiş ↔ ham plaka:
+- **kalınlık** = sınırda görünür çizginin piksel satırı sayısı (ışın boyunca, komşu zeminden |ΔY| > zeminin yüksek geçiren std'sinin 2 katı olan ardışık pikseller);
+- **luma basamağı** = sınırın iki yanındaki 4–8 px bantların medyan farkı (/255);
+- **maske dışı sabit:** maske dışı ↔ ham plaka farkı 0, kayma 0 px (NCC).
+- Eşik world/proje alanı. [referans ölçümü (kaynak proje): kalınlık ≤ 2 satır · luma ≤ 10/255.]
+- Kanıt: sınır boyunca örnek profil tablosu + 4× kırpım.
+
 ---
 
 ## §6 M-GRADE · grade zincirleri world verisidir
@@ -813,6 +940,23 @@ Bir world'ün ölçülebilir olması için gereken alanlar (CONTRACT §3). Değe
   "camera": { "maxPxPerFrame": 30, "stepJump": 2.5, "accel": { "max": 0.15, "floor": 2 } },
   "motion": { "toolMaxPx": 57, "writeGlyphsPerSec": 12, "settlePx": 2 },
   "supersample": { "k2x": 0.5, "pad": 6, "blend": 6, "sxK": 1.5, "edgeMaxPx": 1.9 }
+}
+```
+
+**1.4 ölçü alanları** [ÖRNEK — değerler referans ölçümüdür (kaynak proje), varsayılan değildir]. `plan` bloğunu `plan-check` okur (blok/alt blok yoksa o denetim atlanır); `motion.liveness`, `edge` (kenar, dikiş, temas) ölçü tanımıdır (motion-measure ve reviewer okur, araç okumaz):
+
+```json
+{
+  "plan": {
+    "entry":  { "kalem": { "in": 0.15, "out": 0.25 }, "kart": { "in": 0.30, "out": 0.70 }, "lyric": { "in": 0.34 } },
+    "beats":  { "maxConcurrent": 1, "minGapMs": 120 },
+    "leads":  { "golge": [60, 70], "isik": [120, 150] },
+    "moves":  { "peak": [8, 14], "visibleS": [1.0, null], "maxJump": 0.05, "settleS": 0.28, "profile": "cubic",
+                "classes": { "travel": { "peak": [null, 25], "visibleS": [1.5, 2.5] } } }
+  },
+  "motion": { "liveness": { "band": [0.3, 1.9], "ref": { "dir": "out/frames/<onaylı sahne>", "frames": [150, 179] } } },
+  "edge": { "matteMaxPx": 1, "haloMax": 2, "grainRatio": [0.667, 1.5], "upscaleMax": 1.25, "contactGapPx": 0, "seam": { "rowsMax": 2, "lumaMax": 10 },
+            "contact": { "bandMin": 0.06, "shadowMin": 0.03 } }
 }
 ```
 

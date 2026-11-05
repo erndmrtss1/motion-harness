@@ -7,7 +7,8 @@
 > - **Bu dosyada olmayanlar:** yapanın gerekçesi, konuşması, puanı, sayıları, künyesi. Reviewer işi görmemiş gözdür; yalnız çıktıları ve kuralları okur, kendi yöntemiyle ölçer.
 > - **Kayıt tablosu elle tutulmaz:** `grep '^KARAR:' docs/REVIEWER.md` her kapının tek satırlık kararını listeler.
 > - Prosedürün tek kaynağı: `skills/motion-reviewer/SKILL.md` (ölçüt §3–§6, kapı türleri §7, karar sözlüğü §8, tek düzeltme turu §9, dönüş biçimi §10, hafıza §11).
-> - `<kapı-id>` = `<birim>-<kapı-türü>-r<k>` (ör. `P2-animatik-r1`). Kapı türleri: `lookdev` · `varyant` · `storyboard` · `animatik` · `render` · `teslim` · `master` · `live` · `varlik`.
+> - `<kapı-id>` = `<birim>-<kapı-türü>-r<k>` (ör. `P2-animatik-r1`); kilometre taşında still ve klip ayrı reviewer: `<birim>-<tür>-still-r<k>` · `<birim>-<tür>-klip-r<k>` (1.4). Kapı türleri: `lookdev` · `varyant` · `storyboard` · `animatik` · `hareket` · `render` · `teslim` · `master` · `live` · `varlik`.
+> - Reviewer faz başına, kilometre taşında açılır; iş başına ≤ 3 soru; referans klip yan yana (SKILL §1.4, §3.0).
 
 ## Ölçüt listeleri (her kayıtta kullanılır)
 
@@ -102,7 +103,7 @@ Güncellik: <probe ↔ kayıtlı kare imgdiff sonucu> · Kapsam: <kare sayısı,
 |---|---|---|---|
 
 ### Somut düzeltme listesi (GEÇMEZ ve ŞARTLI GEÇER için zorunlu)
-| # | kare aralığı | sorun | ölçüt | nasıl doğrulanacak |
+| # | kare aralığı | sorun | ölçüt (nesne tanımıyla; koordinat yalnız örnek) | nasıl doğrulanacak |
 |---|---|---|---|---|
 
 ### Küçük notlar (teslimi durdurmaz)

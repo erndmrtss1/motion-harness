@@ -1,6 +1,6 @@
 ---
-description: Bir birimin kapısını yürütür. Sırayla belgeler güncel mi denetlenir, qc + frame-check + contact koşulur, gerekirse bağımsız ölçüm (motion-measure) alınır, TAZE bir motion-reviewer açılır ve KARAR satırı işlenir. Tek düzeltme turu kuralı uygulanır: GEÇMEZ → bir düzeltme turu → yeni reviewer → yine GEÇMEZ ise DUR ve render yok.
-argument-hint: "<birim> [varyant|lookdev|storyboard|animatik|render|teslim|master|live|varlik] [--tek]"
+description: Bir birimin kapısını yürütür. Sırayla kapsam (kilometre taşı ya da ara adım) belirlenir, belgeler güncel mi ve çelişkisiz mi denetlenir, qc + frame-check + contact koşulur, gerekirse bağımsız ölçüm (motion-measure, ≤ 3 madde) alınır, kilometre taşında TAZE motion-reviewer açılır (still ve klip ayrı, ≤ 3 soru, referans klip yan yana) ve KARAR satırı işlenir. Tek düzeltme turu kuralı uygulanır: GEÇMEZ → bir düzeltme turu → yeni reviewer → yine GEÇMEZ ise DUR ve render yok.
+argument-hint: "<birim> [varyant|lookdev|storyboard|animatik|hareket|render|teslim|master|live|varlik] [--tek] [--ara]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 ---
 
@@ -12,9 +12,10 @@ Argümanlar: `$ARGUMENTS`
 - `<birim>`: `scenes.json` sahne id'si ya da `LOOK`, `FILM`, `LIVE`.
 - Kapı türü verilmezse `render`.
 - `--tek` verilirse yalnız bu tur çalışır; düzeltme turu otomatik açılmaz.
+- `--ara` (1.4) verilirse kapı **ara adımdır** (V1): değişiklik listesinden türeyen ölçüm + doğruluk + qc koşar, reviewer açılmaz; sonuç bilgi kontağıdır.
 
 Kaynaklar:
-- `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/references/PLAYBOOK.md` §2.2–§2.3
+- `${CLAUDE_PLUGIN_ROOT}/skills/motion-core/references/PLAYBOOK.md` §2.2–§2.3, §3.3–§3.4 (kapı ilkeleri, verim V1–V8)
 - `${CLAUDE_PLUGIN_ROOT}/skills/motion-reviewer/SKILL.md`. Bu dosyayı **sen uygulamazsın**; yalnız reviewer'a girdileri doğru vermek için okursun.
 
 ## 0. Tur ve eşik
@@ -24,16 +25,27 @@ Kaynaklar:
    - Önceki tur `r1 GEÇMEZ` ise bu tur **r2** (düzeltme turu) olur.
    - Önceki `r2 GEÇMEZ` varsa kapı açılmaz: **DUR** (DUR-9).
 2. Eşik = max(profil eşiği, `scenes.json` `gate.taste`). Profil eşikleri: full ≥ 7/8 · light ≥ 6/8 · live ≥ 7/8.
+3. **Kapsam (1.4, PLAYBOOK §3.4).**
+   - **Kilometre taşı mı?** `project.md` §3 "QA kapsamı" tablosuna bak (varsayılan: look-dev seçimi · sözlük · ilkel kütüphanesi · storyboard · animatik ·
+     hareket kontağı · perde tam render · master). Kilometre taşıysa **V2 tam tarama + taze reviewer**; değilse (`--ara`) **V1**: yalnız değişiklik
+     listesinden türeyen ölçüm + doğruluk + qc, reviewer yok, sonuç bilgi kontağı (PLAYBOOK §6).
+   - **Parçalar.** Kapı hem still hem klip içeriyorsa (ör. animatik: style frame still'leri + mp4) iki ayrı taze reviewer: `<birim>-<tür>-still-r<k>` ve
+     `<birim>-<tür>-klip-r<k>` (reviewer SKILL §7.2). Tur sayısı parça başınadır.
+   - **Değişiklik listesi** (V1): director raporundaki "dokunulan katman · ilkel · kamera · plaka" listesi; ölçüm kapsamı buradan çıkar.
 
 ## 1. Kapıdan önce (sen yaparsın)
 
 1. **Belgeler reviewer'dan önce.** Şunlar güncel olmalı:
    - künye
-   - `project.md` §Na
+   - `project.md` §Na ve §11 tablosu (karar metni `docs/KARAR-TARIHI.md`'de aynen)
    - `scenes.json` (istisna ve "incelendi" kayıtları gerekçeli)
    - `out/RENDER_REPORT.md`
 
    Güncel değilse önce güncellenir ya da director'a güncelletilir.
+   - **Çelişki taraması** (1.4): `motion-render celiski-tara` çıkış 0. Bulgu varsa (arşiv terimi etkin kural gibi, spec'te üstü çizili satır, aynı kural
+     anahtarı farklı sayıyla, ölü yol, brief > tavan) reviewer açılmaz; belge düzeltilir. Tur sayılmaz.
+   - **Still tazeliği** (still/maket kapısı: `lookdev`, `varyant`, `storyboard`, still parçası): kayıtlı her still ↔ şimdi alınan `probe` `imgdiff` 0.
+     Fark varsa bayat maket reviewer'a gitmez; still yeniden üretilir.
 2. **Ölçüm** (harness; kapının kendi koşusu):
 
    ```bash
@@ -47,11 +59,16 @@ Kaynaklar:
    - **Kayıtsız QC hatası varsa (çıkış 3) reviewer açılmaz.** Kapı açılmamış sayılır; tur sayılmaz. Hata director'a döner. "Muhtemelen kasıtlı" kabul değildir: düzeltilir ya da istisna önce sorulur.
    - **İstisna, look-dev kapısı (HK-34):** `qc LOOK…` çıkış kodu kapıyı kilitlemez; reviewer yine açılır. Look-dev sayfası teslim değil, yön karşılaştırmasıdır. qc sonucu (yön başına çıkış kodu + hata başlıkları) reviewer istemine verilir ve kayıtta KARAR satırının altına `qc (bilgi):` satırı olarak girer. Hatalar seçilen yön sahneye taşınırken kapanır.
    - Bayat kare varsa da reviewer açılmaz; önce yeniden render gerekir.
-   - `animatik` kapısında kareler `out/frames/<id>_animatic`'tedir (`render … --tag animatic`): qc/frame-check `--frames-dir out/frames/<id>_animatic`, contact `--dir out/frames/<id>_animatic --fstep 2`, ours `--dir out/frames/<id>_animatic --step 2`.
+   - `animatik` kapısında kareler `out/frames/<id>_animatic`'tedir (`render … --tag animatic`): qc/frame-check `--frames-dir out/frames/<id>_animatic`, contact `--dir out/frames/<id>_animatic --page-step 2` (disk karesi başına sayfa karesi; eski `--fstep`), ours `--dir out/frames/<id>_animatic --step 2`.
+   - **`hareket` kapısında (1.4, PLAYBOOK §4.5 Adım 6a):** `motion-render contact motion <id> …` — bütün kamera hamleleri ve mekanik pencereleri
+     referans kliple yan yana tek video (etiket: tepe, görünür süre, C1). Bu video reviewer'a ve kullanıcıya ("DUR — hareket") giden kanıttır.
+   - **V1 (ara adım):** yalnız değişen katmanın ölçüsü (PLAYBOOK §3.4 V1 tablosu) + doğruluk + `qc`; frame-check yalnız ilgili tipler (`--only`).
    - **Look-dev kapısında ayrışma ölçümü (1.1):** `motion-render lookdev-diff` → `out/review/lookdev-diff.json` + `.md`. Önceki proje ya da seçilmemiş bir kütüphane world'ünün kontağı varsa `--ref <kontak.png>@<C>x<R>+<şerit>` eklenir. World seçilmiş projede araç "world içi" satırı yazar (palet/çekici bilgi). Reviewer'a her yönün kilit karelerinin **tam karesi** verilir, kırpım değil (LESSONS L-225). Komut "iskelet ölçülemedi" diyorsa look-dev sayfasının kahraman öğesine `data-hero` eklenir (`manifest validate` uyarısı).
    - Kapı türüne göre: `varyant` ve `lookdev` için still'ler ve kontak sayfası; `master` için `qc film` ve `frame-check <FILM> --only temporal,identical,loudness,accentColor`; `live` için `motion-render live <sayfa> --qc`.
-3. **Bağımsız ölçüm.** Kapı sayısal bir ön koşula dayanıyorsa `motion:motion-measure` açılır. Örnekler: varlık/logo kabulü, K1, aksan ΔE, devir, senkron, canlı fps/gecikme.
-   - İstek: ne · hangi kareler · ölçütün kaynağı.
+3. **Bağımsız ölçüm.** Kapı sayısal bir ön koşula dayanıyorsa `motion:motion-measure` açılır. Örnekler: varlık/logo kabulü, K1, aksan ΔE, devir, senkron, canlı fps/gecikme; hareket kapısında kural C (M-C), seyahat (M-SEYAHAT), vuruş/ön olay (M-VURUS, M-ONCU).
+   - İstek: ne · hangi kareler · ölçütün kaynağı. **İş başına ≤ 3 madde, tek tur** (1.4, V4): öncelik sırası + "en geç 60. turda kayıt" + "ölçülemedi serbest".
+   - Liste üç maddeyi aşıyorsa iş bölünür (en çok iki ölçüm ajanı paralel; makine kuralı PLAYBOOK §2.6). Tur sınırına takılan iş retroya yazılır.
+   - Kaynaklar (yapan, ölçüm, reviewer, araç) aynı ölçüde ayrışırsa istekte **tekleştirme** tanımı verilir: aynı kare aralığı, aynı özellik noktası (PLAYBOOK §3.3 madde 8).
    - Measure sayıları **reviewer'a verilmez**. Raporda yapanın sayısıyla yan yana konur.
 4. **Yapanın puanı.** Director raporundaki §0.6 (yapan) puanını kendine not et. Bu puan reviewer'a verilmez.
 5. **Kalibrasyon referansı** (reviewer SKILL §3.0): `project.md` §3 "Kalite referansı" tablosundaki klipler var mı? Yoksa reviewer açılmaz:
@@ -60,23 +77,26 @@ Kaynaklar:
 
 ## 2. Reviewer'ı aç (her zaman yeni ajan)
 
-`Agent` → `subagent_type: motion:motion-reviewer`.
+`Agent` → `subagent_type: motion:motion-reviewer`. Yalnız kilometre taşında (§0.3); `--ara` ise bu bölüm atlanır.
 - **Asla** önceki bir reviewer'a SendMessage ile devam etme.
-- Tür bulunamazsa genel amaçlı ajan açılır: "Önce `${CLAUDE_PLUGIN_ROOT}/agents/motion-reviewer.md` dosyasını oku ve rolü birebir üstlen. Write/Edit kullanma."
+- **Still ve klip ayrı reviewer** (1.4): parçalı kapıda iki taze ajan, ayrı istemle (paralel açılabilir). Her istemde **≤ 3 soru**, öncelik sırasıyla
+  (projenin `project.md` §3 sabit soruları dahil, aynen); standart prosedür sorulardan ayrıdır.
+- Tür bulunamazsa genel amaçlı ajan açılır: "Önce `${CLAUDE_PLUGIN_ROOT}/agents/motion-reviewer.md` dosyasını oku ve rolü birebir üstlen. Edit kullanma; Write yalnız `out/review/<kapı-id>/` altına."
 
 İstem şablonu (yalnız yollar; içerik kopyalanmaz):
 
 ```
-Kapı: <kapı-id> · tür <tür> · birim <id> · profil <p> · eşik ≥<e>/8 · tur r<k>
+Kapı: <kapı-id> · tür <tür> · parça <still|klip|—> · birim <id> · profil <p> · eşik ≥<e>/<n> · tur r<k>
 Brief ve faz istemi (aynen): "<…>"
+Sorular (≤ 3, öncelik sırasıyla): 1. <…> 2. <…> 3. <…>   · Kayıt en geç 90. turda; yetişmeyen "ölçülemedi"
 Kurallar: ${CLAUDE_PLUGIN_ROOT}/skills/motion-reviewer/SKILL.md · RULES.md · MEASURE.md · GENAI.md · project.md §1,§3,§4,§5,§6,§9,§10
 World: world/world.json (origin) · Kütüphane (#11): ${CLAUDE_PLUGIN_ROOT}/skills/motion-world/library/INDEX.md
 Manifest: scenes.json (birim <id>)
 Çıktılar: out/frames/<id>[_tag]/ · out/scenes/<…>.mp4 · out/probe/<id>-qc.json · out/probe/<id>-fc.json (+ sheet) · kontak <yol> · A/B <yol> · assets/gen/manifest.json
-Kalibrasyon (§3.0): <referans klip yolları · project.md §3 Kalite referansı> · [animatik] Oynatım (§7.1): out/scenes/<id>_animatic.mp4
+Kalibrasyon (§3.0): <referans klip yolları · project.md §3 Kalite referansı> · yan yana: <contact motion videosu | kontak> · [animatik] Oynatım (§7.1): out/scenes/<id>_animatic.mp4
 [lookdev] Ayrışma: out/review/lookdev-diff.md (iskelet + palet UYARI; gerekçe zorunlu) · yönlerin tam kareleri · qc (bilgi): LOOK-A <çıkış> · LOOK-B <çıkış> (<hata başlıkları>) · …
 [r2] Önceki kayıt: docs/REVIEWER.md "<birim> · <tür> · r1" · Değişen kare aralıkları: <…> · Madde → durum: <1 → UYGULANDI f…, …> (sayısız)
-Lütfen özellikle bak: <madde listesi; kare aralığıyla>
+Bakılacak kare aralıkları: <aralık + konu; neden ve sayı yok>
 Yazma alanı: out/review/<kapı-id>/ · kaydı docs/REVIEWER.md sonuna ekle · ilk satır KARAR.
 ```
 
@@ -93,12 +113,16 @@ Reviewer beklenirken paralel iş yapılır: belgeler, sonraki birimin taslağı.
 1. Dönüşün ilk satırını SKILL §10'daki düzenli ifadeyle doğrula.
    - Uymuyorsa reviewer'dan biçimi düzeltmesini iste. Bu yalnız biçim içindir; içerik değişmez.
 2. `docs/REVIEWER.md`'de kayıt var mı bak. Yoksa `out/review/<kapı-id>/RECORD.md`'yi ya da dönüşü **aynen** sona ekle.
+   - Reviewer tur sınırına çarpıp kayıtsız döndüyse kapı açılmamış sayılır: istem bölünür (daha az soru) ve taze reviewer açılır; olay retroya yazılır.
+   - Parçalı kapıda kapı kararı iki parçanın ağırıdır (GEÇMEZ > ŞARTLI GEÇER > GEÇER); düzeltme turu yalnız GEÇMEZ parçada açılır.
+   - Reviewer'ın sayısal estetik şartı kapı şartı değildir, bilgi olarak rapora girer; ölçüsü tanımsız madde açık karar olur (PLAYBOOK §3.3).
+   - ŞARTLI GEÇER şartı koordinata bağlı yazıldıysa director'a nesne tanımıyla verilir; kompozisyon değiştiyse yapan iki ölçüyü (nesne + literal) birlikte raporlar.
 3. Karara göre ilerle:
 
 | karar | sonraki adım |
 |---|---|
 | **TESLİM GEÇER** | kapanış (PLAYBOOK §4.5 Adım 11 / §4.6) |
-| **GEÇER** | sonraki adım; "KAPI GEÇERSE DURMA". İstisna: projenin ilk perdesinin animatiği kullanıcıya gider (DUR) |
+| **GEÇER** | sonraki adım; "KAPI GEÇERSE DURMA". İstisna: projenin ilk perdesinin animatiği kullanıcıya gider (DUR); `hareket` kapısı ilk perdede ve yeni hamle/mekanik giren perdede **"DUR — hareket"** (DUR-12), öteki perdelerde bilgi kontağı |
 | **ŞARTLI GEÇER** | Şartlar director'a verilir → uygulanır → kanıt (probe/kırpım, gerekirse measure) → sonraki adım. Yeni reviewer turu açılmaz; şartlar sonraki kapıda doğrulanır |
 | **GEÇMEZ r1** (evet ≥ 3) | `--tek` yoksa **tek düzeltme turu**. Director'a yalnız reviewer'ın "Somut düzeltme listesi" verilir. Etkilenen aralık PLAYBOOK §5 protokolüyle yeniden çizilir. §1'deki ölçüm tekrarlanır. Yeni reviewer açılır (r2) |
 | **GEÇMEZ r1** (evet < 3) | Düzeltme turu yok. Look-dev / storyboard / varyanta dönülür (DUR-11); dönülen iş yeni bir taze reviewer kapısından geçmeden sonraki faza geçilmez (otomatik onay dahil) |
@@ -114,12 +138,12 @@ Reviewer beklenirken paralel iş yapılır: belgeler, sonraki birimin taslağı.
 
 ```markdown
 ### <kapı-id>: <KARAR>
-KARAR satırı (aynen) · yapan §0.6 x/8 · reviewer y/8 · fark ±n
-| ölçü | yapan | measure | reviewer | ölçüt |      (sayısal ön koşul varsa)
-UCUZ: … · Ön plan: … · Hata görünümü: …
+KARAR satırı (aynen; parçalıysa still ve klip ayrı satır) · yapan §0.6 x/8 · reviewer y/8 · fark ±n
+| ölçü | yapan | measure | reviewer | ölçüt |      (sayısal ön koşul varsa; tekleştirilmişse tek sayı + yöntem)
+UCUZ: … · Ön plan: … · Hata görünümü: … · Sorular: <1 → … · 2 → … · 3 → …>
 Düzeltme turu: <yok | r2 sonucu> · Kanıt: out/review/<kapı-id>/
 ```
 
-Kapanış:
-- Kapı GEÇER ise akış sürer.
-- DUR gerekiyorsa `**DUR — <kapı-id>: <neden>.**`
+Kapanış (rapor PLAYBOOK §7.1 istisna biçiminde, ≤ 40 satır):
+- Kapı GEÇER ise akış sürer; ara sonuç bilgi kontağıdır (dosya gönderilir, akış sürer).
+- DUR gerekiyorsa önce süreç listesi taranır ve `celiski-tara` koşar (PLAYBOOK §6), sonra `**DUR — <kapı-id>: <neden>.**`

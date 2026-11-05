@@ -1,0 +1,24 @@
+{
+  "_not": "motion-render celiski-tara yapılandırması (init → docs/celiski.json). '_' önekli alanlar açıklamadır, araç okumaz. Bu dosya yoksa araç aynı genel varsayılan kümeyle koşar (olmayan dosyalar atlanır); dosya varsa '?' soneksiz her bağlayıcı dosya zorunludur (yoksa (d) bulgusu). Çıkış: 0 bulgu yok · 1 bulgu · 2 kullanım/yapılandırma hatası. Commit kapısı: .githooks/pre-commit (git config core.hooksPath .githooks).",
+  "_baglayici": "Bağlayıcı belge kümesi: (a) (b) (c) (d) bu dosyalarda koşar. Projeye özgü kural belgelerini (ör. docs/<KURAL>.md) buraya ekleyin. '?' sonek = dosya isteğe bağlı.",
+  "baglayici": ["CLAUDE.md", "project.md", "scenes.json?", "world/world.json", "docs/SOZLUK.md", "docs/CRAFT-REF.md"],
+  "_brief": "Director brief'i: bu dosyaların token toplamı ≈ ceil(kod noktası / 3) briefTavan'ı aşarsa (e) bulgusu. briefSet: ayrı tek dosyalık brief (sanat yönetmeni brief'i) ve tavanı; null = denetim yok; dosya yoksa atlanır.",
+  "brief": ["CLAUDE.md", "project.md", "world/world.json", "docs/SOZLUK.md", "docs/CRAFT-REF.md"],
+  "briefTavan": 60000,
+  "briefSet": { "dosya": "docs/BRIEF-DIRECTOR.md", "tavan": 30000 },
+  "_arsivTerim": "(a) Arşivlenen (artık geçerli olmayan) terimler: etkin satırda geçerse bulgu. Biçim [{\"ad\": \"eski terim\", \"desen\": \"eski\\\\s+terim\"}] ya da düz dizgi; desen küçük harfe çevrilmiş (tr) satıra büyük/küçük harf duyarsız uygulanır. Etkin olmayan satır: '>' alıntı bloğu ve 'arşiv' diyen satır.",
+  "arsivTerim": [],
+  "_anahtar": "(c) Kural anahtarları: metin satırında kural biçimli yazım (işleçli) → değer; aynı anahtar dosyalar arasında farklı değerle geçerse bulgu. desen: düzenli ifade dizisi ({SAYI} = sayı yakalama grubu); tur: sayi (varsayılan) | sure (grup 2 = ms|s → saniye) | aralik (grup 1–2) | hex | metin; bayrak: düzenli ifade bayrakları (varsayılan 'i'). Aşağıdakiler genel örnektir; projenin kurallarını ekleyin.",
+  "anahtar": [
+    { "ad": "kamera tepe px/kare", "desen": ["tepe\\s*(?:≤|<=)\\s*{SAYI}\\s*px\\s*/\\s*kare"] },
+    { "ad": "giriş/çıkış s", "desen": ["giriş\\s*/\\s*çıkış\\s*(?:≥|>=)\\s*{SAYI}\\s*s(?![a-zçğıöşü])"] }
+  ],
+  "_jsonAnahtar": "(c) .json dosyalarındaki alanlar aynı anahtarlarla karşılaştırılır: yol (nokta yolu, ör. camera.maxPxPerFrame; [a, b] dizisi aralık olur) ya da desen (satır düzenli ifadesi, grup 1 değer); yuzde: true → değer ≤ 1 ise ×100; dosya: yalnız bu dosyada.",
+  "jsonAnahtar": [
+    { "ad": "kamera tepe px/kare", "yol": "camera.maxPxPerFrame" }
+  ],
+  "_disAlinti": "(d) Başka depodan `yol:satır` alıntısı veren belge → o deponun öneki: {\"docs/CRAFT-REF.md\": \"<depo>\"}; bu belgelerde yalnız alıntı biçimli yol atlanır.",
+  "disAlinti": {},
+  "_yolHaric": "(d) Bu öneklerle başlayan yollar denetlenmez: üretilen çıktılar (out/) ve init şablonlarının ileride oluşan dosyaları (look-dev, ses hattı, üretken politika). Dosya oluşunca listeden çıkarılabilir.",
+  "yolHaric": ["out/", "world/DECISIONS.md", "script/BEATS.md", "assets/gen/policy.json"]
+}
