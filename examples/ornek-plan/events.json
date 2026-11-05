@@ -1,0 +1,25 @@
+{
+  "_not": "Örnek olay planı (8 s, 2 shot, 2 cümle, 2 alet kullanımı) — motion-render plan-check için şema örneği; içerik uydurmadır, kelimeler yer tutucu.",
+  "fps": 60,
+  "dur": 8,
+  "sentences": [ { "n": 1, "t0": 0.20, "t1": 3.80 }, { "n": 2, "t0": 4.10, "t1": 7.80 } ],
+  "shots": [ { "id": "S1", "t0": 0, "t1": 4 }, { "id": "S2", "t0": 4, "t1": 8 } ],
+  "events": [
+    { "id": "e01", "t": 0.30, "a0": 0.30, "word": "kelime-1", "sentence": 1, "shot": "S1", "kind": "lyric", "dur": 0.45 },
+    { "id": "e02", "t": 1.00, "sentence": 1, "shot": "S1", "kind": "cizim",
+      "tool": { "name": "kalem",
+        "in":   { "t": 0.50, "dur": 0.50, "from": [2100, 900], "to": [960, 600] },
+        "work": { "t": 1.00, "dur": 1.20 },
+        "out":  { "t": 2.20, "dur": 0.50, "from": [960, 600], "to": [2100, 900] } } },
+    { "id": "e03", "t": 2.90, "sentence": 1, "shot": "S1", "kind": "kart", "dur": 0.40 },
+    { "id": "e04", "t": 3.85, "shot": "S1", "kind": "gecis", "dur": 0.30 },
+    { "id": "e05", "t": 4.20, "a0": 4.20, "word": "kelime-2", "sentence": 2, "shot": "S2", "kind": "lyric", "dur": 0.45 },
+    { "id": "e06", "t": 5.30, "sentence": 2, "shot": "S2", "kind": "olcum",
+      "tool": { "name": "cetvel",
+        "in":   { "t": 4.80, "dur": 0.50, "from": [-200, 700], "to": [700, 640] },
+        "work": { "t": 5.30, "dur": 1.00 },
+        "out":  { "t": 6.30, "dur": 0.50, "from": [700, 640], "to": [-200, 700] } } },
+    { "id": "e07", "t": 7.00, "sentence": 2, "shot": "S2", "kind": "kart", "dur": 0.40 },
+    { "id": "e08", "t": 7.60, "a0": 7.60, "word": "kelime-3", "sentence": 2, "shot": "S2", "kind": "lyric", "dur": 0.45 }
+  ]
+}
