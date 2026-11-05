@@ -27,7 +27,7 @@ Proje belgelerinin şablonları paketin `templates/` klasöründedir.
 4. `scenes.json` (manifest; fps, boyut, profil ve sahne kayıtları için tek kaynak).
 5. `world/` (world.json, lessons.md, DECISIONS.md).
 6. Paket skill'leri (RULES, PLAYBOOK, MEASURE, AUDIO, GENAI).
-7. `script/` (transkript, BEATS, amap) ve `docs/` (künye, sözlük).
+7. `script/` (transkript, BEATS, amap) ve `docs/` (künye, sözlük). `docs/KARAR-TARIHI.md` karar metinlerinin aynen kaydıdır (tarih): çelişki taramasına ve director brief'ine girmez; güncel özü `project.md`'dedir (§3.5).
 
 ### 0.2 Profiller (`scenes.json` → `profile`)
 
@@ -70,20 +70,21 @@ kullanıcı
    ├─ motion:motion-research  → docs/research/<konu>.md · assets/gen/requests/<birim>.json
    ├─ motion:motion-director  → kod · kareler · qc/fc json · kontak · künye · rapor taslağı (## Katkı)
    ├─ motion:motion-measure   → out/measure/<iş>/ (sayı + yöntem + kırpım)
-   └─ motion:motion-reviewer  → kapı başına TAZE · out/review/<kapı-id>/ · docs/REVIEWER.md (sona ekler)
+   └─ motion:motion-reviewer  → kapı başına TAZE (kilometre taşında; still ve klip ayrı) · out/review/<kapı-id>/ · docs/REVIEWER.md (sona ekler)
 ```
 
 | rol | kim | yetki | yazdığı | asla |
 |---|---|---|---|---|
-| **orkestra** | ana oturum | tüm araçlar | `project.md` §'leri, rapor, kapanış belgeleri; `docs/REVIEWER.md` yalnız dosya yoksa (reviewer'ın `RECORD.md`'sini ekler) | kapıyı kendi puanıyla geçirmek; reviewer'a künye ya da yapan sayısı vermek |
-| **yapan** | `motion-director` alt ajanı ya da ana oturumun kendisi | tüm araçlar | sahne kodu, render, ölçüm, künye | reviewer'ın yerine karar vermek |
+| **orkestra = kapı / QA** | ana oturum | tüm araçlar | `docs/KARAR-TARIHI.md` (karar metni aynen), `project.md` §'leri ve §11 tablosu, director brief'i, rapor, kapanış belgeleri; teknik kısımlar (araç ayarı, `checks/`, ölçü tanımı, belge hijyeni); `docs/REVIEWER.md` yalnız dosya yoksa (reviewer'ın `RECORD.md`'sini ekler) | kapıyı kendi puanıyla geçirmek; reviewer'a künye ya da yapan sayısı vermek; **tasarım yapmak** (1.4) |
+| **yapan** | `motion-director` alt ajanı: tek tasarımcı-uygulayıcı (1.4); küçük teknik işi ana oturum kendisi yapabilir | tüm araçlar | sahne kodu, render, ölçüm, künye, checkpoint | reviewer'ın yerine karar vermek |
 | **araştırma** | `motion-research` | salt okuma + kendi çıktı dosyası | `docs/research/<konu>.md` (sözlük taslağı, kaynak/aday tablosu), `assets/gen/requests/<birim>.json` | üretim yapmak, kredi harcamak |
 | **bağımsız ölçüm** | `motion-measure` | okuma + kendi betikleri; yazma yalnız `out/measure/<iş>/` | `RESULT.md` + `result.json` (sayı, yöntem, kalibrasyon, kırpım) | yapanın aracını ya da sayılarını referans almak; zevk ya da kapı kararı vermek |
-| **bağımsız reviewer** | `motion-reviewer`, **her kapıda yeni** (`/motion:gate` açar) | okuma + ölçüm ilkelleri; yazma yalnız `out/review/<kapı-id>/` ve `docs/REVIEWER.md` sonuna ekleme | `KARAR:` satırı + kayıt gövdesi | düzeltme yapmak, proje dosyasına dokunmak, künye/rapor okumak |
+| **bağımsız reviewer** | `motion-reviewer`, **her kapıda yeni** (`/motion:gate` açar; 1.4: kapı kilometre taşındadır, still ve klip ayrı ajan) | okuma + ölçüm ilkelleri; yazma yalnız `out/review/<kapı-id>/` ve `docs/REVIEWER.md` sonuna ekleme | `KARAR:` satırı + kayıt gövdesi | düzeltme yapmak, proje dosyasına dokunmak, künye/rapor okumak |
 
 - `<kapı-id>` = `<birim>-<kapı-türü>-r<k>` (ör. `P2-animatik-r1`).
 - `<iş>` = `<birim>-<ölçü>-<YYYYAAGG>` (ör. `P3-k1-20261017`).
-- Kapı türleri: `lookdev` · `varyant` · `storyboard` · `animatik` · `render` · `teslim` · `master` · `live` · `varlik`. Ayrıntı: `motion-reviewer` SKILL §7.
+- Kapı türleri: `lookdev` · `varyant` · `storyboard` · `animatik` · `hareket` (1.4) · `render` · `teslim` · `master` · `live` · `varlik`. Ayrıntı: `motion-reviewer` SKILL §7.
+- Kilometre taşında still ve klip ayrı reviewer'a gider (1.4): kapı-id `<birim>-<tür>-still-r<k>` ve `<birim>-<tür>-klip-r<k>`.
 
 İlkeler:
 
@@ -91,11 +92,28 @@ kullanıcı
 - **Ajan türü bulunamazsa:** genel amaçlı ajan açılır ve isteme şu cümle konur: "Önce `agents/<ad>.md` dosyasını oku ve oradaki rolü birebir üstlen."
 - **Ölçüm ağırlıklı ön koşullar** (logo/varlık kabulü, ölçer kalibrasyonu, yapanın sayısıyla çelişen ölçü) `motion-measure`'a verilir. Ana oturum ölçüm sonucunu yapanın sayısıyla yan yana koyar ve farkı raporlar. Reviewer `out/measure/**`'ı da okumaz; kendisi ölçer.
 
+**Rol sözleşmesi (1.4).** Kaynak projede kapı listesini brief olarak alan yapan, kapıyı geçen ama ürün olarak reddedilen işler üretti;
+tur sınırına çarpan ölçüm ve reviewer ajanları devam mesajıyla kapandı. Roller bu yüzden şöyle ayrılır:
+
+| rol | ne yapar | sınır |
+|---|---|---|
+| **ana oturum** | kapı ve QA'dır: yapmaz, ölçtürür, karar işler. Faz istemindeki kararları belgeye işler (§3.5), değişiklik listesinden ölçüm kapsamını çıkarır (§3.4 V1), ölçüm ve reviewer işlerini böler, kararı rapora taşır | sahne tasarımı ve kompozisyon kararı director'dadır |
+| **director** | **sanat yönetmeni brief'iyle** çalışan tek tasarımcı-uygulayıcı. Brief = niyet (kullanıcı metni aynen; tek estetik ölçüt) + film bağlamı (tüm sözlük, CRAFT-REF) + onaylı ilkeller + işletim kuralları (ölçüt değil). Şablon `templates/BRIEF-DIRECTOR.md` → `docs/BRIEF-DIRECTOR.md` | kapı listesi brief'e yazılmaz (§3.3); brief token tavanı (§3.5 madde 4); uzun görevde checkpoint (§2.6) |
+| **ölçüm ajanı** | iş başına **≤ 3 madde, tek tur**. İstemde öncelik sırası, "en geç N. turda kayıt" (tur sınırının ~%75'i) ve "ölçülemedi" izni bulunur | tur sınırına takılan iş tasarım hatasıdır → retro; geniş liste iki ajana bölünür (makine kuralı içinde, §2.6) |
+| **reviewer** | **referans klip zorunlu** (birimle yan yana); **still ve klip ayrı reviewer**; iş başına **≤ 3 soru** (öncelik sırasıyla, projenin sabit soruları dahil); faz başına, kilometre taşında taze (§3.4 V3) | sayısal estetik şartı kapı değil bilgidir (§3.3 madde 2); şart satırı nesne tanımıyla yazılır, koordinat yalnız örnektir (§3.3 madde 10) |
+
+Bu sayılar (≤ 3 madde, ≤ 3 soru, %75) süreç varsayılanıdır; proje `project.md` §3 "QA kapsamı"nda değiştirebilir.
+
 ### 2.2 Bağımsız reviewer sözleşmesi
 
 Tek kaynak `skills/motion-reviewer/SKILL.md` ve `agents/motion-reviewer.md` dosyalarıdır; bu bölüm özettir, çelişkide onlar kazanır.
 
 **Tazelik.** Her kapı yeni bir reviewer ajanıyla açılır; reviewer SendMessage ile bir sonraki kapıya taşınmaz. Kaynak projede tek bir kalıcı reviewer 23 dönüşte ~111 MB bağlama ulaştı ve "işi görmemiş göz" niteliği aşındı.
+
+**Faz başına, kilometre taşında (1.4, V3).** Reviewer set ya da adım başına değil, kilometre taşında açılır ve o fazın bütün çıktısını yan yana görür
+(süreklilik için daha doğru). Ara adımda reviewer yoktur; V1 kapsamı + qc koşar (§3.4). Kilometre taşında still ve klip **ayrı** reviewer'lara gider;
+kapı kararı ikisinin ağırıdır (GEÇMEZ > ŞARTLI GEÇER > GEÇER). Her reviewer işine **≤ 3 soru** verilir (öncelik sırasıyla); sorunun dışı standart
+prosedürdür (§0.6, UCUZ, ön plan). Kayıt tur sınırından önce yazılır (en geç ~%75'te); yetişmeyen madde "ölçülemedi" olur.
 
 **Hafıza.** Kapılar arası tek hafıza `docs/REVIEWER.md`'dir: önceki kararlar, kayıtlı istisnalar, kabuller. Reviewer işe bu dosyayı okuyarak başlar.
 
@@ -108,7 +126,8 @@ Tek kaynak `skills/motion-reviewer/SKILL.md` ve `agents/motion-reviewer.md` dosy
   - kareler `out/frames/<id>[_tag]/NNNNN.png` (dizindeki N. dosya → mutlak zaman `t = tc + N·step/fps`), mp4, kontak, anahtar kareler, varyant/look-dev still'leri;
   - `out/probe/<id>-qc.json`, `out/probe/<id>-fc.json` (+ `--sheet` sayfası) — **yönlendirici**, kanıt değil;
   - `scenes.json`, `world/world.json`, `assets/gen/manifest.json` (ledger);
-- kapsam bilgisi: incelenecek ya da değişen **kare aralıkları** (yalnız aralık + konu).
+- kapsam bilgisi: incelenecek ya da değişen **kare aralıkları** (yalnız aralık + konu);
+- **≤ 3 soru** (1.4) ve **referans klip** yolu; klip kapısında birimle yan yana kontak/video (`motion-render contact motion`, §4.5 Adım 6a).
 
 **Verilmeyenler:**
 
@@ -124,7 +143,7 @@ Tek kaynak `skills/motion-reviewer/SKILL.md` ve `agents/motion-reviewer.md` dosy
 KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <geçer|VAR #a[,#b][ sınırda #c]|sınırda #c> · kapı <tür> <full|light|live> ≥<e>/<n>|yok · tur r<k> · birim <id>
 ```
 
-Ardından gövde (~60 satır): Kontroller · §0.6 · UCUZ (VAR ve sınırda satırları; #11 eksen tablosu) · Ön plan · Hata gibi görünen öğe · En zayıf anlar · Somut düzeltme listesi (GEÇMEZ ve ŞARTLI GEÇER için zorunlu: `| # | kare aralığı | sorun | ölçüt | nasıl doğrulanacak |`) · Küçük notlar · Açık kararlar. Son satır: `Proje dosyalarına dokunmadım. Kanıt: out/review/<kapı-id>/`.
+Ardından gövde (~60 satır): Kontroller · §0.6 · UCUZ (VAR ve sınırda satırları; #11 eksen tablosu) · Ön plan · Hata gibi görünen öğe · En zayıf anlar · Somut düzeltme listesi (GEÇMEZ ve ŞARTLI GEÇER için zorunlu: `| # | kare aralığı | sorun | ölçüt | nasıl doğrulanacak |`; 1.4: ölçüt **nesne tanımıyla** yazılır, koordinat yalnız örnek) · Küçük notlar · Açık kararlar. Son satır: `Proje dosyalarına dokunmadım. Kanıt: out/review/<kapı-id>/`.
 
 **Kayıt.** Reviewer kaydını `out/review/<kapı-id>/RECORD.md` olarak yazar ve `docs/REVIEWER.md` sonuna kendisi ekler. Başlık `## <YYYY-AA-GG> · <birim> · <kapı> · r<k>: <KARAR>`, hemen altında `KARAR:` satırı. Dosya yoksa reviewer oluşturmaz; ekleme işini ana oturum yapar. Makineler `grep '^KARAR:' docs/REVIEWER.md` ile okur.
 
@@ -153,13 +172,18 @@ r2 kendi tablosunu yazar (`madde | r1 bulgusu | r2 ölçümü | kapandı mı`) v
 ### 2.3 Ana oturumun bir kapıyı yürütmesi (`/motion:gate`)
 
 ```text
+0. Kapsam (1.4): kilometre taşı mı (V2: tam tarama + taze reviewer) yoksa ara adım mı (V1: değişiklik listesinden ölçüm + qc,
+   reviewer yok → bilgi kontağı)? Liste project.md §3 "QA kapsamı"ndadır (§3.4).
 1. Belgeler reviewer'dan ÖNCE: reviewer'ın okuduğu kural ve manifest dosyaları güncel olmalı
    (project.md kullanıcı kararları, scenes.json istisna/"incelendi" kayıtları, world.json, qc/fc json).
    Künye ve RENDER_REPORT da aynı anda güncellenir; reviewer onları okumaz ama rapor ve teslim belgesi onlardan beslenir.
    (Eski kural/manifest reviewer bulgusunu "eski okuma"yla kirletir.)
+   1.4: `motion-render celiski-tara` bulgu 0 (bağlayıcı küme çelişkisi kapıyı kirletir); still/maket kapısında kayıtlı
+   still ↔ taze `probe` `imgdiff` 0 (bayat maket reviewer'a gitmez).
 2. Bakiye oku (`motion-render doctor`) — kapı bütçe içeriyorsa.
 3. motion-reviewer'ı aç (TAZE ajan): §2.2'deki girdiler + kapı-id + bakılacak kare aralıkları
-   (yalnız aralık ve konu; yapanın sayısı, gerekçesi, künyesi YOK).
+   (yalnız aralık ve konu; yapanın sayısı, gerekçesi, künyesi YOK) + ≤ 3 soru + referans klip.
+   Still ve klip varsa iki ayrı taze reviewer (paralel açılabilir; makine kuralı §2.6).
 4. Beklerken: PARALEL işler (künye, ölçüm tablosu, sonraki birimin taslağı).
 5. Dönüş → `grep '^KARAR:' docs/REVIEWER.md` ile kaydın eklendiğini doğrula.
    Eklenmemişse (dosya yoksa) `out/review/<kapı-id>/RECORD.md`'yi aynen ekle. Kayda yorum eklenmez.
@@ -187,6 +211,7 @@ r2 kendi tablosunu yazar (`madde | r1 bulgusu | r2 ölçümü | kapandı mı`) v
 - Toplu render'da bir sahne başarısız olursa iş durmaz: hata loglanır, sıradaki sahneye geçilir, sonda atlanan sayısı raporlanır.
 - Çok adımlı zincirler bir betik dosyası olarak yazılıp tek arka plan komutuyla koşturulur. Betik, kullanılan zinciri belgeler.
 - **Etkileşimsiz oturum (headless, `claude -p`):** ajanlar ve uzun işler ön planda (`Agent` → `run_in_background: false`; Bash ön planda ya da `motion-render wait`) koşturulur ve beklenir. Headless süreç tur bitince kapanır; arka planda bırakılan ajan ve iş de ölür (eval tur 1'de üç oturum bu yüzden look-dev ortasında bitti).
+- Makine kuralı, checkpoint ve kesinti sonrası denetim: §2.6 (1.4).
 
 ### 2.5 Faz içi ara mesajlar
 
@@ -195,6 +220,31 @@ r2 kendi tablosunu yazar (`madde | r1 bulgusu | r2 ölçümü | kapandı mı`) v
 | Bekleme bildirimi | Bir paragraf: hız, kalan, ne zaman devam edileceği, beklerken yapılanlar. Örnek: "Animatik ~1.7 s/kare ilerliyor (658 karenin 44'ü bitti, ~19 dk kaldı). Bitince bildirimle devam edeceğim; bu arada künyenin ölçüm tablosunu yazıyorum." |
 | Durum sorusuna cevap | İlk cümle hüküm ("Genel olarak yolunda."), ardından `\| birim \| durum \| sonuç \|` tablosu ve kalan iş. |
 | Reviewer kararı aktarımı | "Reviewer kararı: **GEÇMEZ** (§0.6 5/8). Tek düzeltme turum bu; bundan sonrası DUR. Bulgular: …" |
+| Bilgi kontağı (1.4, V7) | Dosya(lar) gönderilir (araç varsa) ya da yolları verilir + V5 biçiminde ≤ 10 satır: ne değişti, sayılar, "akış sürüyor: <sonraki adım>". Kullanıcı müdahale ederse durulur. |
+
+### 2.6 Kesinti, checkpoint ve makine (1.4)
+
+Kaynak projede bir sistem çökmesi uzun bir director görevinin ilerlemesini sildi (kurtarma artefakt taramasıyla elle yapıldı); bozuk kurulmuş bir
+stdin betiği ajan bittikten sonra 45 saat bir çekirdeği meşgul etti; harness geliştirmesi kurulu klonda yapılınca proje render'ı yarım kodla koşma
+riskine girdi. Kurallar:
+
+1. **Checkpoint.** Uzun director görevinde (çok adımlı ya da ~30 dk'dan uzun) her adım sonunda commit + `docs/CHECKPOINT-<görev>.md`'ye tek
+   durum satırı: `adım · saat · durum (sayıyla) · kanıt dosyası` (biçim DOCS-TEMPLATES §3.14). Commit kimliği sonraki satırda ya da raporda.
+   Uzak depo varsa push. Ana oturum görevi yeniden başlatırken checkpoint'in son satırından devam ettirir.
+2. **Kesinti sonrası denetim** (çökme, oturum kaybı, dış kesme), kaldığı yerden devam etmeden önce:
+   (a) **artefakt mutabakatı** — son checkpoint satırı ↔ diskteki çıktılar (kare sayısı, `.part` artığı, mtime);
+   (b) **ledger mutabakatı** — `motion-render doctor` bakiyesi ↔ ledger; yarım üretim `ingest --from-run` ya da `lost[]`;
+   (c) **tanık kare** — son kabul edilmiş çıktıdan tanık kare(ler) `probe` ↔ kayıtlı kare `imgdiff` 0 (MEASURE M-ZS);
+   (d) **süreç listesi** — yarım kalan render/probe/ffmpeg/Chromium süreci (madde 3).
+   Sonra `--resume` ile devam; kurtarma V5 biçiminde raporlanır.
+3. **Süreç listesi temiz.** Ajan kapanışında ve **her DUR öncesi** bu oturumun başlattığı python/node/ffmpeg/Chromium süreçleri taranır; kalan süreç
+   sonlandırılır ya da raporda yazılır. Ölçüm betiği dosyadan koşar (Write); stdin'e verilen `python - <<EOF … || node -e …` zinciri kurulmaz.
+4. **Makine kuralı.** Aynı anda **tek render**; probe/ölçüm ≤ 2 paralel; render ile probe aynı anda koşmaz (proje §3'te değiştirebilir).
+   Render süresi tahmini = kare × ölçülen ms/kare. Her render ve encode öncesi `tools/render-oncesi.ps1` (Windows) ya da `tools/render-oncesi.sh`:
+   kurulu harness klonu beklenen tabanda ve temiz mi, başka Playwright Chromium / ffmpeg süreci var mı. Çıkış kodu borusuz okunur; **1 → render yok** (DUR-8).
+5. **Harness geliştirmesi kurulu klonda yapılmaz.** `motion-render`'ın koştuğu kurulu klon yalnız sürüm alır (`git pull` + `install`); geliştirme ayrı
+   klonda ya da worktree'de yapılır. Kurulu klonun taban commit'i `render-oncesi`'nin beklenen tabanıdır; taban değişince proje bunu kararla günceller.
+   Harness test render'ı ile proje render'ı aynı anda koşmaz.
 
 ---
 
@@ -209,11 +259,12 @@ FAZ F<n>[-B|-C] — <KAPSAM BAŞLIĞI> [→ <hedef çıktı/sürüm>] [(kredi 0)
 <1–3 satır bağlam: kaynak aralık; DONDURULAN / değişmeyecek olanlar;
  "başka kare değişmez (imgdiff 0)">
 
-§<N> KARARLAR (project.md):            ← önceki raporun açık kararlarına cevaplar
+§<N> KARARLAR (project.md):            ← önceki raporun açık kararlarına cevaplar; aynen → docs/KARAR-TARIHI.md, öz → §11
 - <karar> … (kapalı; bir daha listelenmez)
 İLKE | KURAL | ELEME KURALI (project.md §x'e ekle): <yeni bağlayıcı kural>
 DEVİR: <önceki birim son karesi> → <bu birimin ilk anahtarı>; fark ≤ <eşik>
 BAĞLAM: docs/SOZLUK.md (tüm film) · docs/CRAFT-REF.md · onaylı ilkeller <world/…> · <bağlayıcı kararlar>   ← kapı listesi değil
+DEĞİŞİKLİK: <dokunulan katman · ilkel · kamera · plaka> → ölçüm kapsamı (V1) · KİLOMETRE TAŞI: evet | hayır (V2)   ← 1.4
 
 0. <ön iş / TEŞHİS — düzeltmeden önce, sayıyla neden>
 1. <birim/shot kimliği> (<zaman aralığı>): <görsel tarif · alet · kamera ·
@@ -251,11 +302,18 @@ EK F<n> / F<n> ARA NOTLAR: 1. … 2. …   ← sonradan gelen düzeltmeler
 onaylı ilkeller (§4.4a) + birimin bağlayıcı kararları. Kapı listesi brief'e yazılmaz ve tasarım kapıya göre yapılmaz; kapılar (frame-check, ölçüm,
 reviewer) işten **sonra** QA olarak koşar (§2.3). Kota ölçütleri brief'te hedef olarak verilmez (RULES §0.8).
 
+**Sanat yönetmeni brief'i (1.4).** Director'ın görev brief'i tek dosyadır: `docs/BRIEF-DIRECTOR.md` (şablon `templates/BRIEF-DIRECTOR.md`).
+Bölümleri: §1 niyet — kullanıcının sanat yönetmeni metni **aynen**; brief'teki **tek estetik ölçüt** budur · §2 iş (kullanıcı metni aynen) ·
+§3 uygulama yorumları (ana oturum; karar değil) · §4–§6 içerik ve zanaat kaynakları (sözlük satırları aynen, CRAFT-REF özeti, onaylı ilkeller) ·
+§7 işletim kuralları (kredi, makine, yazma sınırı; ölçüt değil) · §8+ güncel iş (sıra, teslim yolları). project.md, sözlüğün tamamı ve world.json
+bu dosyaya kopyalanmaz; yolla başvurulur. Token tavanı varsayılan 30k (proje brief'i toplamı 60k; §3.5 madde 4); `motion-render celiski-tara` ölçer.
+Kapı listesi, eşik tablosu, doluluk ya da kompozisyon metriği bu brief'e girmez (§3.3).
+
 ### 3.2 Daimi çalışma kuralları (her fazda)
 
 1. **Soru yok.** Eksik ya da uyumsuz olanı işaretle ve devam et; kullanıcının vermesi gereken karar raporda "açık karar" olur. **İstisna:** bağlayıcı bir tablodan (pencere, shot, sözlük) sapmak gerekiyorsa önce sorulur (DUR-3).
 2. **KAPALI KARAR tekrar sorulmaz.** Rapor yazmadan önce `project.md` ve `scenes.json` notlarında "KAPALI KARAR" aranır. Önceki raporun açık karar listesi kopyalanmaz; her madde yeniden doğrulanır.
-3. **Kararlar önce belgeye.** Faz istemindeki KARARLAR ve KURAL'lar işe başlamadan `project.md` §11'e yazılır: tarihli, "kullanıcı" etiketli, aynen. Uygulama ayrıntısı "§Na uygulama notu (yapan)" altına gider.
+3. **Kararlar önce belgeye** (1.4 biçimi, §3.5). Faz istemindeki KARARLAR ve KURAL'lar işe başlamadan kullanıcı metni **aynen ve tarihli** `docs/KARAR-TARIHI.md` sonuna (`### 11.<faz>` başlığıyla) yazılır; güncel özü `project.md`'nin ilgili bölümüne ve §11 tablosuna (id · tarih · öz · durum) işlenir. Uygulama ayrıntısı KARAR-TARIHI'nde "uygulama notu (ana oturum; karar değil)" altına gider.
 4. **Teşhis önce, sayıyla neden.** Düzeltmeden önce ölçülür. Brief'in varsayımı yanlış çıkabilir. Neden en az iki bağımsız deneyle sayıyla bulunur ve raporda "Teşhis: neden …?" bölümüne yazılır.
 5. **Kasıtlı ihlal yok.** SERT bir ölçüm ihlali "muhtemelen kasıtlı" diye bırakılmaz. İhlalin yeri ve nedeni bulunur; düzeltilir ya da istisna önce sorulur. Animatikten önce kapanır.
 6. **Her "giderildi" kare numarasıyla kanıtlanır.** Künyede "düzeltme" sütununun yanında "doğrulama (kare / probe)" sütunu bulunur.
@@ -265,6 +323,87 @@ reviewer) işten **sonra** QA olarak koşar (§2.3). Kota ölçütleri brief'te 
 10. **Yama dosyadan.** Heredoc ya da kabuk dizesiyle yama yapılmaz. Her yamadan sonra tek kare probe yapılır; sahne açılmıyorsa render'a geçilmez (DUR-6).
 11. **Çıktılar `.part` → rename.** Kesilen iş `--resume` ile kaldığı yerden devam eder.
 12. **Üç kez tekrarlanan bulgu kurala dönüşür.** Ölçülebilir bir kural ve kontrol olur (`/motion:promote`).
+13. **Paket bulgusu** (1.4). Harness aracının yanlış ölçtüğü, ölçemediği ya da yanlış sınıfladığı durum projenin `docs/PAKET-NOTLAR.md` dosyasına
+    yazılır (`| PN-n | tarih | yer | ne oldu (sayıyla) | nerede (paket dosyası) | öneri | durum (aday / PR / kapandı) |`); `/motion:promote` toplar.
+    Proje oturumu kurulu harness'e yazmaz (§2.6 madde 5).
+
+### 3.3 Kapı ≠ brief: kapı ilkeleri (1.4)
+
+**Brief ≠ kapı (1.3)** ilkesinin genişlemesi. Kaynak projede bütün kusur kapıları geçerken ürün "ucuz" bulundu; kota ve kompozisyon metriği hedef
+olunca tasarım metriğe göre yapıldı; araç ölçemediği içerik kırpıldı. Kapılar bu yüzden şu ilkelerle koşar:
+
+1. **Kapı listesi brief'e yazılmaz** (§3.1). Brief niyet + film bağlamı + onaylı ilkellerdir; kapılar işten sonra QA'dır.
+2. **Estetik metrik kapı dışı.** Kompozisyon ve doluluk metrikleri (ızgara, grup sayısı, kahraman oranı, negatif alan / içerik payı, kalite paritesi,
+   derinlik hız oranı …) kapı değildir; raporda **bilgi** olarak yazılır. Estetik hüküm proje sahibi + referansla kalibre reviewer'dır. Reviewer'ın
+   sayısal estetik şartı da bilgidir.
+3. **Kapı sınıflaması.** Her kapı `project.md` §3 tablosunda bir sınıftadır: **kusur** (ölçüt dışı → GEÇMEZ, tek düzeltme turu) · **uyarı** (raporda
+   sayı; GEÇMEZ üretmez) · **bilgi** · **kapı dışı** · **arşiv**. Sınıflanmamış kapı uygulanmaz. **Ölçüsü tanımsız madde** (yöntemi project.md ya da
+   world.json'da yazılı değil) GEÇMEZ gerekçesi olamaz; açık karar olur.
+4. **Ölçüm eşiği yalnız proje sahibi kararıyla değişir.** `checks/*.json` eşik/taban alanı, qc/fc varsayılanı, world ölçü eşiği yapan ya da ana oturum
+   tarafından değiştirilmez. Aşım ölçümle teşhis edilir ve düzeltilir; düzelmiyorsa sayı + kare ile açık karar olur.
+5. **Araç kısıtı içeriği şekillendirmez; araç düzeltilir.** Araç bir içeriği ölçemiyor ya da yanlış sınıflıyorsa düzeltilen araçtır: proje ayarı
+   (checks bölgesi, kanca, sınıf) ya da paket bulgusu (§3.2-13). İçerik araca göre kırpılmaz, ertelenmez, sadeleştirilmez; araç düzelene dek o madde
+   bağımsız ölçümle (motion-measure) sayılır.
+6. **Kasıtlı ihlal yok** (§3.2-5, DUR-10).
+7. **Her "giderildi" kare numarasıyla doğrulanır** (§3.2-6).
+8. **Ölçüm tekleştirme.** Kaynaklar (yapan, ölçüm ajanı, reviewer, araç) aynı ölçüde ayrışırsa yöntem tekleşir: aynı kare aralığı, aynı özellik noktası,
+   aynı tanım; hız ve paralaks pikselden ölçülür (DOM yalnız beklenti). Kapıda tek sayı yazılır, yöntemi raporda (MEASURE).
+9. **"Kredi yüzünden" satırı zorunlu.** Her raporda "kredi yüzünden yapılmadı / kabul edildi" satırı bulunur; boşsa "yok". **Doluysa DUR** (DUR-13):
+   satır kabul mekanizması değildir.
+10. **Şart satırı nesne tanımıyla.** ŞARTLI GEÇER şartı ve düzeltme maddesi ölçülecek nesneyi tanımıyla yazar (ör. "katman kenarının altında 4–40 px
+    gölge", "iki katman arası boşluk: pencere − aynı katman komşuluk medyanı"); koordinat yalnız örnektir. Kompozisyon değişince yapan iki ölçüyü
+    (nesne tanımı + literal koordinat) birlikte raporlar.
+
+### 3.4 Verim V1–V8 (1.4)
+
+**Kapı sayısı eksilmez; eksilen tekrar ve ritüeldir.** Kaynak projede her ara adımda tam tarama, set başına reviewer ve 80 satırlık rapor zamanı
+ölçüme değil ritüele harcattı. Varsayılanlar:
+
+| id | kural | özü |
+|---|---|---|
+| **V1** | değişim-odaklı ölçüm | Her iş bir **değişiklik listesiyle** başlar (dokunulan katman · ilkel · kamera · plaka). Ölçüm kapsamı listeden türer: dokunulmayan katman yeniden ölçülmez. **Doğruluk** (içerik doğruluğu, okunurluk, aksan kotası) + **qc her render'da** kalır (ucuz, otomatik). |
+| **V2** | tam tarama yalnız kilometre taşında | frame-check bildirilen bütün tipler + doğruluk + hareket kuralı + vuruş/zanaat + canlılık + taze reviewer (still ve klip ayrı) yalnız kilometre taşında. Ara adımda V1 kapsamı + qc. |
+| **V3** | reviewer faz başına | Adım ya da set başına değil; kilometre taşında bir reviewer fazın bütün çıktısını yan yana görür. Referans klip zorunlu. |
+| **V4** | ölçüm ≤ 3 madde, tek tur | Tur sınırına takılan ölçüm işi tasarım hatasıdır → retro; geniş liste bölünür (§2.1 rol sözleşmesi). |
+| **V5** | istisna raporu | Geçenler tek satır tablo; yalnız sapma, açık karar, "kredi yüzünden" satırı ve ledger açılır; ≤ 40 satır (§7.1). Retro / paket bulgusu / dersler **faz sonunda tek seferde**; kök neden "dikkatsizlik" olamaz. |
+| **V6** | maskeli bölge üretimi varsayılan | Plakada nesne ekleme/düzeltme plakanın kalanı sabitken maskeli bölgeyle yapılır; yer tutucu + ölçek referansı zorunlu; tam plaka yalnız ışık ya da kompozisyon değişince. Deneme ≤ 3, sonra yöntem değişir (açık karar). Ayrıntı `GENAI.md` §17. |
+| **V7** | DUR yalnız geri dönüşü pahalı kararda | storyboard, hareket kontağı, ilk tam render öncesi, "kredi yüzünden" dolu, bütçe (DUR-2) ve DUR-1 onay kapıları. Gerisi **bilgi kontağı**: dosya gönderilir, akış sürer; kullanıcı müdahale ederse durulur (§6). |
+| **V8** | kilitli kurallar | hiçbiri gevşemez: harness paritesi (kurulu klon beklenen tabanda, plugin metinleri checkout'la aynı) · ledger tek yazar (`ingest`) · checkpoint commit her adımda · eşik yalnız proje sahibi kararıyla · araç kısıtı içeriği şekillendirmez · estetik metrik kapı dışı · hareket kuralı (MEASURE M-C) · nesne / kenar kuralları (M-KENAR, M-ASKIDA). |
+
+**V1 kapsam tablosu** (değişiklik listesi → yeniden ölçülen; ölçü kimlikleri MEASURE'da):
+
+| dokunulan | yeniden ölçülen |
+|---|---|
+| kamera / hamle yolu | M-C (kural C), M-SEYAHAT, fc `velocity` · `moves` · `camera` |
+| ilkel / mekanik | `motion-test`, M-VURUS, M-ONCU, fc `pop` · `entryExit` · `onset` |
+| plaka / üretken varlık | M-KENAR, M-ASKIDA, M-DIKIS (bölge üretimi), ışık ve ton |
+| tutuş / drift / nefes | M-CANLI |
+| runtime / render yolu / paylaşılan bileşen | M-ZS + teslim edilmiş birimlerden tanık kare (§3.2-9) |
+| yalnız belge | `motion-render celiski-tara` |
+| her render'da (değişmese de) | doğruluk + qc |
+
+**Kilometre taşları** (varsayılan; proje `project.md` §3 "QA kapsamı"nda daraltır ya da genişletir): look-dev seçimi · sözlük · ilkel kütüphanesi ·
+storyboard · animatik · hareket kontağı · perde tam render (teslim) · master.
+
+### 3.5 Belge hijyeni: md zehirlenmesi karşıtı (1.4)
+
+Uzun projede bağlayıcı belgeler eski kural, üstü çizili satır ve kopya karar metniyle şişer; aynı kural iki yerde iki sayıyla durur ve director yanlış
+brief'le çalışır ("md zehirlenmesi"). Kurallar:
+
+1. **Tek güncel spec.** `project.md` yalnız bugün geçerli kuralı taşır: üstü çizili satır, "KALDIRILDI / geçersiz" notu, eski sürüm metni kalmaz.
+   Değişen satırın eski metni **aynen** `docs/KARAR-TARIHI.md`'ye gider (geçersiz kılan karar + tarih + güncel karşılığı).
+2. **Karar tarihi.** Kullanıcı karar metni aynen + tarih `docs/KARAR-TARIHI.md` sonuna (şablon `templates/KARAR-TARIHI.md`); özü `project.md`
+   ilgili bölümüne ve §11 tablosuna. KARAR-TARIHI tarihtir: bağlayıcı küme dışıdır, çelişki taraması okumaz, director brief'ine girmez.
+3. **CLAUDE.md ≤ 60 satır.** Yalnız bağlayıcı sıra, daimi kurallar ve projeye özgü kısa özet; komut listesi, ölçü tanımları ve uzun kural metni ayrı
+   belgede (ör. `docs/KOMUTLAR.md`, project.md §3) durur, CLAUDE.md yolla başvurur.
+4. **Brief token tavanı.** Proje brief'i (project.md + sözlük + CRAFT-REF + world.json + CLAUDE.md + projenin bağlayıcı ekleri) varsayılan ≤ 60k
+   token; director görev brief'i (`docs/BRIEF-DIRECTOR.md`) ≤ 30k. Proje değiştirebilir (`docs/celiski.json`). Aşan brief'te en büyük dosya kısaltılır,
+   çıkan metin karar tarihine taşınır.
+5. **Commit kapısı.** `.githooks/pre-commit` → `motion-render celiski-tara`: bağlayıcı kümede arşiv terimi etkin kural gibi, spec'te üstü çizili /
+   KALDIRILDI notu, aynı kural anahtarı farklı sayıyla, ölü göreli yol, brief toplamı > tavan → çıkış 1, commit yok. Etkin kılma (bir kez):
+   `git config core.hooksPath .githooks`. Elle: `motion-render celiski-tara --rapor`.
+6. **KAPALI KARAR tekrar sorulmaz; kararlar önce belgeye** (§3.2-2, §3.2-3).
+7. **Aynı kural tek yerde.** Kural bir belgede tanımlanır; ötekiler § numarasıyla başvurur, sayıyı kopyalamaz (anahtar denetimi farkı yakalar).
 
 ---
 
@@ -280,6 +419,10 @@ F0 kurulum ─► ses hattı ─► look-dev (yeni world) ─► sözlük ─►
 **İlkel kütüphanesi onayı → film (1.3).** Film birimleri yalnız **onaylı** hareket ilkelleriyle kurulur (§4.4a). Kütüphane onaylanmadan perde
 tasarımı başlamaz; perde sırasında yeni bir mekanik gerekirse önce kütüphaneye eklenir, test edilir, onaylanır. Kapılar (frame-check, reviewer)
 işten **sonra** QA olarak koşar; tasarım kapı listesine göre yapılmaz.
+
+**Perde içinde (1.4):** `… animatik ─► hareket kontağı ─► tam render …` — tam render'dan önce perdenin bütün kamera hamleleri ve mekanikleri
+referans kliple yan yana **tek videoda** görülür (`motion-render contact motion`; §4.5 Adım 6a) → **"DUR — hareket"** (geri dönüşü pahalı karar, V7).
+Ara adımlar V1 kapsamıyla ölçülür, reviewer kilometre taşında açılır (§3.4); uzun director görevi checkpoint'le yürür (§2.6).
 
 Perdeler sırayla tasarlanır. Bir perdenin tam render'ı arka planda koşarken bir sonraki perde tasarlanabilir; bu PARALEL iştir.
 
@@ -315,7 +458,8 @@ motion-render doctor                 # ortam + Higgsfield oturumu + bakiye (yaln
 
 - proje kökünde: `project.md` (§0–§13, §1 aynen), `scenes.json` (sahnesiz; `manifest validate` world'ü denetler, ilk sahne eklenene dek "scenes boş" hatası verir — `init --demo` örnek sahneyle ✓), `CLAUDE.md`;
 - `assets/gen/manifest.json` (ledger iskeleti);
-- `docs/` şablonları (`REVIEWER.md`, `RETRO.md`, `RENDER_REPORT.md`, `KUNYE.md`, `RAPOR.md`, `FAZ.md`, `SOZLUK.md`, `SES-KAYMA.md`, `TESLIM.md`); `out/RENDER_REPORT.md` şablondan açılır ve yalnız sona eklenir (otomatik özet: `motion-render report` → `out/RENDER_SUMMARY.md`);
+- `docs/` şablonları (`REVIEWER.md`, `RETRO.md`, `RENDER_REPORT.md`, `KUNYE.md`, `RAPOR.md`, `FAZ.md`, `SOZLUK.md`, `SES-KAYMA.md`, `TESLIM.md`; 1.4: `KARAR-TARIHI.md`, `BRIEF-DIRECTOR.md`); `out/RENDER_REPORT.md` şablondan açılır ve yalnız sona eklenir (otomatik özet: `motion-render report` → `out/RENDER_SUMMARY.md`);
+- (1.4) `.githooks/pre-commit` (çelişki taraması commit kapısı; etkin kılma `git config core.hooksPath .githooks`), `docs/celiski.json` (bağlayıcı küme, brief listesi ve tavanları), `tools/render-oncesi.ps1` + `tools/render-oncesi.sh` (render/encode öncesi makine denetimi, §2.6);
 - `docs/INIT.md` kurulum raporu: kopyalanan · dönüştürülen · yazılan (şablon) · taşınmayan · malzeme · notlar.
 
 **Malzeme.** Kullanıcı malzemesi **yol olarak** bağlanır; kopyalanmaz, taşınmaz, silinmez. Her malzeme için §7'ye şunlar yazılır:
@@ -403,6 +547,10 @@ motion-render amap build --anchors amap.config.json                       # tasa
 
 ### 4.4a İlkel kütüphanesi (hareket mekanikleri) onayı → film
 
+> 1.4: ilkelin tasarım kuralları (sprite 9 dilim, gösterim boyutu, ölçekten bağımsız doku, ön plan a–f, nesne kenarı + gövde sınıfı, askıda,
+> dikiş) ve kanıt kontağı motion-world `references/ILKEL.md` §1–§6'dadır; stilden bağımsız mekanik ilkeller (süpürme, katlama, seyahat)
+> `shared/motion-mek.jsx`'tedir (PATTERNS).
+
 Sözlükten sonra, ilk perdeden **önce**. Amaç: filmin bütün hareket mekaniklerinin (çizim, nesne girişi/çıkışı, katlama, yırtılma, kamera hamlesi…)
 zanaatını film bağlamından bağımsız, tek tek doğrulamak; perdeler onaylı ilkelleri dizer.
 
@@ -418,18 +566,30 @@ zanaatını film bağlamından bağımsız, tek tek doğrulamak; perdeler onayl�
 5. **DUR — mekanik onayı** (DUR-1). Kullanıcı kontak + grafik + mp4'lere bakar; onaylı ilkeller `docs/CRAFT-REF.md` §4'e ve `world/DECISIONS.md`'ye yazılır.
    Onaylı ilkelin hareket tanımı (süre, easing, profil) perdede değiştirilmez; değişiklik kütüphaneye döner ve yeniden onaylanır.
 
+**(1.4) eklemeler:**
+
+- **Ortak nesne ilkelleri de kütüphanededir.** Birden çok shot'ta dönen nesne (aynı alet, aynı kart, aynı ışık kaynağı) mekanikle birlikte ilkel olur;
+  setler ya da perdeler ilkellerden **sonra** kurulur. Komşu birimlerde aynı nesne aynı ilkeldir.
+- **Tek yan yana video.** Kapıya ve kullanıcıya bütün mekanikler tek videoda, her biri referans klibiyle yan yana gider (mekanik başına ayrı dosya
+  yerine); etiket: mekanik adı, tepe hız, görünür süre, C1.
+- **V1 burada da geçerli:** onaylı ilkel değişmediyse perdede o ilkelin ölçüsü yeniden alınmaz; değiştiyse önce kütüphanede yeniden test + onay.
+- Onaylı ilkelin parametresine eklenen yeni değerin varsayılanı eski çıktıyı verir (§3.2-9); kütüphane sürümü `world/DECISIONS.md`'de.
+
 ### 4.5 P<n> — perde akışı (çekirdek döngü)
 
 ```text
 sözlük ✓ → zaman + devir → izdüşüm kapısı → 3 varyant still/shot → [reviewer varyant turu] → seçim
-→ animatik (K7, 960×540@30) → ölçüm → belgeler → bağımsız reviewer (animatik kapısı)
-→ [tek düzeltme turu → yeni reviewer] → tam render (2×/S×) → expo-post → grade → qc → frame-check
+→ animatik (K7, 960×540@30) → ölçüm → belgeler → bağımsız reviewer (animatik kapısı; still ve klip ayrı)
+→ [tek düzeltme turu → yeni reviewer] → hareket kontağı → "DUR — hareket" (1.4)
+→ tam render (2×/S×) → expo-post → grade → qc → frame-check
 → contact → OURS/K1/K6 → ses → belgeler → reviewer teslim turu → kapanış belgeleri → rapor → DUR
 ```
 
 #### Adım 0 — Faz açılışı
 
-- Faz istemi okunur. KARARLAR `project.md` §11'e yazılır (§3.2-3). Bakiye okunur (`doctor`).
+- Faz istemi okunur. KARARLAR `docs/KARAR-TARIHI.md`'ye aynen, özü `project.md` §11'e yazılır (§3.2-3). Bakiye okunur (`doctor`).
+- **Değişiklik listesi** (1.4, V1): dokunulacak katman · ilkel · kamera · plaka; ölçüm kapsamı bu listeden çıkar (§3.4 V1 tablosu). Kilometre taşları işaretlenir.
+- Director'a görev `docs/BRIEF-DIRECTOR.md` ile verilir (sanat yönetmeni brief'i, §3.1); uzun görevse `docs/CHECKPOINT-<görev>.md` açılır (§2.6).
 - `scenes.json`'a perde kaydı açılır: `frames`, `tc`, `slice`, `redQuota`, `layer.exit`, `keys`, `k1`, `checks`, `hooks`.
 - Künye açılır: `docs/KUNYE-P<n>.md` (şablon `templates/KUNYE.md`).
 
@@ -476,7 +636,7 @@ motion-render contact sheet out/probe/<faz>/S07-varyant.png a.png=a b.png=b c.pn
 motion-render render P<n> --scale 0.5 --step 2 --tag animatic --progress   # 960×540 → out/frames/P<n>_animatic; step = fps / 30
 motion-render expo-post P<n> --dir out/frames/P<n>_animatic --step 2      # yalnız sahne içi iniş/dip varsa
 motion-render grade P<n> --animatic                                      # → out/scenes/P<n>_animatic.mp4 @fps/2
-motion-render contact P<n> --dir out/frames/P<n>_animatic --fstep 2
+motion-render contact P<n> --dir out/frames/P<n>_animatic --page-step 2   # disk karesi başına sayfa karesi (eski --fstep)
 motion-render ours P<n> --dir out/frames/P<n>_animatic --step 2
 motion-render qc P<n> --frames-dir out/frames/P<n>_animatic --step 2   # etkin hız fps/2
 motion-render frame-check P<n> --frames-dir out/frames/P<n>_animatic --step 2 --sheet   # piksel tipleri; tasarım tipleri --step olmadan
@@ -500,9 +660,25 @@ motion-render frame-check P<n> --frames-dir out/frames/P<n>_animatic --step 2 --
 - **Kullanıcı animatik kapısı:**
   - projenin **ilk perdesinde** animatik kullanıcıya gider (DUR);
   - sonraki perdelerde faz istemi aksini demedikçe reviewer GEÇER kararı yeterlidir ("KAPI GEÇERSE DURMA").
+- **Still ve klip ayrı (1.4).** Animatik kapısında style frame / anahtar kare still'leri (`n = 5`) ve animatik mp4'ü (`n = 8`) iki ayrı taze reviewer'a
+  gider (`P<n>-animatik-still-r<k>`, `P<n>-animatik-klip-r<k>`); her birine ≤ 3 soru. Kapı kararı ikisinin ağırıdır.
+
+#### Adım 6a — Hareket kontağı (1.4; tam render'dan önce)
+
+Kaynak projede hamle ve mekanikler ayrı ayrı kapılardan geçti; kullanıcı bütün hareketi ilk kez animatikte birlikte görünce kamera dili baştan
+değişti (ani yakınlaşma ve gizli hamle kalktı). Hareket, render bütçesi harcanmadan önce tek yerde onaylanır:
+
+1. **Kontak videosu.** Perdenin bütün kamera hamleleri, geçişleri ve mekanik pencereleri (giriş/çıkış, vuruş, seyahat hamlesi) referans kliple
+   yan yana, etiketli tek video: `motion-render contact motion <id> …` (etiket: tepe px/kare, görünür süre %10–90, C1; seçenekler CONTRACT §6).
+2. **Ölçüm.** `motion-measure` tek iş, ≤ 3 madde, öncelik sırasıyla: kural C (MEASURE M-C) · seyahat hamlesi (M-SEYAHAT) · vuruş ağırlığı ve
+   ön olay (M-VURUS, M-ONCU). Proje §3'teki hareket ölçütleri eşiktir; eşik değişmez (§3.3 madde 4).
+3. **Kapı.** Taze reviewer, kapı türü `hareket` (klip; referans yan yana; ≤ 3 soru; reviewer SKILL §7).
+4. **DUR — hareket** (DUR-12). Projenin ilk perdesinde ve yeni hamle tipi ya da mekanik giren her perdede zorunlu; öteki perdelerde bilgi kontağı (V7).
+5. Onaydan sonra hamle tanımı (yol, süre, eğri) tam render'da değişmez; değişirse kontak yenilenir ve yeniden onaylanır.
 
 #### Adım 7 — Tam render
 
+- **Makine** (1.4, §2.6): render öncesi `tools/render-oncesi` çıkış 0; aynı anda tek render; render sırasında probe yok.
 - **Kare bütçesi:** kare sayısı × ölçülen s/kare.
   - Ölçüm temsilci karelerden yapılır; ilk kareden tahmin iyimser kalır.
   - Tahmin 20 dakikayı aşarsa iş aralıklara bölünür.
@@ -567,12 +743,13 @@ Taze reviewer (kapı `teslim`) şunları alır: mp4, kare dizini, kontak, qc/fc 
 #### Adım 11 — Kapanış
 
 1. `docs/REVIEWER.md` kaydı doğrulanır (`grep '^KARAR:'`); reviewer eklememişse `RECORD.md` aynen eklenir.
-2. `docs/RETRO.md`'ye giriş eklenir.
-3. `world/lessons.md`'ye bu fazın dersleri eklenir.
+2. `docs/RETRO.md`'ye giriş eklenir (faz sonunda **tek seferde**; ara adımlarda retro yazılmaz, V5).
+3. `world/lessons.md`'ye bu fazın dersleri, `docs/PAKET-NOTLAR.md`'ye paket bulguları eklenir (aynı tek seferde).
 4. `out/RENDER_REPORT.md` güncellenir.
 5. Bakiye okunur.
-6. Videolar ve kontak kullanıcıya gönderilir (araç varsa) ya da yolları verilir.
-7. Faz raporu yazılır (§7), ardından **DUR — Perde <n> teslimi**.
+6. Süreç listesi taranır (§2.6 madde 3); `motion-render celiski-tara` bulgu 0; checkpoint son satırı + commit.
+7. Videolar ve kontak kullanıcıya gönderilir (araç varsa) ya da yolları verilir.
+8. Faz raporu yazılır (§7.2 kapanış raporu), ardından **DUR — Perde <n> teslimi**.
 
 ### 4.6 Master (bütün film)
 
@@ -624,7 +801,7 @@ Kurallar:
 
 ### 4.8 Retro → `/motion:promote`
 
-- **Her tur bir RETRO girişiyle kapanır** (şablon `templates/RETRO.md`). **Kök neden "dikkatsizlik" olamaz.** Hangi kontrolün neden yakalamadığı yazılır ve o kontrol düzeltilir.
+- **Her faz bir RETRO girişiyle kapanır** (şablon `templates/RETRO.md`); 1.4: retro, dersler ve paket bulguları faz sonunda **tek seferde** yazılır, ara adımda değil (V5). **Kök neden "dikkatsizlik" olamaz.** Hangi kontrolün neden yakalamadığı yazılır ve o kontrol düzeltilir. Tur sınırına takılan ajan işi de retroya girer (tasarım hatası: iş bölünmeliydi).
 - Dersler üç yere gider:
 
   | ders | gittiği yer |
@@ -633,7 +810,7 @@ Kurallar:
   | projeye özgü | `project.md` |
   | core aday | RETRO'da "core aday" etiketi |
 
-- **`/motion:promote`** RETRO ve lessons'taki core adaylarını toplar:
+- **`/motion:promote`** RETRO, lessons ve `docs/PAKET-NOTLAR.md`'deki core adaylarını toplar:
   - tekilleştirir;
   - üç kez tekrarlanmışsa ölçülebilir kural + kontrol önerisi yapar;
   - A/B'si yoksa "deneme" etiketi koyar;
@@ -668,31 +845,73 @@ Bir değişiklik birimin yalnız bir aralığını etkiliyorsa:
 
 ## 6. DUR sözleşmesi
 
-Varsayılan davranış "soru yok, işaretle ve devam"dır. Aşağıdaki durumlarda iş durur, rapor verilir ve onay beklenir.
+Varsayılan davranış "soru yok, işaretle ve devam"dır. **DUR yalnız geri dönüşü pahalı kararda** (1.4, V7); gerisi bilgi kontağıdır. Aşağıdaki
+durumlarda iş durur, rapor verilir ve onay beklenir.
 
 | id | tetik | ne yapılır |
 |---|---|---|
-| DUR-1 | kullanıcı onay kapıları: F0 kurulum, look-dev yön seçimi, sözlük, aday seçimi, pilot (üretken), ilk perde animatiği, varlık kabulü (logo vb.) | teslim et ve dur; onaysız render yok |
+| DUR-1 | kullanıcı onay kapıları: F0 kurulum, look-dev yön seçimi, sözlük, aday seçimi, ilkel kütüphanesi (mekanik onayı), storyboard, pilot (üretken), ilk perde animatiği, varlık kabulü (logo vb.) | teslim et ve dur; onaysız render yok |
 | DUR-2 | bütçe: görev tavanı aşılacak · tahmin ↔ gerçek sapma > %10 · liste dışı model | dur ve sor |
 | DUR-3 | bağlayıcı tablodan (pencere, shot, sözlük) sapma gerekiyor | önce sor |
 | DUR-4 | analiz / yeniden teklif modu ("yalnız analiz", "uygulama yok") | sahne dosyası değişmez |
 | DUR-5 | üretim aracı yok (istem sayfası yolu) | istem sayfasını yaz ve dur |
 | DUR-6 | sahne açılmıyor (`[dc-runtime] x-import: FAILED`, sayfa hatası) | render'a geçme |
 | DUR-7 | faz sonu: her faz "DUR: <teslim>" ile biter | rapor; sonraki faz yeni kullanıcı kararıyla |
-| DUR-8 | ön koşul doğrulaması geçmedi (varlık vektör değil, ses metninde beklenmeyen fark) | DUR ve iste |
+| DUR-8 | ön koşul doğrulaması geçmedi (varlık vektör değil, ses metninde beklenmeyen fark; 1.4: `render-oncesi` çıkış 1) | DUR ve iste; render yok |
 | DUR-9 | reviewer GEÇMEZ ve tek düzeltme turu da GEÇMEZ | kontak + nedenler; render yok |
 | DUR-10 | SERT ihlal "kasıtlı" görünüyor | düzelt ya da önce sor; "kasıtlı" notuyla bırakma |
 | DUR-11 | §0.6 eşiğin altında | render yok; look-dev / varyanta dön |
+| DUR-12 | (1.4) hareket kontağı hazır (§4.5 Adım 6a): ilk perde ve yeni hamle/mekanik giren perde | "DUR — hareket"; onaysız tam render yok |
+| DUR-13 | (1.4) raporun "kredi yüzünden yapılmadı / kabul edildi" satırı dolu | dur ve sor; satır kabul mekanizması değildir |
 
 - **"KAPI GEÇERSE DURMA":** kapı geçerse akış sorgusuz sürer. DUR yalnız yukarıdaki tetiklerde ve faz isteminin DUR satırında vardır.
+- **Bilgi kontağı (1.4, V7).** DUR gerektirmeyen ara sonuç (set, ara render, kalibrasyon, düzeltme turu çıktısı) kullanıcıya **dosya olarak**
+  gönderilir (araç varsa; yoksa yol) ve V5 biçiminde kısa not düşülür; **akış sürer**. Kullanıcı müdahale ederse o noktada durulur ve müdahale
+  karar olarak belgeye işlenir (§3.2-3). Kontak her zaman sayı taşır; "bilgi" olması ölçülmemesi demek değildir.
+- **DUR öncesi** (1.4): süreç listesi taranır (§2.6 madde 3), `motion-render celiski-tara` bulgu 0, checkpoint satırı + commit.
 - DUR sırasında DUR'a bağlı olmayan işler sürdürülür ve raporda "DUR sırasında yapılanlar" bölümünde yazılır.
 - Birden çok DUR numaralanır (DUR 1, DUR 2). Cevaplar faz kodu taşır: `F<n> DUR 1 RED → …`, `DUR 1b KARARI`.
 
 ---
 
-## 7. Rapor biçimi (faz sonu)
+## 7. Rapor biçimi
 
-Şablon: `templates/RAPOR.md`. Rapor ana oturumun faz sonu mesajıdır; aynı metin `docs/F<n>-RAPOR.md` olarak da kaydedilir.
+Şablon: `templates/RAPOR.md` (iki biçim). Rapor ana oturumun mesajıdır; aynı metin `docs/F<n>-RAPOR.md` sonuna da eklenir.
+
+| biçim | ne zaman | ölçü |
+|---|---|---|
+| **İstisna raporu** (§7.1; 1.4 varsayılanı, V5) | her ara DUR, kapı sonucu, bilgi kontağı, kurtarma | ≤ 40 satır |
+| **Kapanış raporu** (§7.2) | faz kapanışı: perde teslimi, master, look-dev / sözlük / ilkel onayı fazının sonu | 45–80 satır |
+
+### 7.1 İstisna raporu (1.4)
+
+Geçen madde tek satırdır; yalnız **sapma**, **açık karar**, **"kredi yüzünden" satırı** ve **ledger** açılır. Künye yalnız sayı taşır; rapor künyeyi
+kopyalamaz. Retro, paket bulgusu ve dersler burada yazılmaz (faz sonunda tek seferde).
+
+```markdown
+# F<n> · <kapsam>: <tek satır sonuç — KARAR (still x/5 · klip y/8)> [— DUR: <neden>] — <YYYY-AA-GG>
+
+| madde | sayı | eşik | |
+|---|---|---|---|
+| <geçen madde> | <ölçülen, birimli; yöntem kısaltması> | <ölçüt + kaynak §> | ✓ |
+| <araç ayrışması> | <sayı + araç tanımı farkı (paket bulgusu PN-n)> | — | ✓ / açık |
+
+**Sapma (açık karar, proje sahibi):**     ← bağlayıcı sayıdan sapma İLK sırada; her biri sayı + kare + seçenekler + öneri + etki
+1. **<konu>** — <sayı, kare>. Seçenek (a) … · (b) …. Öneri (b).
+
+**Kredi:** <k> (bakiye <önce> → <sonra>). **Kredi yüzünden yapılmadı / kabul edildi:** yok.   ← doluysa DUR (DUR-13)
+**Ledger:** <değişmedi | match ✓ | lost n>. Katkı: <tek satır | yok>.
+
+Kanıt: <göreli yollar: out/review/<kapı-id>/ · out/measure/<iş>/ · teslim dosyası>
+
+**DUR — <nokta>: <beklenen kararlar>.** Cevaptan sonra: <sıra>.    ← ya da: **Bilgi kontağı — <dosyalar>; akış sürüyor: <sonraki adım>.**
+```
+
+- KARAR parçası reviewer kaydıyla aynıdır; yapanın puanı farklıysa "yapan x/8" eklenir.
+- Ölçüsü tanımsız ya da sınıflanmamış madde tabloya "bilgi" olarak girer (§3.3 madde 3).
+- Ölçü ≤ 40 satır; bu sayı süreç varsayılanıdır, proje `project.md` §3'te değiştirebilir.
+
+### 7.2 Kapanış raporu (faz sonu)
 
 **Bölüm sırası sabittir:**
 
@@ -701,7 +920,7 @@ Varsayılan davranış "soru yok, işaretle ve devam"dır. Aşağıdaki durumlar
 
 <Sonuç paragrafı, 2–4 cümle: ne bitti; bağımsız reviewer kararı **TESLİM GEÇER | GEÇER | ŞARTLI GEÇER | GEÇMEZ**
 (§0.6 x/8, UCUZ geçer/sınırda); ilk turda engel varsa ne olduğu ve nasıl kapandığı;
-"Kredi <k>, bakiye <önce> → <sonra>.">
+"Kredi <k>, bakiye <önce> → <sonra>. Kredi yüzünden yapılmadı / kabul edildi: yok.">
 
 **Teslim dosyaları:**                                  ← yalnız teslim/master fazlarında
 - [<dosya>](<göreli yol>) — biçim, çözünürlük/fps, kare, süre; ses ölçümü (LUFS / dBTP)
@@ -747,14 +966,15 @@ Varsayılan davranış "soru yok, işaretle ve devam"dır. Aşağıdaki durumlar
 
 **Doğrulanabilir kurallar:**
 
-- `## Katkı` her raporda vardır. Görev başına 1–3 katkı yazılır; A/B'siz katkı "deneme" etiketi alır. Sahneye yazılan katkı yarım sayılır ve ortak dosyaya taşıma önerisi gerektirir.
+- `## Katkı` her kapanış raporunda vardır (istisna raporunda tek satır). Görev başına 1–3 katkı yazılır; A/B'siz katkı "deneme" etiketi alır. Sahneye yazılan katkı yarım sayılır ve ortak dosyaya taşıma önerisi gerektirir.
 - KAPALI KARAR'lar açık karar listesinde yer almaz. Borca devredilen karar borç tablosuna gider.
 - Sayılar birimli verilir: px, /255, ΔE2000, LUFS, dBTP, kare, s, px/kare, %.
 - Dosyalar göreli yol ya da göreli Markdown bağlantısıdır.
 - Reviewer bulguları rapora karar ve sayı olarak taşınır. Yapanın puanı farklıysa fark yazılır ("yapan 7/8 · reviewer 8/8").
-- Ölçü: 3–5,5 bin karakter, 45–80 satır, 1–3 tablo.
-- Kapanış satırı her zaman `**DUR — …**` biçimindedir.
-- Ara DUR raporunda başlık DUR'u taşır: `# F<n> · DUR 1: <konu>`. Ardından "Senden gerekenler" ve "DUR sırasında yapılanlar" bölümleri gelir.
+- "Kredi yüzünden yapılmadı / kabul edildi" satırı her iki biçimde zorunludur (§3.3 madde 9).
+- Ölçü: kapanış raporu 3–5,5 bin karakter, 45–80 satır, 1–3 tablo; istisna raporu ≤ 40 satır.
+- Kapanış satırı her zaman `**DUR — …**` (ya da istisna raporunda `**Bilgi kontağı — …**`) biçimindedir.
+- Ara DUR istisna biçimindedir (§7.1); başlık DUR'u taşır. Cevap beklenen kararlar "Sapma (açık karar)" altında; DUR sırasında yapılanlar tek satır.
 
 ---
 
@@ -764,12 +984,13 @@ Ayrıntı `DOCS-TEMPLATES.md`'dedir. Özet:
 
 | an | belge |
 |---|---|
-| faz açılışı | `project.md` §11 kararlar |
-| tasarım | künye (zaman, yerleşim, varyant) |
-| her ölçümden sonra | künye ölçüm tabloları |
-| **reviewer'dan önce** | scenes.json + project.md kullanıcı kararları + qc/fc json (reviewer okur) · künye + §Na + RENDER_REPORT (reviewer okumaz) |
+| faz açılışı | `docs/KARAR-TARIHI.md` (karar metni aynen) → `project.md` ilgili bölüm + §11 tablosu (1.4) · `docs/BRIEF-DIRECTOR.md` (director görevi) |
+| tasarım | künye (zaman, yerleşim, varyant) · uzun görevde `docs/CHECKPOINT-<görev>.md` her adımda (1.4) |
+| her ölçümden sonra | künye ölçüm tabloları (yalnız sayı) |
+| **reviewer'dan önce** | scenes.json + project.md kullanıcı kararları + qc/fc json (reviewer okur) · künye + §Na + RENDER_REPORT (reviewer okumaz) · `celiski-tara` bulgu 0 |
 | reviewer dönüşünde | reviewer kaydı `docs/REVIEWER.md` sonuna ekler; ana oturum `grep '^KARAR:'` ile doğrular |
-| kapanış | RETRO, world/lessons.md, RENDER_REPORT, (teslimde) TESLIM, rapor |
+| her commit | `.githooks/pre-commit` → `celiski-tara` (1.4) |
+| kapanış | RETRO, world/lessons.md, `docs/PAKET-NOTLAR.md` (tek seferde), RENDER_REPORT, (teslimde) TESLIM, rapor |
 
 ---
 
@@ -794,16 +1015,17 @@ Ayrıntı `DOCS-TEMPLATES.md`'dedir. Özet:
 
 **Faz başı**
 
-- [ ] Faz istemi okundu; KARARLAR → `project.md` §11 (aynen, tarihli); KAPALI KARAR'lar işaretli.
+- [ ] Faz istemi okundu; KARARLAR → `docs/KARAR-TARIHI.md` (aynen, tarihli) + `project.md` §11 özü; KAPALI KARAR'lar işaretli.
+- [ ] Değişiklik listesi yazıldı; ölçüm kapsamı (V1) ve kilometre taşları (V2) belli.
 - [ ] Bakiye okundu (`doctor`); bütçe satırı hazır.
 - [ ] DOKUNULMAZ listesi ve YAPMA maddeleri borca yazıldı.
-- [ ] Disk ≥ 40 GB.
+- [ ] Disk ≥ 40 GB; `tools/render-oncesi` çıkış 0 (render varsa).
 
 **Reviewer'dan önce**
 
-- [ ] Künye, §Na, scenes.json ve RENDER_REPORT güncel.
-- [ ] qc / frame-check / ours json'ları güncel; kareler kod değişikliğinden sonra render edilmiş.
-- [ ] Reviewer istemi: kapı-id · brief aynen · yalnız çıktı + kural yolları · bakılacak kare aralıkları · "kendi yönteminle ölç" · künye, yapan sayısı, gerekçe ve puan YOK.
+- [ ] Künye, §Na, scenes.json ve RENDER_REPORT güncel; `celiski-tara` bulgu 0.
+- [ ] qc / frame-check / ours json'ları güncel; kareler kod değişikliğinden sonra render edilmiş; still'ler taze probe ile aynı.
+- [ ] Reviewer istemi: kapı-id · brief aynen · yalnız çıktı + kural yolları · bakılacak kare aralıkları · ≤ 3 soru · referans klip · "kendi yönteminle ölç" · künye, yapan sayısı, gerekçe ve puan YOK. Still ve klip ayrı reviewer.
 
 **Rapordan önce**
 
@@ -811,7 +1033,8 @@ Ayrıntı `DOCS-TEMPLATES.md`'dedir. Özet:
 - [ ] ŞARTLI GEÇER şartlarının her biri kanıtla uygulandı (künye + rapor).
 - [ ] Her "giderildi" kare numarasıyla kanıtlı.
 - [ ] Değişmeyen kareler imgdiff 0 / bit-aynı kanıtı var.
-- [ ] RETRO girişi yazıldı (kök neden ≠ dikkatsizlik); world dersleri işlendi.
-- [ ] Bakiye önce → sonra; ledger `match` doğru (kayıp varsa `lost[]`).
-- [ ] Açık kararlar numaralı, öneri + etki ile; KAPALI KARAR yok.
-- [ ] `## Katkı` var; kapanış `**DUR — …**`.
+- [ ] RETRO girişi yazıldı (kök neden ≠ dikkatsizlik; faz sonunda tek seferde); world dersleri ve paket bulguları işlendi.
+- [ ] Bakiye önce → sonra; ledger `match` doğru (kayıp varsa `lost[]`); "kredi yüzünden" satırı "yok" (doluysa DUR).
+- [ ] Açık kararlar numaralı, öneri + etki ile; bağlayıcı sapma ilk sırada; KAPALI KARAR yok.
+- [ ] Rapor biçimi doğru (istisna ≤ 40 satır / kapanış); `## Katkı` (kapanışta) var; kapanış `**DUR — …**` ya da bilgi kontağı.
+- [ ] Süreç listesi temiz (bu oturumun başlattığı python/node/ffmpeg/Chromium kalmadı); checkpoint son satırı + commit.

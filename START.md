@@ -58,7 +58,7 @@ World sorusunda önerilen seçenek **yeni look-dev**'dir. Kütüphaneden seçmek
 3. Projende `CLAUDE.md`: bağlayıcı sıra ve daimi kurallar.
 4. `skills/motion-core/references/PLAYBOOK.md`: fazlar, kapılar, DUR noktaları, rapor biçimi.
 5. `skills/motion-core/references/RULES.md`: SERT ve VARSAYILAN kurallar.
-6. `skills/motion-reviewer/SKILL.md`: bağımsız reviewer'ın neye baktığı. §0.6 sekiz madde, UCUZ 11 işaret, karar sözlüğü.
+6. `skills/motion-reviewer/SKILL.md`: bağımsız reviewer'ın neye baktığı. §0.6 sekiz madde, UCUZ 12 işaret, karar sözlüğü.
 7. Gerektikçe: `MEASURE.md` (ölçüm), `AUDIO.md` (ses), `GENAI.md` (üretken varlık), `skills/motion-world/SKILL.md` (world sözleşmesi), `skills/motion-live/SKILL.md` (canlı profil).
 
 ## 4. Akış ve DUR noktaları
@@ -71,7 +71,7 @@ Her faz bir rapor ve **DUR** satırıyla biter. DUR'da senden ne beklendiği rap
 | 2 | `/motion:faz audio` | Transkript, vuruş haritası (BEATS), shot listesi önerisi, kayma tablosu | Shot sınırlarını onayla |
 | 3 | `/motion:faz lookdev` | Gerçekten farklı **3 yön**; ölçümler; bağımsız reviewer (yeni world kurarken kütüphane türevleri elenir; world seçildiyse yönler world içinde yapıda ayrışır) | **Bir yön seç** (ya da birleşim) |
 | 4 | `/motion:faz lexicon` | Shot başına nesne sözlüğü; kaynaklı içerik adayları (kaynaktan aynen) | Sözlüğü onayla; aday seç |
-| 5 | `/motion:faz P1` (P2, …) | Varyantlar → animatik → reviewer kapısı → tam render → QC → teslim kapısı | İlk perdede animatiği onayla; her perdenin teslimine bak |
+| 5 | `/motion:faz P1` (P2, …) | Varyantlar → animatik → reviewer kapısı → **hareket kontağı** (bütün hamleler referansla yan yana tek video) → tam render → QC → teslim kapısı | İlk perdede animatiği ve hareketi ("DUR — hareket") onayla; her perdenin teslimine bak |
 | 6 | `/motion:master` | Tek sürekli encode, loudness, dikişler, arşiv, `docs/TESLIM.md`, master kapısı | Teslim dosyalarını onayla |
 | 7 | `/motion:promote` | Dersler: world, proje ve paket (öneri dosyası) | Paket önerilerini onayla ya da reddet |
 | — | `/motion:gate <birim> <kapı>` | Herhangi bir kapıyı elle yeniden koşar | — |
@@ -81,17 +81,26 @@ Her faz bir rapor ve **DUR** satırıyla biter. DUR'da senden ne beklendiği rap
 - **Taze reviewer.** Her kapıda işi görmemiş yeni bir reviewer açılır. Yalnız çıktıları ve kuralları okur ve kendi yöntemiyle ölçer.
 - **Eşikler.** Kapı eşiği full ≥ 7/8, light ≥ 6/8, live ≥ 7/8. UCUZ işaretlerinden biri varsa birim geri döner.
 - **Tek düzeltme turu.** Kapı geçmezse bir düzeltme turu yapılır. O da geçmezse **DUR**: render yapılmaz; kontak sayfası ve nedenler sana gelir.
-- **Kredi.** Üretken kredi yalnız `project.md` §9 bütçesi içinde harcanır. Tavan aşılacaksa iş durur ve sana sorar.
+- **Kredi.** Üretken kredi yalnız `project.md` §9 bütçesi içinde harcanır. Tavan aşılacaksa iş durur ve sana sorar. Raporda "kredi yüzünden yapılmadı / kabul edildi" satırı dolarsa da durur.
+- **Verim (1.4).** Reviewer kilometre taşında açılır (still ve klip ayrı); ara adımda yalnız değişen katman ölçülür ve sana **bilgi kontağı** gelir: dosya gönderilir, akış sürer (müdahale edersen durur). Raporlar kısa istisna biçimindedir (≤ 40 satır).
+
+**1.4 araçları (kısa):**
+- `motion-render celiski-tara` — bağlayıcı belgelerde çelişki taraması (arşiv terimi, üstü çizili satır, aynı kural farklı sayı, ölü yol, brief tavanı). `/motion:init` bunu `.githooks/pre-commit` olarak kurar; git deposunda bir kez `git config core.hooksPath .githooks`.
+- `tools/render-oncesi.ps1` / `.sh` — render/encode öncesi makine denetimi (kurulu harness beklenen tabanda mı, başka render süreci var mı); çıkış 1 → render yok.
+- `motion-render contact motion <id> …` — hareket kontağı videosu (her hamle referans kliple yan yana, etiketli).
+- Kararların aynen metni `docs/KARAR-TARIHI.md`'de; `project.md` yalnız güncel kuralı taşır. Director görevi `docs/BRIEF-DIRECTOR.md`.
 
 ## 5. Dosyalar nereye gider (proje klasörün)
 
 ```
-project.md  CLAUDE.md  scenes.json         ← kararlar, kurallar, manifest
+project.md  CLAUDE.md  scenes.json         ← güncel spec, kurallar (≤ 60 satır), manifest
+.githooks/pre-commit  tools/render-oncesi.* ← çelişki taraması commit kapısı · render öncesi makine denetimi (1.4)
 world/                                     ← seçilen world (world.json, lessons.md, DECISIONS.md, jsx)
 <BİRİM>.dc.html  *.jsx                     ← sahne sayfaları ve kodu
 script/                                    ← transkript, BEATS, ses eşlemi
 assets/gen/                                ← üretken varlıklar + manifest.json (bütçe defteri)
-docs/                                      ← INIT, SOZLUK, KUNYE-*, REVIEWER (reviewer hafızası), RETRO, TESLIM, F*-RAPOR
+docs/                                      ← INIT, SOZLUK, KUNYE-*, REVIEWER (reviewer hafızası), RETRO, TESLIM, F*-RAPOR,
+                                              KARAR-TARIHI (karar metni aynen), BRIEF-DIRECTOR, CHECKPOINT-*, PAKET-NOTLAR, celiski.json
 docs/research/                             ← araştırma çıktıları (atıflı)
 out/frames/  out/scenes/  out/master/      ← kareler, sahne videoları, master
 out/probe/                                 ← qc / frame-check sonuçları, kontaklar
@@ -108,4 +117,6 @@ Kullanıcı malzemesi (ses, logo, görsel) yol olarak bağlanır; kopyalanmaz, t
 | `motion-render` bulunamadı | Kurulumdan sonra yeni terminal aç (PATH yenilenir) |
 | disk < 40 GB | Render çıkış 6 verir. Yer açmak senin kararın; paket dosya silmez |
 | reviewer ajanı bulunamadı | Plugin kurulu mu, `/motion:doctor` ile bak. Komutlar yedek yolu (genel ajan + rol dosyası) kendisi kullanır |
-| Bir faz yarıda kesildi | Aynı `/motion:faz …` komutunu ver. Render'lar `--resume` ile kaldığı yerden devam eder |
+| Bir faz yarıda kesildi | Aynı `/motion:faz …` komutunu ver. Önce `docs/CHECKPOINT-*.md` son satırı, artefakt + ledger mutabakatı, tanık kare ve süreç listesi denetlenir; render'lar `--resume` ile kaldığı yerden devam eder |
+| Commit reddedildi (`celiski-tara`) | `motion-render celiski-tara --rapor` dosya:satır listesini verir; çelişen satırı düzelt, eski metni `docs/KARAR-TARIHI.md`'ye taşı |
+| `render-oncesi` çıkış 1 | Başka bir render/encode süreci ya da kurulu harness klonunda değişiklik var; bitmesini bekle ya da klonu tabana döndür. Render başlatılmaz |

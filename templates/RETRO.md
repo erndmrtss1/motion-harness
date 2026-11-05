@@ -1,6 +1,6 @@
 # RETRO — <PROJE>
 
-> Her faz bu dosyaya bir girişle kapanır. Giriş **sona eklenir**.
+> Her faz bu dosyaya bir girişle kapanır. Giriş **sona eklenir**. Retro, dersler ve paket bulguları **faz sonunda tek seferde** yazılır; ara adımlarda ve her DUR'da yazılmaz (PLAYBOOK §3.4 V5).
 > Dersler işlendiği yere yazılır: `world/lessons.md` (faz başlığıyla), `project.md`, `CLAUDE.md`, araç. Core adaylar `/motion:promote` ile pakete önerilir.
 
 ## Kurallar

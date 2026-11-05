@@ -37,21 +37,32 @@ Ana oturum **orkestradır**.
 - `motion:motion-measure`
 - `motion:motion-reviewer`
 
-**Tür bulunamazsa:** genel amaçlı ajan aç ve isteme şunu koy: "Önce `${CLAUDE_PLUGIN_ROOT}/agents/<ad>.md` dosyasını oku ve oradaki rolü birebir üstlen." Reviewer ve measure için ayrıca şunu ekle: "Write/Edit kullanma; yalnız belirtilen out/ alt klasörüne Bash ile yaz."
+**Tür bulunamazsa:** genel amaçlı ajan aç ve isteme şunu koy: "Önce `${CLAUDE_PLUGIN_ROOT}/agents/<ad>.md` dosyasını oku ve oradaki rolü birebir üstlen." Reviewer ve measure için ayrıca şunu ekle: "Edit kullanma; Write yalnız belirtilen out/ alt klasörüne; betiği dosyadan koş (stdin'e betik yok)."
 
 Her ajan isteği **tek görev, tek çıktı, en küçük bağlam** ilkesine uyar: yalnız gereken dosya yolları verilir; katalog ya da uzun çıktı kopyalanmaz.
+
+**Roller (1.4, PLAYBOOK §2.1).** Sen kapı ve QA'sın: tasarım yapmazsın, ölçtürürsün, kararı belgeye işlersin; teknik kısımlar (araç ayarı, `checks/`, ölçü tanımı, belge hijyeni) sende kalabilir.
+Director sanat yönetmeni brief'iyle (`docs/BRIEF-DIRECTOR.md`) çalışan tek tasarımcı-uygulayıcıdır. Ölçüm işi ≤ 3 madde, reviewer işi ≤ 3 soru; ikisi de tek tur.
 
 ## 0. Faz açılışı (her fazda)
 
 1. Sırayla oku: `CLAUDE.md` → `project.md` → `scenes.json` → `world/` → `docs/REVIEWER.md`'nin son kayıtları.
-2. **Kararlar önce belgeye.** İstemdeki KARARLAR ve KURAL'ları işe başlamadan `project.md` §11'e yaz: tarihli, "kullanıcı" etiketli, aynen.
+2. **Kararlar önce belgeye** (PLAYBOOK §3.5). İstemdeki KARARLAR ve KURAL'ları işe başlamadan kullanıcı metni **aynen ve tarihli** `docs/KARAR-TARIHI.md` sonuna (`### 11.<faz>`) yaz; güncel özü `project.md`'nin ilgili bölümüne ve §11 tablosuna (id · tarih · öz · durum).
+   - Değişen spec satırının eski metni karar tarihine taşınır; `project.md`'de üstü çizili satır ya da silinti notu bırakılmaz.
    - KAPALI KARAR'ları işaretle; açık karar listesine bir daha girmezler.
    - YAPMA maddeleri §12 borç kütüğüne gider.
+   - `motion-render celiski-tara` çıkış 0 (bulgu varsa önce belge düzeltilir).
 3. Ön koşulları kontrol et:
    - `motion-render doctor`: bakiye yalnız okunur, disk ≥ 40 GB.
    - `world.json` (audio ve lookdev hariç her fazda zorunlu).
    - Onaylı sözlük (`P<n>` için).
-4. Uzun işler arka planda koşar ya da `motion-render wait --id <id> --tag <T>|- --frames N --expect <s>` ile beklenir (üst sınır = 2 × expect). Elle bekleme döngüsü yazılmaz. Beklerken belge işleri yapılır (PLAYBOOK §2.4).
+   - Render içeren fazda `tools/render-oncesi.ps1` (ya da `.sh`) çıkış 0; 1 → render yok (DUR-8).
+4. **Değişiklik listesi ve kapsam** (1.4, PLAYBOOK §3.4). Fazın dokunacağı katman · ilkel · kamera · plaka listesini çıkar; ölçüm kapsamı (V1) ve kilometre
+   taşları (V2; `project.md` §3 "QA kapsamı") buradan belli olur. Ara adımda reviewer açılmaz; sonuç bilgi kontağıdır (dosya gönderilir, akış sürer).
+5. **Director görevi.** Görev `docs/BRIEF-DIRECTOR.md` (şablondan) ile verilir: §1 kullanıcının sanat yönetmeni metni aynen (tek estetik ölçüt), §2 iş,
+   §8 güncel iş; kapı listesi yazılmaz; ≤ 30k token. Uzun görevde director her adımda commit + `docs/CHECKPOINT-<görev>.md` satırı yazar; kesinti olursa
+   devam etmeden önce artefakt + ledger mutabakatı, tanık kare ve süreç listesi denetlenir (PLAYBOOK §2.6).
+6. Uzun işler arka planda koşar ya da `motion-render wait --id <id> --tag <T>|- --frames N --expect <s>` ile beklenir (üst sınır = 2 × expect). Elle bekleme döngüsü yazılmaz. Beklerken belge işleri yapılır (PLAYBOOK §2.4). Aynı anda tek render; probe/ölçüm ≤ 2 paralel.
 
 ## 1. `audio`: ses hattı
 
@@ -97,14 +108,16 @@ Her ajan isteği **tek görev, tek çıktı, en küçük bağlam** ilkesine uyar
    (yoksa **DUR**, referans iste).
 2. `motion:motion-director`'a tek görev: "ilkel kütüphanesi: <mekanikler> — world ilkeli + `motion-render motion-test <ilkel> --ref <klip>` her biri".
    Girdi: tüm sözlük, CRAFT-REF, referans klipler. Kapı listesi verilmez.
-3. Test çıktıları (`out/motion-test/*/`) kusur ölçülerine bakılır (C1 ≤ %5 tepe, giriş/çıkış ≥ 0,4 s, tek kare 0); `/motion:gate ilkel varlik` taze reviewer.
+3. Test çıktıları (`out/motion-test/*/`) kusur ölçülerine bakılır (C1 ≤ %5 tepe, giriş/çıkış ≥ 0,4 s, tek kare 0); kullanıcıya ve kapıya bütün mekanikler
+   referans klipleriyle yan yana **tek videoda** gider (1.4); `/motion:gate ilkel varlik` taze reviewer (≤ 3 soru). Ortak nesne ilkelleri de bu fazdadır.
 4. **DUR — mekanik onayı** (DUR-1). Onaylananlar CRAFT-REF §4 ve `world/DECISIONS.md`; `P1` ancak bundan sonra açılır.
 
 ## 4. `P<n>`: perde / birim döngüsü (PLAYBOOK §4.5)
 
 ```
 sözlük ✓ → zaman + devir → izdüşüm kapısı → 3 varyant still/shot → varyant kapısı → seçim
-→ animatik → ölçüm → belgeler → animatik kapısı → [tek düzeltme turu] → tam render → kare sonrası + QC + ölçüm
+→ animatik → ölçüm → belgeler → animatik kapısı (still ve klip ayrı) → [tek düzeltme turu]
+→ hareket kontağı → "DUR — hareket" (1.4) → tam render → kare sonrası + QC + ölçüm
 → belgeler → teslim kapısı → kapanış → rapor → DUR
 ```
 
@@ -115,32 +128,40 @@ sözlük ✓ → zaman + devir → izdüşüm kapısı → 3 varyant still/shot 
    - Üretim director'ın işidir ve GENAI.md prosedürüyle yapılır.
    - Bütçe dışı, liste dışı ya da sapma > %10 ise **DUR** (DUR-2).
 3. **Yapım.** `motion:motion-director`'a tek görev verilir: "P<n>: zaman + devir + izdüşüm kapısı + 3 varyant still/shot".
-   - Girdi (brief = film bağlamı): birim id, **tüm** sözlük, `docs/CRAFT-REF.md`, onaylı ilkeller, BEATS yolu, research çıktıları. Kapı listesi brief'e yazılmaz;
-     kapılar işten sonra QA olarak koşar (PLAYBOOK §3.1). Onaylı ilkel kütüphanesi yoksa P<n> açılmaz (§4.4a).
+   - Girdi (brief = film bağlamı): `docs/BRIEF-DIRECTOR.md` (sanat yönetmeni brief'i) + birim id, **tüm** sözlük, `docs/CRAFT-REF.md`, onaylı ilkeller, BEATS yolu,
+     research çıktıları, değişiklik listesi. Kapı listesi brief'e yazılmaz; kapılar işten sonra QA olarak koşar (PLAYBOOK §3.1, §3.3). Onaylı ilkel kütüphanesi
+     yoksa P<n> açılmaz (§4.4a).
    - Director'ın raporundaki **§0.6 (yapan)** puanını not et. Bu puan reviewer'a verilmez.
 4. **Varyant kapısı.** `/motion:gate P<n> varyant` adımları uygulanır.
    - Seçimler uyuşursa sürer.
    - Uyuşmazsa güçlü gerekçe kazanır ve rapora yazılır. Kararsızsa açık karar → **DUR**.
    - `light` profilde varyant seçimi animatik kapısıyla birlikte yapılır.
 5. **Animatik.** Director: animatik + qc + frame-check `--sheet` + contact + ours. Ölçümler künyeye yazılır.
-6. **Animatik kapısı.** `/motion:gate P<n> animatik`. Tek düzeltme turu kuralı gate komutundadır.
+6. **Animatik kapısı.** `/motion:gate P<n> animatik`: still'ler ve mp4 **ayrı taze reviewer**'a gider, her birine ≤ 3 soru. Tek düzeltme turu kuralı gate komutundadır.
    - Projenin **ilk perdesinde** animatik kullanıcıya gider (**DUR**).
    - Sonraki perdelerde faz istemi aksini demedikçe "KAPI GEÇERSE DURMA".
-7. **Tam render.** Director'a verilir: kare bütçesi, disk, 2×/S×, `run` zinciri. Bekleme arka planda yapılır.
+6a. **Hareket kontağı** (1.4, PLAYBOOK §4.5 Adım 6a). Director `motion-render contact motion P<n> …` ile bütün hamleleri ve mekanikleri referans kliple yan yana
+    tek videoda verir → `motion:motion-measure` (≤ 3 madde: M-C, M-SEYAHAT, M-VURUS/M-ONCU) → `/motion:gate P<n> hareket` → ilk perdede ve yeni
+    hamle/mekanik giren perdede **"DUR — hareket"** (DUR-12); öteki perdelerde bilgi kontağı.
+7. **Tam render.** Director'a verilir: `tools/render-oncesi` çıkış 0, kare bütçesi, disk, 2×/S×, `run` zinciri. Bekleme arka planda yapılır; aynı anda tek render.
 8. **Ölçüm.** Sayısal ön koşul varsa (K1, aksan ΔE, devir, senkron, varlık kabulü) `motion:motion-measure` paralel çalışır.
 9. **Belgeler reviewer'dan önce:** künye, §Na, `scenes.json` istisnaları, `out/RENDER_REPORT.md`.
 10. **Teslim kapısı.** `/motion:gate P<n> teslim`.
 11. **Kapanış:**
     - REVIEWER kaydı yerinde mi
-    - RETRO girişi
-    - `world/lessons.md`
+    - RETRO girişi, `world/lessons.md` dersleri, `docs/PAKET-NOTLAR.md` bulguları — faz sonunda **tek seferde** (V5)
     - RENDER_REPORT
-    - bakiye
+    - bakiye; "kredi yüzünden yapılmadı / kabul edildi" satırı (doluysa DUR)
+    - süreç listesi temiz (bu oturumun başlattığı python/node/ffmpeg/Chromium kalmadı) · `celiski-tara` 0 · checkpoint son satırı + commit
     - videoların ve kontağın yolları
 
 ## 5. Faz raporu (PLAYBOOK §7)
 
-Rapor `docs/F<n>-RAPOR.md` (ya da `docs/<faz>-RAPOR.md`) olarak kaydedilir ve kullanıcıya verilir. Sıra sabittir:
+Rapor `docs/F<n>-RAPOR.md` (ya da `docs/<faz>-RAPOR.md`) sonuna eklenir ve kullanıcıya verilir.
+
+- **Ara DUR, kapı sonucu, bilgi kontağı** → **istisna raporu** (PLAYBOOK §7.1, ≤ 40 satır): geçenler tek satır tablo (madde · sayı · eşik · ✓); yalnız sapma
+  (bağlayıcı sapma ilk sırada), açık karar, "kredi yüzünden yapılmadı / kabul edildi" satırı ve ledger açılır; `**DUR — …**` ya da bilgi kontağı.
+- **Faz kapanışı** → kapanış raporu (PLAYBOOK §7.2). Sıra sabittir:
 
 ```markdown
 # <faz> · <kapsam>: <tek satır sonuç>

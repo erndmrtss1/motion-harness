@@ -26,6 +26,8 @@ Profil `live` ise bu komut çalışmaz; master yoktur. `/motion:live` kullanıl�
 - Ledger `match` doğru; kayıplar `lost[]` alanında.
 - Disk ≥ 40 GB (`motion-render doctor`). Bakiye okunur.
 - Master fazı varsayılan olarak **kredi 0**'dır. Üretken çağrı yapılmaz.
+- (1.4) `tools/render-oncesi.ps1` (ya da `.sh`) çıkış 0: kurulu harness beklenen tabanda, başka render/encode süreci yok; 1 → encode yok (DUR-8).
+  `motion-render celiski-tara` çıkış 0. Master bir kilometre taşıdır (V2): tam tarama + taze reviewer.
 
 ## 1. Zincir
 
@@ -87,11 +89,12 @@ Karar **GEÇMEZ** ise tek düzeltme turu gate kuralıyla işler. Çoğu zaman bu
 ## 4. Kapanış ve rapor
 
 - `out/RENDER_REPORT.md`'nin sonuna ekle.
-- `docs/RETRO.md` girişi yaz.
-- Bakiye önce → sonra.
+- `docs/RETRO.md` girişi yaz; dersler ve `docs/PAKET-NOTLAR.md` bulguları aynı anda, tek seferde.
+- Bakiye önce → sonra; "kredi yüzünden yapılmadı / kabul edildi" satırı (doluysa DUR).
+- DUR'dan önce süreç listesi taranır: bu oturumun başlattığı ffmpeg/Chromium/node süreci kalmaz.
 - Önceki master'lar ve arşivler tutulur.
 - Animatik tur dizinlerinin temizliği kullanıcı kararıdır. Varsayılan geri dönüşüme taşımadır; sayı ve GB raporlanır.
 
-Rapor PLAYBOOK §7 biçimindedir. "Teslim dosyaları" bloğu en üstte durur: dosya · biçim · çözünürlük/fps · kare · süre · LUFS/dBTP · arşiv bit-exact.
+Rapor PLAYBOOK §7.2 (kapanış) biçimindedir. "Teslim dosyaları" bloğu en üstte durur: dosya · biçim · çözünürlük/fps · kare · süre · LUFS/dBTP · arşiv bit-exact.
 
 Kapanış satırı: `**DUR — master v<N>.** Teslim dosyaları ve TESLIM.md onayın için hazır.`

@@ -30,6 +30,11 @@ Bir motion projesinin belgeleri iki işe yarar:
 | `docs/F<n>-RAPOR.md` | `templates/RAPOR.md` | faz sonu (ana oturumun son mesajıyla aynı metin) | ana oturum | kullanıcı |
 | faz istemi | `templates/FAZ.md` | faz açılışı | kullanıcı ya da `/motion:faz` | ana oturum |
 | `docs/INIT.md` | (PLAYBOOK §4.1) | F0 | `/motion:init` | kullanıcı |
+| `docs/KARAR-TARIHI.md` (1.4) | `templates/KARAR-TARIHI.md` | her faz açılışında, işe başlamadan (karar metni aynen); spec satırı değişince eski metin | ana oturum | ana oturum, kullanıcı — çelişki taraması ve director brief'i dışı |
+| `docs/BRIEF-DIRECTOR.md` (1.4) | `templates/BRIEF-DIRECTOR.md` | her director görevi (güncel iş §8) | ana oturum | **director** (tek görev brief'i) |
+| `docs/CHECKPOINT-<görev>.md` (1.4) | — (biçim §3.14) | uzun director görevinde her adım sonunda | yapan | ana oturum (kurtarma, devam) |
+| `docs/PAKET-NOTLAR.md` (1.4) | `templates/PAKET-NOTLAR.md` | harness aracı yanlış ölçtüğünde / ölçemediğinde | ana oturum / yapan | `/motion:promote` |
+| `docs/celiski.json` (1.4) | `motion-render init` kopyalar | F0; bağlayıcı küme ya da brief değişince | ana oturum | `motion-render celiski-tara`, `.githooks/pre-commit` |
 | `world/lessons.md`, `world/DECISIONS.md` | (world şablonu: `motion-world`) | look-dev seçimi; her faz kapanışı | yapan | yapan, reviewer, `/motion:promote` |
 
 ---
@@ -67,6 +72,11 @@ Bir motion projesinin belgeleri iki işe yarar:
 
 **Tutarlılık kuralı.** Bir kapının kararı üç yerde aynı yazılır: REVIEWER.md'deki `KARAR:` satırı, künyenin ilgili bölümü, teslim belgesinin kapı satırı. Reviewer kaydı olmadan "GEÇER" ya da "FİNAL" yazılmaz; bekleyen tur "(bekliyor)" olarak yazılır.
 
+**Hijyen kuralı (1.4, PLAYBOOK §3.5).** Bağlayıcı belgede (CLAUDE.md, project.md, sözlük, world.json, CRAFT-REF ve `docs/celiski.json`'daki küme)
+yalnız bugün geçerli kural durur: üstü çizili satır, "kaldırıldı / geçersiz" notu, eski sürüm metni olmaz; eski metin aynen `docs/KARAR-TARIHI.md`'ye
+gider. Aynı kural tek yerde tanımlanır, öteki belgeler § numarasıyla başvurur. CLAUDE.md ≤ 60 satır; brief'ler token tavanı içinde. Her commit
+`celiski-tara`dan geçer.
+
 **Yalıtım kuralı.** Yapanın belgeleri (künye, rapor, RETRO, RENDER_REPORT, `out/probe/<faz>/` betik çıktıları) ve `out/measure/**` reviewer'a verilmez. Reviewer'ın gördüğü belgeler: kural dosyaları, `project.md` (brief, kalite çıtası, yasaklar, world, bütçe, hedefler, kullanıcı kararları), `scenes.json`, `world.json`, ledger, `docs/REVIEWER.md`.
 
 ---
@@ -95,9 +105,12 @@ Bir motion projesinin belgeleri iki işe yarar:
   | §12 | borç kütüğü |
   | §13 | istisna sicili |
 
-- §11'de her fazın iki alt bölümü vardır:
-  - `F<n> kararları (kullanıcı, tarih)`: aynen, tablo;
-  - `F<n>a uygulama (yapan)`: ölçü, gerekçe, sapma.
+- **Tek güncel spec (1.4).** §11 bir **karar tablosudur**: `| id | tarih | öz | durum |`; yalnız bugün bağlayıcı kararlar. Kullanıcı karar metni aynen ve
+  tarihli `docs/KARAR-TARIHI.md`'ye (§3.13), uygulama notu da oraya gider. Değişen bölüm satırının eski metni karar tarihine taşınır; project.md'de
+  üstü çizili satır ya da silinti notu kalmaz. (1.4 öncesi projelerde §11 alt bölümleri — `F<n> kararları`, `F<n>a uygulama` — ilk konsolidasyonda
+  aynen karar tarihine taşınır.)
+- §3 kapı sınıflaması (kusur · uyarı · bilgi · kapı dışı) ve **QA kapsamı** (kilometre taşları, V1/V2) tablolarını taşır; "Kalite referansı" tablosu zorunludur.
+- §12 borç kütüğü: `| borç | kaynak | neden ertelendi | ne zaman / koşul | durum |`; paket aracı yüzünden bekleyen borç paket bulgusu numarasını taşır.
 - "İLKE" ve "KURAL" satırları kalın yazılır. **KAPALI KARAR** etiketi açıkça yazılır.
 - Varsayılanı tersine çeviren her proje kararı §2 "Varsayılandan sapmalar" tablosuna girer.
 
@@ -123,6 +136,8 @@ Bir motion projesinin belgeleri iki işe yarar:
   - dikiş tablosu.
 - Sonraki fazlar aynı künyeye `## F<n> · <değişiklik> (project.md §…)` bölümü ekler. Teşhis, uygulama ve önce/sonra ölçü tablosu bu bölüme girer.
 - **"Giderildi" yazmadan önce doğrulanır.** Doğrulama sütunu boş bırakılmaz.
+- **(1.4)** Künye yalnız sayı taşır (tablolar; anlatı yok). Her bölüm bir **değişiklik listesiyle** açılır (dokunulan katman · ilkel · kamera · plaka);
+  ölçüm kapsamı buradan türer (PLAYBOOK §3.4 V1). Rapor künyeyi kopyalamaz, sayısına başvurur.
 
 ### 3.4 `docs/REVIEWER.md` (reviewer hafızası)
 
@@ -131,14 +146,15 @@ Bir motion projesinin belgeleri iki işe yarar:
   - başlık `## <YYYY-AA-GG> · <birim> · <kapı> · r<k>: <KARAR>`;
   - hemen altında tek satır, makine-okur: `KARAR: <TESLİM GEÇER|GEÇER|ŞARTLI GEÇER|GEÇMEZ> · §0.6 <x>/<n>|yok · UCUZ <…> · kapı <tür> <profil> ≥<e>/<n>|yok · tur r<k> · birim <id>`;
   - r2 GEÇMEZ ise ikinci satır `DUR: tek düzeltme turu tükendi, render yok`;
-  - gövde: Kontroller · §0.6 (8 madde) · UCUZ (VAR ve sınırda; #11 eksen tablosu) · Ön plan · Hata gibi görünen öğe · En zayıf anlar · Somut düzeltme listesi (GEÇMEZ ve ŞARTLI GEÇER için zorunlu, kare aralıklı) · Küçük notlar · Açık kararlar;
+  - gövde: Kontroller · §0.6 (8 madde) · UCUZ (VAR ve sınırda; #11 eksen tablosu) · Ön plan · Hata gibi görünen öğe · En zayıf anlar · Somut düzeltme listesi (GEÇMEZ ve ŞARTLI GEÇER için zorunlu, kare aralıklı; 1.4: ölçüt nesne tanımıyla) · Sorular (≤ 3) · Küçük notlar · Açık kararlar;
+  - 1.4: kilometre taşında still ve klip ayrı kayıttır (`<birim>-<tür>-still-r<k>`, `-klip-r<k>`); kapı türü `hareket` eklendi;
   - son satır `Proje dosyalarına dokunmadım. Kanıt: out/review/<kapı-id>/`.
 - **Özet** elle tutulmaz: `grep '^KARAR:' docs/REVIEWER.md` kayıt tablosudur. Tekrarlayan bulgu `Tekrar: #<n> (<birimler>)` satırıyla işaretlenir (`/motion:promote` adayı).
 - Kayıtta yapanın sözü, gerekçesi ya da sayısı bulunmaz.
 
 ### 3.5 `docs/SOZLUK.md`
 
-- Tasarımdan önce kullanıcı onayına gider (DUR). Onay tarihi ve düzeltme tablosu `project.md` §11'e yazılır.
+- Tasarımdan önce kullanıcı onayına gider (DUR). Onay metni aynen `docs/KARAR-TARIHI.md`'ye, özü ve onay tarihi `project.md` §11 tablosuna yazılır. Sözlükte yalnız güncel sürüm durur; eski sürüm arşive gider.
 - Cümle sütunu ses metninden aynen alınır. Kaynaklı içerik kaynak + sayfa ile verilir; uydurma yoktur.
 
 ### 3.6 `docs/SES-KAYMA-<ses>.md`
@@ -172,6 +188,7 @@ Bir motion projesinin belgeleri iki işe yarar:
 - **Uzun form:** İstenen · Çıkan · İyi giden · Ters giden (kök neden) · Kararlar ve sapmalar · Sayılar · Katkı · Dersler (nereye işlendi) · Sonraki tur için.
 - **Kısa form** (perde akışı oturduktan sonra): İyi giden · Kötü giden (numaralı) · Dersler (nereye).
 - **Kök neden "dikkatsizlik" olamaz.** Hangi kontrolün neden yakalamadığı yazılır ve o kontrol düzeltilir.
+- **Faz sonunda tek seferde** (1.4, V5): ara adımda ve her DUR'da retro yazılmaz; dersler ve paket bulguları aynı anda işlenir. Tur sınırına takılan ajan işi "ters giden"e girer (iş bölünmeliydi).
 - Kendi hatası "benim hatam" diye açıkça yazılır.
 - Kullanıcının vermesi gereken karar "Sonraki tur için"e yazılır; sessizce verilmez.
 
@@ -184,14 +201,16 @@ Bir motion projesinin belgeleri iki işe yarar:
   3. kapı özetleri;
   4. istisna sicili;
   5. ölçümler (bütün film) ve önceki ölçümler;
-  6. bilinen borçlar (kapananların üstü çizili);
+  6. bilinen borçlar (kapananlar "kapandı (F<n>)" durumuyla);
   7. varlık notu (sha256, üretim yolu);
   8. kredi.
 
 ### 3.10 Faz raporu (`docs/F<n>-RAPOR.md`)
 
-- Biçim PLAYBOOK §7'dedir.
-- **Doğrulanabilir kurallar:** `## Katkı` var · KAPALI KARAR listelenmez · sayılar birimli · yollar göreli · kapanış `**DUR — …**` · 3–5,5 bin karakter.
+- Biçim PLAYBOOK §7'dedir; iki biçim (şablon `templates/RAPOR.md` A/B):
+  - **istisna raporu** (1.4 varsayılanı, §7.1): ara DUR, kapı sonucu, bilgi kontağı; ≤ 40 satır; geçenler tek satır tablo; yalnız sapma, açık karar, "kredi yüzünden" satırı ve ledger açılır;
+  - **kapanış raporu** (§7.2): faz kapanışı; 45–80 satır, 3–5,5 bin karakter.
+- **Doğrulanabilir kurallar:** KAPALI KARAR listelenmez · bağlayıcı sapma açık kararlarda ilk sırada · "kredi yüzünden yapılmadı / kabul edildi" satırı var (doluysa DUR) · sayılar birimli · yollar göreli · kapanış raporunda `## Katkı` · son satır `**DUR — …**` ya da bilgi kontağı.
 
 ### 3.11 Faz istemi (`templates/FAZ.md`)
 
@@ -211,3 +230,40 @@ Bir motion projesinin belgeleri iki işe yarar:
 
 - `match:false` yalnız `lost[]` ile açıklanıyorsa uyarıdır; açıklanamıyorsa hatadır (DUR-2).
 - İş kimliği, sonuç URL'si ve hesap bilgisi yazılmaz.
+
+### 3.13 `docs/KARAR-TARIHI.md` (1.4)
+
+- Kullanıcının karar metni **aynen** ve tarihli, dosyanın **sonuna**, `### 11.<faz>[-karar-<k>] — <DUR adı> cevabı: <öz> (kullanıcı, <tarih>)` başlığıyla; altında
+  "Kullanıcı metni aynen (bağlayıcı)" alıntısı ve ayrı "Uygulama notu (ana oturum; karar değil)" maddeleri.
+- **Arşivlenen kural metinleri** bölümü: spec'ten çıkan ya da değişen satırın eski hâli aynen; yanında geçersiz kılan karar, tarih, güncel karşılığı (§).
+- Önceki girişler düzenlenmez, silinmez. Bu dosya tarihtir: `celiski-tara` bağlayıcı kümesinde ve director brief'inde **yoktur**.
+- Özü her zaman `project.md` ilgili bölümüne + §11 tablosuna da yazılır; ikisi aynı commit'tedir.
+
+### 3.14 `docs/CHECKPOINT-<görev>.md` (1.4)
+
+- Uzun director görevinde (çok adımlı ya da ~30 dk'dan uzun) her adım sonunda **bir satır** eklenir, ardından commit (uzak depo varsa push):
+
+  ```markdown
+  # <görev> · CHECKPOINT
+
+  | adım | saat | durum | kanıt |
+  |---|---|---|---|
+  | 1 · <adım adı> | <SS:DD> | <ne bitti, sayıyla; kredi; bakiye önce → sonra; ledger match> | `<göreli kanıt yolu>` |
+  ```
+
+- Commit kimliği bir sonraki satırda ya da raporda yazılır. Satır gerekçe değil durumdur; anlatı rapora gider.
+- **Kesinti sonrası** (PLAYBOOK §2.6 madde 2): son satır ↔ diskteki artefakt, ledger ↔ bakiye, tanık kare `imgdiff` 0, süreç listesi; sonra kaldığı yerden.
+  Kurtarma kendi satırıyla yazılır (`<n>.k · kurtarma`).
+
+### 3.15 `docs/BRIEF-DIRECTOR.md` (1.4)
+
+- Director'ın tek görev brief'idir (sanat yönetmeni brief'i, PLAYBOOK §3.1). Bölümler: §1 niyet (kullanıcı metni aynen; **tek estetik ölçüt**) · §2 iş (aynen) ·
+  §3 uygulama yorumları · §4 film bağlamı (sözlük satırları aynen) · §5 içerik kuralı · §6 zanaat özeti · §7 işletim kuralları (ölçüt değil) · §8 güncel iş.
+- Kapı listesi, eşik tablosu, kompozisyon/doluluk metriği yazılmaz. project.md, world.json ve sözlüğün tamamı kopyalanmaz; yolla başvurulur.
+- Token tavanı varsayılan 30k (proje değiştirebilir, `docs/celiski.json`); biten işin tanımı kısaltılır ya da karar tarihine taşınır.
+
+### 3.16 `docs/PAKET-NOTLAR.md` (1.4)
+
+- Harness aracının yanlış ölçtüğü / ölçemediği / yanlış sınıfladığı durumlar; satır: `| PN-n | tarih | faz / iş | ne oldu (sayıyla) | nerede | öneri | durum |`.
+- Araç düzelene dek içerik araca göre kırpılmaz; o madde bağımsız ölçümle sayılır ve ilgili §12 borç satırı PN numarasını taşır.
+- Faz sonunda tek seferde gözden geçirilir; `/motion:promote` "aday" satırları core öneri dosyasına taşır. Proje içeriği ve gizli bilgi yazılmaz.

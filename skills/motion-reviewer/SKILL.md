@@ -1,8 +1,8 @@
 ---
 name: motion-reviewer
-description: Bağımsız kapı incelemesi prosedürü; yalnız taze açılmış motion-reviewer ajanı uygular (/motion:gate açar). İşi yapanın gerekçesini görmeden yalnız çıktıları ve kuralları okur, kendi yöntemiyle ölçer; §0.6 sekiz madde, UCUZ 11 işaret, ön plan 5 soru ve "hata gibi görünen öğe" taramasıyla TESLİM GEÇER | GEÇER | ŞARTLI GEÇER | GEÇMEZ kararı verir ve kaydı docs/REVIEWER.md'ye ekler. Varyant/look-dev, storyboard, animatik, render, teslim, master, canlı ve eval kiplerini kapsar.
+description: Bağımsız kapı incelemesi prosedürü; yalnız taze açılmış motion-reviewer ajanı uygular (/motion:gate açar). İşi yapanın gerekçesini görmeden yalnız çıktıları ve kuralları okur, kendi yöntemiyle ölçer; §0.6 sekiz madde, UCUZ 12 işaret (#1–#11, #17), ön plan 5 soru ve "hata gibi görünen öğe" taramasıyla TESLİM GEÇER | GEÇER | ŞARTLI GEÇER | GEÇMEZ kararı verir ve kaydı docs/REVIEWER.md'ye ekler. Varyant/look-dev, storyboard, animatik, hareket kontağı, render, teslim, master, canlı ve eval kiplerini kapsar; kilometre taşında still ve klip ayrı reviewer, iş başına ≤ 3 soru, referans klip yan yana.
 argument-hint: <birim> <kapı-türü> [r<k>] [KİP: eval]
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Read, Grep, Glob, Bash, Write
 disable-model-invocation: true
 ---
 
@@ -28,6 +28,8 @@ Bu dosya ise yalnız inceleme yöntemini, karar sözlüğünü ve dönüş biçi
 - **Kapı başına taze ajan.** Bir reviewer SendMessage ile bir sonraki kapıya taşınmaz.
   - Ders: Kaynak projede tek bir reviewer, kapılar boyunca SendMessage ile sürdürüldü. 23 dönüşte bağlamı ~111 MB'a büyüdü ve "işi görmemiş göz" niteliği aşındı.
   - Kapılar arası tek hafıza `docs/REVIEWER.md` dosyasıdır (§11).
+- **Faz başına, kilometre taşında (1.4).** Seni ara adımda değil kilometre taşında açarlar; o fazın bütün çıktısını yan yana görürsün (süreklilik).
+  Kilometre taşında **still ve klip ayrı reviewer**'dır: sen ya still'leri ya klibi incelersin (§7.2).
 - **Yapanın puanı sana verilmez.** Yapanın §0.6 puanını, ölçümlerini, raporunu ve künyesini görmezsin.
   - Puanların farkını sen değil, ana oturum kapı raporunda yazar.
 - **Kendi yönteminle ölçersin.** Yapanın araçlarının ve betiklerinin ürettiği sayılar referans değildir (§2).
@@ -85,6 +87,16 @@ Gerekli bir girdi yoksa o madde **"ölçülemedi"** olur. Örnek: kontak yok, an
 - Kapı kararını belirleyen bir madde ölçülemiyorsa en iyi karar **ŞARTLI GEÇER** olur. Şart, "ölçülebilir hâle getir + ölç" biçiminde yazılır.
 - Teslim kapısında ölçülemeyen SERT madde varsa karar **GEÇMEZ** olur.
 
+### 1.4 İş sınırı: ≤ 3 soru, tek tur (1.4)
+
+Kaynak projede tek bir reviewer'a bir kapının bütün listesi (16 kapı + hareket kalitesi) verildi; ajan tur sınırına çarptı ve devam mesajıyla kapandı.
+
+- **İş başına ≤ 3 soru.** Kapı istemi sana en çok üç soru verir, öncelik sırasıyla (projenin `project.md` §3'teki sabit soruları dahil; aynen sorulur).
+  Standart prosedür (güncellik, kalibrasyon, §0.6, UCUZ, ön plan, hata görünümü) sorulardan ayrıdır ve her zaman yapılır.
+- **Öncelik sırasıyla çalış; kaydı erken yaz.** Tur sınırının ~%75'ine gelince elindekiyle `RECORD.md`'yi yaz ve ekle; yetişmeyen soru ya da madde
+  **"ölçülemedi"** olur (karar etkisi §1.3). Sınıra çarpıp kayıtsız kapanmak en kötü sonuçtur.
+- Liste üç soruya sığmıyorsa bu bir istem hatasıdır; kayda `Not: istem > 3 soru, ilk 3 yanıtlandı` yaz.
+
 ---
 
 ## 2. Kendi yöntemin
@@ -98,6 +110,7 @@ Harness'in denetim çıktıları (`qc`, `frame-check`, `ours`) sana nereye bakac
 - `ffmpeg`, `ffprobe`
 
 **Kendi betiklerin.** Yalnız `out/review/<kapı-id>/` altına yazılır (`m-<konu>.mjs`).
+- Betiği **dosya olarak** yazarsın (Write, yalnız `out/review/<kapı-id>/` altına) ve dosyadan koşarsın. Stdin'e verilen betik (`python - <<EOF`, `node -e` zinciri) kurmazsın; kapanışta başlattığın süreç kalmaz (1.4).
 - Bağımlılıksız tutarsın. Pikseli ffmpeg ile ham olarak alırsın, örnek: `ffmpeg -v error -i <kare> -vf crop=w:h:x:y,format=gray -f rawvideo -`. İstatistiği node ile hesaplarsın.
 - Sahne kodu, `render/` ve yapanın betikleri içe aktarılmaz.
 
@@ -139,6 +152,9 @@ Kanıtı olmayan bulgu kayda girmez. "Gözle" denen yerde de kırpım verilir.
 3. **Göreli puanla.** Her maddede birimin sayısı referans çıtasının yanında yazılır: "evet" = çıtaya ulaşıyor (ölçülebilir maddede ± %20 içinde ya da daha iyi;
    gözle değerlendirilen maddede referansla aynı kırpım boyutunda yan yana kanıt). Referansın kendisi o maddede "evet" değilse madde referansla değil kuralla puanlanır ve not düşülür.
 4. **Kayıt.** KARAR satırının altına ikinci satır: `kalibrasyon: <ref adları> · <madde: çıta → birim, …>` (en çok 4 madde; ayrıntı kanıt klasöründe).
+5. **Yan yana (1.4, zorunlu).** Referans klip birimle **yan yana** değerlendirilir: klip kapısında aynı hamle/mekanik penceresi referansla aynı
+   ölçek ve aynı süreyle yan yana (ana oturumun `motion-render contact motion` videosu ya da kendi `contact sheet` şeridin); still'de aynı kırpım boyutu.
+   Yan yana kanıtı olmayan §0.6 maddesi "evet" alamaz.
 
 Her madde **evet / hayır** olarak işaretlenir. Kanıtı kendi kırpımındır; çıtası referansın aynı ölçüsüdür.
 
@@ -164,14 +180,15 @@ Her madde **evet / hayır** olarak işaretlenir. Kanıtı kendi kırpımındır;
 - Uygulanan eşik = max(profil eşiği, `scenes.json` `gate.taste`). Proje eşiği yükseltebilir, düşüremez.
 - Değerlendirilebilen madde sayısı `n` 8'den azsa eşik şöyle hesaplanır: **en çok (8 − profil eşiği) "hayır"**. Örnek: durağan still'de `n = 5`; full için eşik 4/5, light için 3/5, live için 4/5. KARAR satırının `kapı` alanına bu dönüştürülmüş eşik yazılır (ör. `kapı lookdev live ≥4/5`), 8'lik eşik değil.
 - **Evet < 3** ise karar GEÇMEZ olur ve geri dönüş noktası **look-dev / storyboard** olur. Düzeltme turu açılmaz, tasarım geri döner.
+  `hareket` kapısında (`n = 3`; full eşik ≥ 2/3) bu eşik **evet 0**'dır; geri dönüş noktası ilkel kütüphanesi ya da storyboard.
 
 ---
 
-## 4. UCUZ işaretleri: 11 madde
+## 4. UCUZ işaretleri: 12 madde (#1–#11, #17)
 
 Bir işaret **VAR** ise birim **GEÇMEZ** olur. **Sınırda** olan bir işaret ya ŞARTLI GEÇER'in şart listesine kare aralığıyla girer ya da GEÇMEZ yapar. Seçimi sen yaparsın ve gerekçesini yazarsın.
 
-`project.md` §3'te ek UCUZ maddeleri varsa onlar #12'den itibaren numaralanır ve aynı kuralla taranır.
+`project.md` §3'te ek UCUZ maddeleri varsa onlar #12'den itibaren numaralanır ve aynı kuralla taranır; **#17 paketindir** (askıda nesne, 1.4), proje numaralandırması onu atlar (#12–#16, #18…).
 
 | # | işaret | neye bakılır | kanıt |
 |---|---|---|---|
@@ -186,6 +203,7 @@ Bir işaret **VAR** ise birim **GEÇMEZ** olur. **Sınırda** olan bir işaret y
 | 9 | Yapay zekâ artefaktı | El, yüz, yazı, geometri kırığı, eriyen kenar, titreyen doku. | 1:1 ya da 2× kırpım, komşu kareler |
 | 10 | Metin üstüne doğrudan efekt | Glow, blur, bozulma ya da gradyan doğrudan metne uygulanmış; okunurluk düşüyor. | Metin kırpımı ve kontrast oranı |
 | 11 | **Seçilmemiş bir world'e ya da (yeni world kurulurken) önceki projeye benzerlik** | Bkz. §4.1. | Eksen tablosu |
+| 17 | **Askıda nesne (1.4)** | Zeminde durması gereken nesnenin tabanında temas bandı ya da gölgesi yok; nesne "havada" okunur (RULES UCUZ-17 / NK-2; tanım motion-world `references/ILKEL.md` §4, ön plan kuralı §2). | 4× taban kırpımı + temas profili (MEASURE M-ASKIDA) |
 
 ### 4.1 UCUZ #11: seçilmemiş bir world'e ya da önceki projeye benzerlik (HK-36)
 
@@ -280,6 +298,7 @@ Her denetimin sonucu üç değerden biridir: geçti / kaldı / ölçülemedi. Ka
 | `lookdev` | World yönleri (still + `world.json` taslağı) | 5 | Yön başına SEÇ / ELE ve GEÇER / GEÇMEZ (§12) |
 | `storyboard` | Boyalı kareler ve hareket notları | 8. Hareket maddeleri karelerin altındaki nottan "plan" olarak işaretlenir. | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
 | `animatik` | Yarım çözünürlük ve animatik fps ile birim; **mp4 oynatımından** gözlem + ölçüm (§7.1) | 8 | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
+| `hareket` (1.4) | Hareket kontağı: tam render'dan önce bütün kamera hamleleri ve mekanik pencereleri, referans kliple yan yana tek video (`motion-render contact motion`); oynatımdan (§7.1) | 3 (4 ikincil hareket, 5 easing, 6 hold) | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
 | `render` | Tam çözünürlük birim | 8 | GEÇER / ŞARTLI GEÇER / GEÇMEZ |
 | `teslim` | Tam render, kapanış ölçümleri, bütçe | 8 | **TESLİM GEÇER** / ŞARTLI GEÇER / GEÇMEZ |
 | `master` | Tek sürekli encode: film QC, ses yüksekliği, dikişler, son kareler, önceki master ile bit eşliği | yok (birim kararları geçerli) | TESLİM GEÇER / GEÇMEZ |
@@ -303,6 +322,20 @@ Animatik bir **video** olarak değerlendirilir; kare dizisi kontağı tek başı
 
 Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alırsın, örnek: `motion-render probe <id> --frame N --bench N` ya da kendi kısa betiğin. Çıktı yalnız `out/review/<kapı-id>/` altına gider. Yapanın canlı QC dosyası yönlendiricidir.
 
+### 7.2 Still ve klip ayrı reviewer (1.4)
+
+Kilometre taşında still'ler (style frame, anahtar kare, look-dev / varyant / storyboard kareleri) ve klip (animatik, hareket kontağı, tam render)
+**iki ayrı taze reviewer**'a gider. Tek reviewer ikisini birlikte almaz; kaynak projede birleşik paket tur sınırına çarptı.
+
+| parça | kapı-id | §0.6 `n` | KARAR `kapı` alanı |
+|---|---|---|---|
+| still | `<birim>-<tür>-still-r<k>` | 5 (1, 2, 3, 7, 8) | `kapı <tür>-still <profil> ≥<e>/5` |
+| klip | `<birim>-<tür>-klip-r<k>` | 8 (hareket kontağında 3) | `kapı <tür>-klip <profil> ≥<e>/<n>` |
+
+- Kapı kararı iki kararın ağırıdır (GEÇMEZ > ŞARTLI GEÇER > GEÇER); bunu ana oturum birleştirir, sen yalnız kendi parçanı kararlarsın.
+- Tek düzeltme turu parça başınadır: still r1 GEÇMEZ → still r2; klip parçası yeniden açılmaz (değişen kare yoksa).
+- Kapı türü tek parçalıysa (yalnız still: `lookdev`, `varyant`, `storyboard`; yalnız klip: `hareket`) ek yazılmaz.
+
 ---
 
 ## 8. Karar sözlüğü
@@ -316,6 +349,10 @@ Canlı kapıda fps, gecikme ve düşen kare sayısını **kendi koşunla** alır
 
 - Kararı belirleyen en ağır bulgu kayıtta ilk sırada yazılır.
 - Karar değiştirilemez, yumuşatılamaz. "Geçer ama…" yazmazsın: ya şartlıdır ya geçmez.
+- **Sayısal estetik şartı bilgidir (1.4).** Kompozisyon, doluluk ya da oran gibi estetik bir ölçüye kendi koyduğun sayı (ör. "negatif alan ≥ %X")
+  kapı şartı olamaz; "Küçük notlar"a bilgi olarak yazılır. Estetik hüküm §0.6'nın referansa göreli evet/hayır'ıdır.
+- **Ölçüsü tanımsız madde GEÇMEZ gerekçesi olamaz.** Yöntemi `project.md`'de, `world.json`'da ya da paket kurallarında yazılı olmayan bir ölçüyle
+  karar veremezsin; bulgu "Açık kararlar"a gider. Kapı sınıfı (`project.md` §3 kapı sınıflaması) "uyarı" ya da "bilgi" olan madde GEÇMEZ üretmez.
 
 ---
 
@@ -330,7 +367,9 @@ r2 GEÇMEZ ─► DUR: kontak + nedenler, render YOK (tam render / teslim başla
 - **r1 GEÇMEZ ise** kaydın sonunda **Somut düzeltme listesi** zorunludur. Her madde şu sütunları taşır:
   - kare aralığı
   - sorun
-  - ölçüt (sayı)
+  - ölçüt (sayı) — **nesne tanımıyla** (1.4): ölçülecek nesneyi tarif edersin ("katman kenarının altında 4–40 px gölge", "iki katman arası boşluk:
+    pencere − aynı katman komşuluk medyanı"); koordinat (x, y bölgesi) yalnız örnek olarak parantezde. Kompozisyon değişince literal koordinat başka
+    nesneyi ölçer; nesne tanımı ölçmeye devam eder.
   - nasıl doğrulanacak
 
   Yapan yalnız bu listeyi alır.
@@ -405,7 +444,10 @@ Kalibrasyon: <ref klipleri · madde başı çıta (kendi ölçümün)> · Oynat�
 | # | kare · s | bulgu | sınıf (zorunlu / isteğe bağlı / açık karar) |
 
 ### Somut düzeltme listesi        (GEÇMEZ ve ŞARTLI GEÇER için zorunlu)
-| # | kare aralığı | sorun | ölçüt | nasıl doğrulanacak |
+| # | kare aralığı | sorun | ölçüt (nesne tanımıyla; koordinat yalnız örnek) | nasıl doğrulanacak |
+
+### Sorular (istemdeki ≤ 3 soru, sırasıyla)
+| # | soru (aynen) | cevap | kanıt |
 
 ### Küçük notlar (teslimi durdurmaz)
 ### Açık kararlar (kullanıcıya)
@@ -504,3 +546,5 @@ Eval kipinde `docs/REVIEWER.md`'ye ekleme yapılmaz. Kayıt `out/review/eval-<ta
 - Ölçmeden "geçti" yazma. Kanıtsız bulgu yazma.
 - Kararı yumuşatma. "Kasıtlı görünüyor" diye SERT ihlali geçirme.
 - Bir sonraki kapıya taşınmayı kabul etme. Her kapı yeni bir ajandır.
+- Referans klipsiz ya da yan yana kanıtsız §0.6 puanı verme (§3.0). Üçten fazla soruyu yanıtlamaya çalışıp tur sınırına çarpma (§1.4).
+- Koordinata bağlı şart yazma; sayısal estetik şartı kapı yapma (§8, §9).
