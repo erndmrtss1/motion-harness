@@ -17,6 +17,7 @@ import { chromium } from 'playwright';
 import { ROOT, FPS, WIDTH, HEIGHT, sceneById, readTimeline } from './project.mjs';
 
 export const STAGE = 'svg[data-om-exportable-video-with-duration-secs]';
+const SHOT_MS = (v => (v !== undefined && v !== '' && Number.isFinite(+v) && +v >= 0 ? +v : 30000))(process.env.MOTION_SHOT_MS);   // ekran görüntüsü zaman aşımı (ms); varsayılan 30000 = Playwright'ınki (1.4.1), 0 = sınırsız
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jsx': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf',
@@ -178,7 +179,7 @@ export async function withPage(sceneId, opts, fn) {
         if (!box) box = await page.$eval(STAGE, (el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
         await page.evaluate(async (t) => { window.__seek(t); await window.__syncVideos();
           if (window.__fxBakeSettle && await window.__fxBakeSettle()) { window.__seek(t); await window.__syncVideos(); await window.__fxBakeSettle(); } }, fi / FPS);
-        return page.screenshot({ clip: box, type: 'png' });
+        return page.screenshot({ clip: box, type: 'png', timeout: SHOT_MS });
       },
       // kanca dosyaları (proje köküne göre) sayfa global kapsamında çalıştırılır; sahne modülleri yüklendikten SONRA
       inject: async (files) => {

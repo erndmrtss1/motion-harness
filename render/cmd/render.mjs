@@ -28,6 +28,7 @@ let MODULE_FAIL = false;   // sahne modülü yüklenemediyse recordVideo geri d�
 const OUT = path.join(ROOT, 'out');
 const STAGE = 'svg[data-om-exportable-video-with-duration-secs]';
 const MAX_ATTEMPTS = 3;
+const SHOT_MS = (v => (v !== undefined && v !== '' && Number.isFinite(+v) && +v >= 0 ? +v : 30000))(process.env.MOTION_SHOT_MS);   // ekran görüntüsü zaman aşımı (ms); varsayılan 30000 = Playwright'ınki (1.4.1), 0 = sınırsız
 // WATCHDOG: bir kare (seek + video senkronu + ekran görüntüsü) 45 s'de bitmezse sayfa yeniden açılır ve kare 1 kez tekrar denenir;
 // yine olmazsa kare atlanır ve rapora (out/logs/<ad>.json · watchdog) yazılır. Süreç düzeyinde: kare döngüsü sürerken 120 s yeni kare
 // yoksa (yeniden açma da takıldıysa) süreç kendini sonlandırır (çıkış 4).
@@ -169,7 +170,7 @@ async function renderBySeek(browser, base, scene, tl, log, opts = {}) {
     const hang = !!WD_TEST && WD_TEST.frame === fi && (WD_TEST.mode === 'always' || !WD_TEST.hit++);
     await page.evaluate(async ([t, h]) => { if (h) await new Promise(() => {}); window.__seek(t); await window.__syncVideos();
       if (window.__fxBakeSettle && await window.__fxBakeSettle()) { window.__seek(t); await window.__syncVideos(); await window.__fxBakeSettle(); } }, [(fi * 1000 / FPS) / 1000, hang]);   // pişirme önbelleği oturunca aynı kare yeniden (pişen doku aynı karede kullanılır)
-    return page.screenshot({ clip: box, type: 'png' });
+    return page.screenshot({ clip: box, type: 'png', timeout: SHOT_MS });
   })(), WD.frameMs, 'kare ' + fi);
   // zaman aşımında: sayfayı yeniden aç, 1 kez tekrar; yine olmazsa null (kare atlanır)
   const retried = [], skippedFrames = [];
@@ -216,7 +217,7 @@ async function renderBySeek(browser, base, scene, tl, log, opts = {}) {
         for (let k = 1; k <= opts.bench; k++) {
           const b0 = Date.now();
           await page.evaluate(async (t) => { window.__seek(t); await window.__syncVideos(); }, ((frame + k) * 1000 / FPS) / 1000);
-          await page.screenshot({ clip: box, type: 'png' });
+          await page.screenshot({ clip: box, type: 'png', timeout: SHOT_MS });
           ms.push(Date.now() - b0);
         }
         bench = { n: ms.length, avg: Math.round(ms.reduce((a, b) => a + b, 0) / ms.length), min: Math.min(...ms), max: Math.max(...ms) };
@@ -335,7 +336,7 @@ async function renderHyperframes(browser, base, scene, tl, log, opts = {}) {
       const { frame, out } = opts.probe;
       await seek(frame / FPS);
       await fsp.mkdir(path.dirname(out), { recursive: true });
-      await fsp.writeFile(out, await page.screenshot({ clip: box, type: 'png' }));
+      await fsp.writeFile(out, await page.screenshot({ clip: box, type: 'png', timeout: SHOT_MS }));
       const info = await page.evaluate(() => (window.__probeInfo ? window.__probeInfo() : null));
       // --eval "ifade": probe karesinden sonra sayfada değerlendirilir, sonuç stdout'a (hata ayıklama)
       if (opts.evalJs) console.log('  eval → ' + JSON.stringify(await page.evaluate(opts.evalJs)));
@@ -347,7 +348,7 @@ async function renderHyperframes(browser, base, scene, tl, log, opts = {}) {
     const t1 = Date.now();
     for (let i = 0; i < tl.frames; i++) {
       await seek(i / FPS);
-      await fsp.writeFile(path.join(dir, String(i).padStart(5, '0') + '.png'), await page.screenshot({ clip: box, type: 'png' }));
+      await fsp.writeFile(path.join(dir, String(i).padStart(5, '0') + '.png'), await page.screenshot({ clip: box, type: 'png', timeout: SHOT_MS }));
     }
     log('kareler: ' + tl.frames + ' / ' + ((Date.now() - t1) / 1000).toFixed(1) + ' s');
     const bad = sanity(dir, tl.frames);
