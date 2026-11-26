@@ -1,7 +1,7 @@
 # @motion/harness — sözleşme (CLI · manifest · world · sayfa kancaları)
 
 Bu belge paketin bütün parçalarının (skill'ler, ajanlar, komutlar, `render/`) uyduğu tek sözleşmedir.
-Değişiklik önce burada yapılır. Sürüm: 1.4.0.
+Değişiklik önce burada yapılır. Sürüm: 1.4.1.
 
 ## 1. Proje düzeni (her proje kökü)
 
@@ -223,5 +223,7 @@ Dağıtıcı: `motion-render <komut> [--project <dizin>] …` · `motion-render 
 | `plugin-sync [--check] [--root <checkout>] [--plugins-dir <dizin>] [--json]` | plugin metinleri (`.claude-plugin/`, `commands/`, `skills/`, `agents/`, `templates/`, `render/runtime/`) kurulu checkout'tan Claude Code önbelleğine (`installed_plugins.json` → `installPath`) bayt bayt eşitlenir; eski dosya silinir, önbelleğin geri kalanına dokunulmaz. Sürüm aynı kalınca `claude plugin update` önbelleği yenilemediği için install betikleri çağırır (PN-104). `--check` yazmaz, fark → çıkış 3; kurulu değil → 0 |
 
 Çıkış kodları: 0 tamam · 1 hata · 2 kullanım · 3 QC/kontrol `error` · 4 bekçi duraksama · 5 kare atlandı · 6 disk < 40 GB (render) ya da üst sınır doldu (`wait`) · 7 `wait`: 150 s yeni kare yok (harness çöktü).
+
+Ortam değişkenleri (ekran görüntüsü; 1.4.1): `MOTION_SHOT_MS` = kare ekran görüntüsü zaman aşımı (ms), varsayılan 30000 (Playwright varsayılanı), `0` = sınırsız; boş ya da geçersiz değer → 30000. `render` / `probe` (seek kare çekimi, `--bench`, Hyperframes sahnelerinde probe + kare döngüsü; `--fallback` gerçek zamanlı kayıt ekran görüntüsü almaz) ve sayfa oturumu (`page.mjs` `shot`: `frame-check`, `motion-test`, `lookdev-diff`) okur. Kare başı watchdog ayrıdır: `--wd-ms` (varsayılan 45000) seek + video senkronu + ekran görüntüsünün toplamını sınar; ağır karede ikisi birlikte yükseltilir (`--wd-ms` > seek + `MOTION_SHOT_MS`). Değişken verilmezse davranış ve çıktı 1.4.0 ile aynıdır.
 
 `--step N` (qc, frame-check, ours, contact `--page-step`): animatik kareleri (`render --step N`, dosya adı sıralı k) etkin hız `fps/N` ile ölçülür; kare sayısı ⌈N_kare/N⌉. frame-check'te yalnız piksel/ses tipleri; tasarım tipleri render'sız olduğu için `--step` olmadan tam hızda koşulur.

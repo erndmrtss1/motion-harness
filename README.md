@@ -96,6 +96,7 @@ sunucusu olarak eklemek de mümkündür (Higgsfield'ın kendi kurulum talimatı)
 | "Executable doesn't exist" (önceden çalışıyordu) | Playwright tarayıcı önbelleği kullanıcı çapında paylaşılır; başka bir kurulum sabitlenen sürümü silmiş olabilir: `cd render && npx playwright install chromium`, sonra `motion-render doctor` |
 | ffmpeg özelliği eksik (prores_ks, ffv1, loudnorm) | sistem ffmpeg'i kurun (adım 5) ve `MOTION_FFMPEG` ortam değişkenine yolunu yazın |
 | Yeni sürüm çekildi ama `/motion:*` eski davranıyor | kurulum betiğini yeniden çalıştırın (plugin metinlerini eşitler); elle: `claude plugin marketplace update motion-harness` + `claude plugin update motion@motion-harness`; Claude Code'u yeniden başlatın |
+| Ağır kareler (ör. yazılım raster, `--disable-gpu`) 30 s sonra "Timeout 30000ms exceeded" ile yeniden deneniyor ya da atlanıyor | ekran görüntüsü zaman aşımını `MOTION_SHOT_MS` ile yükseltin (ms; `0` = sınırsız) ve kare başı watchdog'u `--wd-ms` ile ondan büyük yapın (varsayılan 45000); ör. `MOTION_SHOT_MS=120000` ortamıyla `motion-render render <id> --wd-ms 150000` |
 | render "disk < 40 GB" ile duruyor | kare dizinlerini arşivleyin ya da eşiği `MOTION_MIN_DISK_GB` ile değiştirin (60 fps ≈ 2 MB/kare) |
 | fontlar yüklenmiyor | proje kökünde `motion-render vendor fonts` (Google Fonts; lisans metni `fonts/LICENSES.md`); erişim yoksa `MOTION_FONT_SOURCE=npm` |
 | Whisper (transkript) | isteğe bağlı: `motion-render init <dir> --with-whisper` (Python 3.10+, `render/requirements.txt`) |

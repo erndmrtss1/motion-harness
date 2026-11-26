@@ -2,6 +2,18 @@
 
 Sürümleme: [semver](https://semver.org/lang/tr/). Plugin sürümü `.claude-plugin/plugin.json`, render paketi `render/package.json`.
 
+## 1.4.1 — 2026-11-26
+
+Düzeltme: ekran görüntüsü zaman aşımı ayarlanabilir. Yazılım raster'da (`--disable-gpu`) 30–45 s süren ağır kareler Playwright'ın sabit
+30 s ekran görüntüsü varsayılanını aşıyor, kare yeniden deneniyor ve yine olmazsa atlanıyordu (çıkış 5).
+
+- **`MOTION_SHOT_MS`** (yeni ortam değişkeni): kare ekran görüntüsü zaman aşımı (ms). Varsayılan 30000 (Playwright'ınki), `0` = sınırsız;
+  boş ya da geçersiz değer → 30000. `render` / `probe` (seek kare çekimi, `--bench`, Hyperframes probe + kare döngüsü) ve `page.mjs` `shot`
+  (`frame-check`, `motion-test`, `lookdev-diff`) okur.
+- Kare başı watchdog ayrıdır ve değişmedi: `--wd-ms` (varsayılan 45000) seek + video senkronu + ekran görüntüsünün toplamını sınar. 45 s'yi
+  aşan karede ikisi birlikte yükseltilir (ör. `MOTION_SHOT_MS=120000` + `--wd-ms 150000`). Belge: CONTRACT §6, README sorun giderme.
+- **Uyumluluk:** değişken verilmezse davranış ve çıktı 1.4.0 ile aynıdır (DEMO k144 tek kare probe md5 eşit).
+
 ## 1.4.0 — 2026-11-05
 
 Konsolidasyon + herkese açık yayın. Bir kaynak projenin ölçülmüş bulguları (PN-104…148) genel yetenek olarak pakete taşındı: set yöntemi,
